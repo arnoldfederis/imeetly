@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- bun run --hot src/index.ts",
+    "lint": "bunx biome lint",
+    "format": "bunx biome check --write --unsafe",
+    "format:file": "bunx biome format --write",
+    "pre:push": "bun lint && bun format",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@shared/rpc": "workspace:*",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "dotenv-cli": "catalog:dev"
+  }
+}

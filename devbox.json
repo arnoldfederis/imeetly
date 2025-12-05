@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": [
+    "postgresql@latest",
+    "process-compose@latest",
+    "traefik@latest",
+    "mailpit@latest",
+    "hostctl@latest",
+    "yq@latest",
+    "sops@latest",
+    "age@latest",
+    "mkcert@latest",
+    "fzf@latest",
+    "turbo@latest",
+    "bun@latest",
+    "direnv@latest",
+    "watch@latest"
+  ]
+}

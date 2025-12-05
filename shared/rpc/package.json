@@ -1,0 +1,38 @@
+{
+  "name": "@shared/rpc",
+  "private": true,
+  "scripts": {
+    "lint": "bunx biome lint",
+    "format": "bunx biome check --write --unsafe",
+    "format:file": "bunx biome format --write",
+    "pre:push": "bun lint && bun format",
+    "auth:generate": "dotenv -e ../../.env -- bunx @better-auth/cli generate --config=./src/lib/auth.ts -y",
+    "db:generate": "dotenv -e ../../.env -- drizzle-kit generate",
+    "db:migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@better-auth/expo": "^1.4.3",
+    "@better-auth/passkey": "^1.4.3",
+    "@neondatabase/serverless": "^1.0.2",
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "@polar-sh/better-auth": "^1.5.0",
+    "@polar-sh/sdk": "^0.41.5",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "better-auth": "catalog:",
+    "drizzle-orm": "^0.44.7",
+    "nodemailer": "^7.0.11",
+    "pg": "catalog:",
+    "resend": "^6.5.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/nodemailer": "^7.0.4",
+    "@types/pg": "^8.15.6",
+    "dotenv-cli": "catalog:dev",
+    "drizzle-kit": "^0.31.7",
+    "tsx": "^4.20.6"
+  }
+}

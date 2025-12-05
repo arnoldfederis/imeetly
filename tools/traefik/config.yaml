@@ -1,0 +1,117 @@
+http:
+  routers:
+    traefik:
+      entryPoints:
+        - websecure
+      rule: "Host(`traefik.aimeetly.dev`)"
+      service: traefik
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    mailpit:
+      entryPoints:
+        - websecure
+      rule: "Host(`mailpit.aimeetly.dev`)"
+      service: mailpit
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    core:
+      entryPoints:
+        - websecure
+      rule: "Host(`core.aimeetly.dev`)"
+      service: core
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    docs:
+      entryPoints:
+        - websecure
+      rule: "Host(`docs.aimeetly.dev`)"
+      service: docs
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    server:
+      entryPoints:
+        - websecure
+      rule: "Host(`server.aimeetly.dev`)"
+      service: server
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    site:
+      entryPoints:
+        - websecure
+      rule: "Host(`aimeetly.dev`)"
+      service: site
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+    web:
+      entryPoints:
+        - websecure
+      rule: "Host(`app.aimeetly.dev`)"
+      service: web
+      tls:
+        options: aimeetly
+        domains:
+          - main: "aimeetly.dev"
+
+  services:
+    traefik:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:8080"
+    mailpit:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:8025"
+    core:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:3001"
+    docs:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:3002"
+    server:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:3003"
+    site:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:3004"
+    web:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:3005"
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: ./tools/certs/aimeetly.dev.pem
+        keyFile: ./tools/certs/aimeetly.dev-key.pem
+  options:
+    aimeetly:
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
