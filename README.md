@@ -278,6 +278,16 @@ bun update --interactive --recursive
 bun update -i -r
 ```
 
+## Add shadcn ui components to the project
+```bash
+cd <project-root>
+
+uiadd <component-name> <package-path-folder>
+
+## example
+uiadd button apps/web
+```
+
 ## Folder Structures
 - `apps`—contains all the apps
   - `core`—web admin panel
