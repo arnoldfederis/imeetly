@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:dev",
-    "@turbo/gen": "^2.6.1",
+    "@turbo/gen": "^2.6.3",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",

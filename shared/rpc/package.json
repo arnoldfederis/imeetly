@@ -12,8 +12,8 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
-    "@better-auth/expo": "^1.4.3",
-    "@better-auth/passkey": "^1.4.3",
+    "@better-auth/expo": "^1.4.5",
+    "@better-auth/passkey": "^1.4.5",
     "@neondatabase/serverless": "^1.0.2",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
@@ -21,7 +21,7 @@
     "@polar-sh/sdk": "^0.41.5",
     "@t3-oss/env-nextjs": "^0.13.8",
     "better-auth": "catalog:",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.0",
     "nodemailer": "^7.0.11",
     "pg": "catalog:",
     "resend": "^6.5.2",
@@ -32,7 +32,7 @@
     "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.15.6",
     "dotenv-cli": "catalog:dev",
-    "drizzle-kit": "^0.31.7",
-    "tsx": "^4.20.6"
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0"
   }
 }
