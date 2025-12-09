@@ -2,9 +2,9 @@
   "name": "core",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e ../../.env -- bun --bun next dev -p 3001",
-    "build": "dotenv -e ../../.env -- bun --bun next build",
-    "start": "dotenv -e ../../.env -- bun --bun next start",
+    "dev": "dotenv -e ../../.env -- next dev -p 3001",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",

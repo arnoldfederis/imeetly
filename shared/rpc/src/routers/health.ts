@@ -16,3 +16,5 @@ export const healthRouter = base
       .input(HealthRequestSchema)
       .handler(({ input }) => healthService.checkHealth(input)),
   });
+
+export default healthRouter;

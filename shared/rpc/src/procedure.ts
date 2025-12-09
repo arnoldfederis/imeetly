@@ -1,5 +1,6 @@
+import { authMiddleware } from "@shared/rpc/middlewares/auth";
+import { rateLimit } from "@shared/rpc/middlewares/rate-limit";
 import { base } from "./context";
-import { authMiddleware } from "./middlewares/auth";
 
-export const protectedProcedure = base.use(authMiddleware);
-export const publicProcedure = base;
+export const protectedProcedure = base.use(authMiddleware).use(rateLimit);
+export const publicProcedure = base.use(rateLimit);

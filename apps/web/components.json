@@ -12,8 +12,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
+    "hooks": "@shared/web-ui/hooks",
+    "lib": "@shared/web-ui/lib",
     "utils": "@shared/web-ui/lib/utils",
     "ui": "@shared/web-ui/components"
   }

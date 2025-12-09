@@ -35,32 +35,6 @@ export const users = schema.table(
   (table) => [index("users_email_idx").on(table.email)]
 );
 
-export const sessions = schema.table(
-  "sessions",
-  {
-    id: text("id").primaryKey(),
-    expiresAt: timestamp("expires_at").notNull(),
-    token: text("token").notNull().unique(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-    ipAddress: text("ip_address"),
-    userAgent: text("user_agent"),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    impersonatedBy: text("impersonated_by"),
-    activeOrganizationId: text("active_organization_id"),
-  },
-  (table) => [
-    index("sessions_user_id_idx").on(table.userId),
-    index("sessions_token_idx").on(table.token),
-  ]
-);
-
 export const accounts = schema.table(
   "accounts",
   {
@@ -184,30 +158,12 @@ export const passkeys = schema.table(
   ]
 );
 
-export const twoFactors = schema.table(
-  "two_factors",
-  {
-    id: text("id").primaryKey(),
-    secret: text("secret").notNull(),
-    backupCodes: text("backup_codes").notNull(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-  },
-  (table) => [
-    index("passkeys_userId_idx").on(table.userId),
-    index("two_factors_secret_idx").on(table.secret),
-  ]
-);
-
 export const authSchema = {
   users,
-  sessions,
   accounts,
   verifications,
   organizations,
   members,
   invitations,
   passkeys,
-  twoFactors,
 };

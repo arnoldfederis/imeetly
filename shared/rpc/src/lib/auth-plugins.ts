@@ -8,8 +8,8 @@ import {
   webhooks,
 } from "@polar-sh/better-auth";
 import { env } from "@shared/rpc/env";
-import { mailer } from "@shared/rpc/lib/mailer";
 import { polarClient } from "@shared/rpc/lib/polar-client";
+import { authService } from "@shared/rpc/services/auth";
 import {
   admin,
   bearer,
@@ -17,7 +17,6 @@ import {
   magicLink,
   openAPI,
   organization,
-  twoFactor,
   username,
 } from "better-auth/plugins";
 
@@ -25,43 +24,18 @@ export const authPlugins = [
   admin(),
   bearer(),
   emailOTP({
-    async sendVerificationOTP({ email, otp, type }) {
-      console.log({ email, otp, type });
-
-      let subject: string;
-
-      if (type === "sign-in") {
-        // Send the OTP for sign in
-        subject = "Sign in to your account";
-      } else if (type === "email-verification") {
-        // Send the OTP for email verification
-        subject = "Verify your email address";
-      } else {
-        // Send the OTP for password reset
-        subject = "Reset your password";
-      }
-
-      await mailer.sendMail({
-        subject,
-        email,
-        html: otp,
-      });
-    },
+    sendVerificationOTP: authService.sendVerificationOTP,
   }),
   expo(),
   magicLink({
-    sendMagicLink: async ({ email, url, token }, request) => {
-      console.log({ email, token, url }, request);
-
-      await mailer.sendMail({
-        subject: "Magic link",
-        email,
-        html: url,
-      });
-    },
+    sendMagicLink: authService.sendMagicLink,
   }),
   organization(),
-  passkey(),
+  passkey({
+    advanced: {
+      webAuthnChallengeCookie: `${env.AUTH_TOKEN_NAME}_passkey`,
+    },
+  }),
   polar({
     client: polarClient,
     createCustomerOnSignUp: true,
@@ -107,7 +81,6 @@ export const authPlugins = [
       }),
     ],
   }),
-  twoFactor(),
   username(),
   ...(env.APP_ENV === "development" && env.APP_MODULE === "server"
     ? [openAPI()]

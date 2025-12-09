@@ -176,6 +176,13 @@ bun db:migrate
 bun db:migrate
 ```
 
+## Reset db
+```bash
+## Open terminal and go to the project root
+## run the command
+reset-db
+```
+
 ## View logs of the running services
 ```bash
 ## more info of running services is in `process-compose.yaml`
