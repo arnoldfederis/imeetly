@@ -1,7 +1,8 @@
 import { type Context, os } from "@orpc/server";
 
-interface BaseContext extends Context {
+export interface BaseContext extends Context {
   headers: Headers;
+  request: Request;
 }
 
 export const base = os.$context<BaseContext>();

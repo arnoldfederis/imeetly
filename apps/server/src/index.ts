@@ -1,4 +1,3 @@
-import "@shared/rpc/lib/compression-stream";
 import { env } from "@shared/rpc/env";
 import { auth } from "@shared/rpc/lib/auth";
 import pino from "pino";
@@ -20,7 +19,7 @@ Bun.serve({
       if (url.pathname.startsWith("/api/auth")) {
         response = await auth.handler(request);
       } else {
-        const context = { headers: request.headers };
+        const context = { headers: request.headers, request };
         const rpcResult = await rpcHandler.handle(request, {
           prefix: "/rpc",
           context,

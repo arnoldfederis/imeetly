@@ -2,9 +2,9 @@
   "name": "web",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e ../../.env -- bun --bun next dev -p 3005",
-    "build": "dotenv -e ../../.env -- bun --bun next build",
-    "start": "dotenv -e ../../.env -- bun --bun next start",
+    "dev": "dotenv -e ../../.env -- next dev -p 3005",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
@@ -12,20 +12,24 @@
     "clean": "rm -rf .next node_modules"
   },
   "dependencies": {
+    "@hookform/resolvers": "catalog:",
     "@orpc/client": "catalog:",
-    "@orpc/experimental-pino": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@shared/rpc": "workspace:*",
     "@shared/web-ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
+    "input-otp": "catalog:",
+    "jotai": "catalog:",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-themes": "catalog:",
     "pg": "catalog:",
-    "pino": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
+    "sonner": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -35,7 +39,6 @@
     "@types/react-dom": "catalog:dev",
     "babel-plugin-react-compiler": "catalog:dev",
     "dotenv-cli": "catalog:dev",
-    "pino-pretty": "catalog:dev",
     "tailwindcss": "catalog:dev",
     "typescript": "catalog:dev"
   }

@@ -1,8 +1,13 @@
 import { serializer } from "@shared/web-ui/lib/serializer";
-import { defaultShouldDehydrateQuery, QueryClient, } from "@tanstack/react-query";
+import {
+  defaultShouldDehydrateQuery,
+  QueryCache,
+  QueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export function createQueryClient() {
-  return new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         queryKeyHashFn(queryKey) {
@@ -26,5 +31,19 @@ export function createQueryClient() {
         },
       },
     },
+    queryCache: new QueryCache({
+      onError: (error) => {
+        toast.error(`Error: ${error.message}`, {
+          action: {
+            label: "retry",
+            onClick: () => {
+              queryClient.invalidateQueries();
+            },
+          },
+        });
+      },
+    }),
   });
+
+  return queryClient;
 }

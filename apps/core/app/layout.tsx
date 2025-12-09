@@ -1,8 +1,7 @@
 import "../lib/orpc.server";
-import "@shared/rpc/lib/compression-stream";
 import type { Metadata } from "next";
 import "@shared/web-ui/styles/globals.css";
-import { QueryProvider, ThemeProvider } from "@shared/web-ui/components/providers";
+import { RootProvider } from "@shared/web-ui/components/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,14 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
-          <QueryProvider>{children}</QueryProvider>
-        </ThemeProvider>
+        <RootProvider>{children}</RootProvider>
       </body>
     </html>
   );

@@ -1,4 +1,3 @@
-import "@shared/rpc/lib/compression-stream";
 import type { Metadata } from "next";
 import "@shared/web-ui/styles/globals.css";
 
@@ -14,9 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        {children}
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

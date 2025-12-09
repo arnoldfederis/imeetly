@@ -1,8 +1,8 @@
-import type { InferRouterOutputs, RouterClient } from "@orpc/server";
-import { healthRouter } from "@shared/rpc/routers/health";
+import { type InferRouterOutputs, lazy, type RouterClient } from "@orpc/server";
 
 export const appRouter = {
-  health: healthRouter,
+  auth: lazy(() => import("./routers/auth")),
+  health: lazy(() => import("./routers/health")),
 };
 
 export type AppRouter = typeof appRouter;

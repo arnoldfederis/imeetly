@@ -13,6 +13,7 @@ export const authMiddleware = base.middleware(async ({ context, next }) => {
 
   return next({
     context: {
+      ...context,
       session: sessionData.session,
       user: sessionData.user,
     },
