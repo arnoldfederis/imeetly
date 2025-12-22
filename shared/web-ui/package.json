@@ -25,7 +25,7 @@
     "clsx": "^2.1.1",
     "input-otp": "catalog:",
     "jotai": "catalog:",
-    "lucide-react": "^0.556.0",
+    "lucide-react": "^0.562.0",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:dev",
-    "@turbo/gen": "^2.6.3",
+    "@turbo/gen": "^2.7.1",
     "@types/node": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
