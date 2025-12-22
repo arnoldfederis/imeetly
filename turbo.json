@@ -36,6 +36,9 @@
     },
     "db:migrate": {
       "cache": false
+    },
+    "expo:fix": {
+      "cache": false
     }
   }
 }
