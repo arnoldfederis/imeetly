@@ -1,0 +1,54 @@
+import { auth } from "@repo/server/lib/auth";
+import { mailer } from "@repo/server/lib/mailer";
+import type { AuthModel } from "@repo/server/modules/auth/model";
+import { UserService } from "@repo/server/modules/user/service";
+import type { EmailOTPOptions, MagicLinkOptions } from "better-auth/plugins";
+
+type SendMagicLink = Parameters<MagicLinkOptions["sendMagicLink"]>;
+type SendVerificationOTP = Parameters<EmailOTPOptions["sendVerificationOTP"]>;
+
+export abstract class AuthService {
+  static async signInSimple(
+    { email }: AuthModel["signInSimpleRequest"],
+    headers: Headers,
+  ): Promise<AuthModel["signInSimpleResponse"]> {
+    const { exists } = await UserService.checkIfEmailExists({ email });
+
+    if (exists) {
+      await auth.api.sendVerificationOTP({
+        body: { email, type: "sign-in" },
+      });
+    } else {
+      await auth.api.signInMagicLink({
+        body: { email },
+        headers,
+      });
+    }
+
+    return { success: true };
+  }
+
+  static async sendMagicLink({ email, token }: SendMagicLink[0]) {
+    await Promise.allSettled([
+      // Automatically verify to create a user if it doesn't exist
+      auth.api.magicLinkVerify({
+        query: { token },
+        headers: new Headers(),
+      }),
+      // Update user `emailVerified` because it's not yet really verified
+      UserService.updateUser(email, { emailVerified: false }),
+      // Send verification email
+      auth.api.sendVerificationOTP({
+        body: { email, type: "sign-in" },
+      }),
+    ]);
+  }
+
+  static async sendVerificationOTP({ email, otp }: SendVerificationOTP[0]) {
+    await mailer.sendMail({
+      subject: "Sign in to your account",
+      email,
+      html: otp,
+    });
+  }
+}

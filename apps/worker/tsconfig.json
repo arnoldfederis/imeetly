@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["es2021"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "rootDir": "./src",
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "@repo/worker/*": ["./src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/env": ["../../packages/env/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

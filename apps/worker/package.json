@@ -1,0 +1,38 @@
+{
+  "name": "@repo/worker",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- nodemon src/worker.ts",
+    "lint": "bunx biome lint",
+    "format": "bunx biome check --write --unsafe",
+    "format:file": "bunx biome format --write",
+    "pre:push": "bun lint && bun format",
+    "clean": "rm -rf node_modules"
+  },
+  "nodemonConfig": {
+    "execMap": {
+      "ts": "ts-node"
+    },
+    "ext": "ts",
+    "watch": [
+      "src"
+    ]
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "@repo/env": "workspace:*",
+    "@temporalio/activity": "^1.15.0",
+    "@temporalio/client": "^1.15.0",
+    "@temporalio/envconfig": "^1.15.0",
+    "@temporalio/worker": "^1.15.0",
+    "@temporalio/workflow": "^1.15.0",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.1",
+    "dotenv-cli": "catalog:dev",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

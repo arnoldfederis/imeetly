@@ -28,6 +28,9 @@
     "clean": {
       "cache": false
     },
+    "test": {
+      "cache": false
+    },
     "auth:generate": {
       "cache": false
     },

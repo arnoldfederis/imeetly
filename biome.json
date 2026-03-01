@@ -1,6 +1,5 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/next", "ultracite/react"],
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -10,8 +9,8 @@
     "ignoreUnknown": true,
     "includes": [
       "**",
-      "!shared/web-ui/src/components",
-      "!**/shared/web-ui/src/components",
+      "!apps/**/src/components/ui",
+      "!**/apps/**/src/components/ui",
       "!apps/**/.next",
       "!apps/**/.dist",
       "!apps/**/.expo",
@@ -53,7 +52,11 @@
         "useSortedClasses": "error"
       },
       "complexity": {
-        "noUselessFragments": "off"
+        "noUselessFragments": "off",
+        "noStaticOnlyClass": "off"
+      },
+      "style": {
+        "noHeadElement": "off"
       }
     },
     "domains": {

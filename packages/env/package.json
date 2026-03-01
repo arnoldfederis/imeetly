@@ -1,0 +1,22 @@
+{
+  "name": "@repo/env",
+  "private": true,
+  "scripts": {
+    "lint": "bunx biome lint",
+    "format": "bunx biome check --write --unsafe",
+    "format:file": "bunx biome format --write",
+    "pre:push": "bun lint && bun format",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.10",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:dev",
+    "dotenv-cli": "catalog:dev"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

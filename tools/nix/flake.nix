@@ -41,6 +41,9 @@
     devShells = forAll (pkgs: {
       default = pkgs.mkShell {
         packages = (builtins.attrValues self.packages.${pkgs.stdenv.system}) ++ (with pkgs; []);
+        shellHook = ''
+          unset DEVELOPER_DIR
+        '';
       };
     });
   };
