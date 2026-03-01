@@ -18,20 +18,11 @@ http:
         options: aimeetly
         domains:
           - main: "aimeetly.dev"
-    core:
+    temporal:
       entryPoints:
         - websecure
-      rule: "Host(`core.aimeetly.dev`)"
-      service: core
-      tls:
-        options: aimeetly
-        domains:
-          - main: "aimeetly.dev"
-    docs:
-      entryPoints:
-        - websecure
-      rule: "Host(`docs.aimeetly.dev`)"
-      service: docs
+      rule: "Host(`temporal.aimeetly.dev`)"
+      service: temporal
       tls:
         options: aimeetly
         domains:
@@ -41,15 +32,6 @@ http:
         - websecure
       rule: "Host(`server.aimeetly.dev`)"
       service: server
-      tls:
-        options: aimeetly
-        domains:
-          - main: "aimeetly.dev"
-    site:
-      entryPoints:
-        - websecure
-      rule: "Host(`aimeetly.dev`)"
-      service: site
       tls:
         options: aimeetly
         domains:
@@ -73,26 +55,18 @@ http:
       loadbalancer:
         servers:
           - url: "http://localhost:8025"
-    core:
+    temporal:
       loadbalancer:
         servers:
-          - url: "http://localhost:3001"
-    docs:
-      loadbalancer:
-        servers:
-          - url: "http://localhost:3002"
+          - url: "http://localhost:8233"
     server:
       loadbalancer:
         servers:
-          - url: "http://localhost:3003"
-    site:
-      loadbalancer:
-        servers:
-          - url: "http://localhost:3004"
+          - url: "http://localhost:4000"
     web:
       loadbalancer:
         servers:
-          - url: "http://localhost:3005"
+          - url: "http://localhost:4001"
 tls:
   stores:
     default:

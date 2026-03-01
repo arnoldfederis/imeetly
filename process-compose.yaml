@@ -31,6 +31,22 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 5
+    readiness_probe:
+      exec:
+        command: "redis-cli -p 6379 ping"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      exec:
+        command: "redis-cli -p 6379 ping"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
 
   traefik:
     command: "traefik --configfile ./tools/traefik/traefik.yaml"
@@ -89,25 +105,108 @@ processes:
       success_threshold: 1
       failure_threshold: 3
 
-  core:
-    command: "bun dev -F core"
-    namespace: "web"
-    disabled: true
+  temporal:
+    command: "temporal server start-dev"
+    namespace: "tools"
+    availability:
+      restart: "always"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 8233
+        scheme: "http"
+        path: "/"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      http_get:
+        host: "localhost"
+        port: 8233
+        scheme: "http"
+        path: "/"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
 
-  docs:
-    command: "bun dev -F docs"
-    namespace: "web"
-    disabled: true
-
-  site:
-    command: "bun dev -F site"
-    namespace: "web"
-    disabled: true
+  temporal-worker:
+    command: "cd ./apps/worker && npm run dev"
+    namespace: "worker"
+    availability:
+      restart: "always"
+    readiness_probe:
+      exec:
+        command: "pgrep -f 'npm run dev'"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      exec:
+        command: "pgrep -f 'npm run dev'"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
 
   web:
-    command: "bun dev -F web"
+    command: "bun dev -F @repo/web"
     namespace: "web"
+    availability:
+      restart: "always"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 4001
+        scheme: "http"
+        path: "/health/ready"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      http_get:
+        host: "localhost"
+        port: 4001
+        scheme: "http"
+        path: "/health/live"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
 
   server:
-    command: "bun dev -F server"
+    command: "bun dev -F @repo/server"
     namespace: "server"
+    availability:
+      restart: "always"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 4000
+        scheme: "http"
+        path: "/health/ready"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      http_get:
+        host: "localhost"
+        port: 4000
+        scheme: "http"
+        path: "/health/live"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3

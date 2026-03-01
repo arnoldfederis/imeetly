@@ -12,11 +12,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
     "incremental": true,
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"],
-      "@shared/rpc/*": ["../../shared/rpc/src/*"]
+      "@repo/server/*": ["./src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/env": ["../../packages/env/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],

@@ -1,0 +1,30 @@
+{
+  "name": "@repo/db",
+  "private": true,
+  "scripts": {
+    "lint": "bunx biome lint",
+    "format": "bunx biome check --write --unsafe",
+    "format:file": "bunx biome format --write",
+    "pre:push": "bun lint && bun format",
+    "db:generate": "dotenv -e ../../.env -- drizzle-kit generate",
+    "db:migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "latest",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:dev",
+    "@types/pg": "catalog:dev",
+    "dotenv-cli": "catalog:dev",
+    "drizzle-kit": "latest",
+    "tsx": "latest"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  }
+}
