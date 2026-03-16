@@ -16,7 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Props {
-  user: typeof authClient.$Infer.Session.user;
+  user: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image?: string | null | undefined;
+  };
 }
 
 export function NavUser({ user }: Props) {
@@ -98,7 +106,7 @@ function UserAvatar({ user }: Props) {
         className="select-none rounded-full"
         src={user.image ?? ""}
       />
-      <AvatarFallback className="select-none rounded-full bg-sidebar-primary text-sidebar-primary-foreground uppercase">
+      <AvatarFallback className="select-none rounded-full bg-background uppercase">
         {fallbackImage}
       </AvatarFallback>
     </Avatar>

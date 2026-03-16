@@ -1,12 +1,19 @@
 import { env } from "@repo/env";
-import { Elysia } from "elysia";
+import { base, publicProcedure } from "@repo/server/procedure";
 
-export const healthController = new Elysia({ prefix: "/health" })
-  .get("/ready", ({ status }) => {
-    if (env) {
-      return status(200, { message: "Server is up and running." });
-    }
+export const healthController = base.prefix("/health").router({
+  ready: publicProcedure
+    .route({ path: "/ready", method: "GET" })
+    .handler(() => {
+      if (env) {
+        return { message: "Server is up and running." };
+      }
 
-    throw new Error("Server is not ready yet.");
-  })
-  .get("/live", ({ status }) => status(200, { message: "Server is alive." }));
+      throw new Error("Server is not ready yet.");
+    }),
+  live: publicProcedure
+    .route({ path: "/live", method: "GET" })
+    .handler(() => ({ message: "Server is alive." })),
+});
+
+export default healthController;

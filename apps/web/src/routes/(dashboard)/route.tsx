@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const fetchSession = createServerFn({ method: "GET" }).handler(
-  async () => await auth.api.getSession({ headers: getRequestHeaders() })
+  async () => await auth.api.getSession({ headers: getRequestHeaders() }),
 );
 
 const authMiddleware = createMiddleware().server(async ({ next }) => {

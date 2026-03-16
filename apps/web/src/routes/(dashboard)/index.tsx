@@ -1,19 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEden } from "@/lib/eden";
+import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/")({
   component: App,
 });
 
 function App() {
-  const eden = useEden();
-  const { data: hello, isLoading } = useQuery(eden.hi.get.queryOptions());
+  const { data: hello, isLoading } = useQuery(client.user.hi.queryOptions());
 
   const echoMutation = useMutation(
-    eden.echo.post.mutationOptions({
+    client.user.echo.mutationOptions({
       onSuccess: (data) => console.log("Echo mutation success", data),
-    })
+    }),
   );
 
   return (
@@ -22,7 +22,11 @@ function App() {
 
       <div>
         <h2 className="font-semibold">Query:</h2>
-        {isLoading ? <p>Loading...</p> : <p>Server says: {hello}</p>}
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <p>Server says: {JSON.stringify(hello)}</p>
+        )}
       </div>
 
       <div className="space-y-2">
