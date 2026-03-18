@@ -1,0 +1,1 @@
+ALTER TABLE "app"."meetings" ADD COLUMN "failure_reason" text;

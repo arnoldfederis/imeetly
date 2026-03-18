@@ -31,10 +31,6 @@ const authMiddleware = createMiddleware().server(async ({ next }) => {
 export const Route = createFileRoute("/(dashboard)")({
   component: RouteComponent,
   loader: () => fetchSession(),
-  headers: () => ({
-    "Cache-Control":
-      "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-  }),
   server: {
     middleware: [authMiddleware],
   },

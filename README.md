@@ -16,6 +16,9 @@ direnv --version
 devbox version
 ```
 
+## Garage S3 Local Setup
+- Go to the `tools/garage/README.md` file.
+
 ## Init local
 - Open the terminal, install the devbox if not yet installed:
 ```bash

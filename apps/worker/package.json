@@ -2,7 +2,7 @@
   "name": "@repo/worker",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e ../../.env -- nodemon src/worker.ts",
+    "dev": "dotenv -e ../../.env -- tsx watch src/worker.ts",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
@@ -19,20 +19,30 @@
     ]
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.79.0",
+    "@aws-sdk/client-s3": "^3.1010.0",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
+    "@t3-oss/env-core": "latest",
     "@temporalio/activity": "^1.15.0",
-    "@temporalio/client": "^1.15.0",
     "@temporalio/envconfig": "^1.15.0",
     "@temporalio/worker": "^1.15.0",
     "@temporalio/workflow": "^1.15.0",
-    "nanoid": "^5.1.6"
+    "drizzle-orm": "catalog:",
+    "groq-sdk": "^1.1.1",
+    "nanoid": "^5.1.6",
+    "openai": "^6.31.0",
+    "pg": "^8.20.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.9.1",
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.18.0",
     "dotenv-cli": "catalog:dev",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

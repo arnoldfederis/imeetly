@@ -9,6 +9,7 @@ import {
 import { env } from "@repo/env";
 import { polarClient } from "@repo/server/lib/polar-client";
 import { AuthService } from "@repo/server/modules/auth/service";
+import { BillingService } from "@repo/server/modules/billing/service";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import {
   admin,
@@ -74,16 +75,23 @@ export const authPlugins = [
       webhooks({
         secret: env.POLAR_WEBHOOK_SECRET,
         onCustomerStateChanged: async (payload) => {
-          console.log(payload);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("[polar] customer state changed:", payload.data.id);
+          // Customer state changes don't carry subscription details directly
         },
         onOrderPaid: async (payload) => {
-          console.log(payload);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("[polar] order paid:", payload.data.id);
+          const order = payload.data;
+          if (order.customer?.id && order.subscription?.id && order.product?.id) {
+            await BillingService.syncSubscription({
+              customerId: order.customer.id,
+              subscriptionId: order.subscription.id,
+              productId: order.product.id,
+              status: "active",
+            });
+          }
         },
         onPayload: async (payload) => {
-          console.log(payload);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("[polar] webhook:", payload.type);
         },
       }),
     ],

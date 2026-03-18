@@ -1,3 +1,4 @@
+import { appRelations } from "@repo/db/relations/app";
 import { authRelations } from "@repo/db/relations/auth";
 import { appSchema } from "@repo/db/schemas/app";
 import { authSchema } from "@repo/db/schemas/auth";
@@ -17,6 +18,7 @@ export const schema = {
   ...appSchema,
   ...authSchema,
   ...authRelations,
+  ...appRelations,
 };
 
 export const db = drizzle({

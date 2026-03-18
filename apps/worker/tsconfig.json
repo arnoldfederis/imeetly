@@ -1,16 +1,22 @@
 {
   "compilerOptions": {
-    "lib": ["es2021"],
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "rootDir": "./src",
     "outDir": "./lib",
     "baseUrl": "./",
+    "strict": true,
+    "skipLibCheck": true,
     "paths": {
       "@repo/worker/*": ["./src/*"],
-      "@repo/db/*": ["../../packages/db/src/*"],
-      "@repo/env": ["../../packages/env/src/index.ts"]
+      "@repo/db/schemas/*": ["../../packages/db/src/schemas/*"],
+      "@repo/db/relations/*": ["../../packages/db/src/relations/*"]
     }
   },
   "include": ["src/**/*.ts"]

@@ -1,3 +1,4 @@
+import { actionItems, meetings, subscriptions } from "@repo/db/schemas/app";
 import {
   accounts,
   invitations,
@@ -11,12 +12,15 @@ import {
 } from "@repo/db/schemas/auth";
 import { relations } from "drizzle-orm";
 
-export const userRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(users, ({ many, one }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   members: many(members),
   invitations: many(invitations),
   passkeys: many(passkeys),
+  meetings: many(meetings),
+  actionItems: many(actionItems),
+  subscription: one(subscriptions),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
