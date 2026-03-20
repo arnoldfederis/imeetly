@@ -54,12 +54,6 @@ const navs: SidebarNav[] = [
     rootPath: "/action-items",
   },
   {
-    title: "Billing",
-    url: "/settings/billing",
-    icon: <CreditCardIcon size={14} />,
-    rootPath: "/billing",
-  },
-  {
     title: "Settings",
     url: "/settings/profile",
     icon: <SettingsIcon size={14} />,

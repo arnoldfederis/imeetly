@@ -4,6 +4,7 @@ import {
   meetingSummaries,
   meetings,
   subscriptions,
+  usageTracking,
 } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
 import { relations } from "drizzle-orm";
@@ -53,10 +54,18 @@ export const subscriptionRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
+export const usageTrackingRelations = relations(usageTracking, ({ one }) => ({
+  user: one(users, {
+    fields: [usageTracking.userId],
+    references: [users.id],
+  }),
+}));
+
 export const appRelations = {
   meetingRelations,
   meetingFileRelations,
   meetingSummaryRelations,
   actionItemRelations,
   subscriptionRelations,
+  usageTrackingRelations,
 };

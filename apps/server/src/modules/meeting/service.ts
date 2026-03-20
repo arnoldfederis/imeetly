@@ -4,43 +4,33 @@ import {
   meetingFiles,
   meetingSummaries,
   meetings,
-  subscriptions,
 } from "@repo/db/schemas/app";
 import { createPresignedUploadUrl } from "@repo/server/lib/s3";
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { getPlanLimits } from "@repo/server/modules/billing/plans";
+import { BillingService } from "@repo/server/modules/billing/service";
 import { env } from "@repo/env";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 
 export abstract class MeetingService {
   static async checkUsageLimit(userId: string) {
-    const subscription = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.userId, userId),
-    });
-
-    const plan = subscription?.plan ?? "free";
+    const { plan, currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
     const { meetingsPerMonth: limit } = getPlanLimits(plan);
 
     if (limit === -1) return; // unlimited
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.userId, userId),
-          sql`${meetings.createdAt} >= ${startOfMonth}`,
-        ),
-      );
+    const { count } = await BillingService.getUserUsage(
+      userId,
+      "meetings_created",
+      { start: currentPeriodStart, end: currentPeriodEnd },
+    );
 
     if (count >= limit) {
       throw new ORPCError("FORBIDDEN", {
         message: `Monthly meeting limit reached (${count}/${limit}). Upgrade your plan for more.`,
-        data: { plan, used: count, limit },
+        data: { code: "PLAN_LIMIT_REACHED", plan, used: count, limit },
       });
     }
   }
@@ -72,6 +62,9 @@ export abstract class MeetingService {
             : "draft",
       })
       .returning();
+
+    // Increment usage only after successful creation
+    await BillingService.incrementUsage(userId, "meetings_created");
 
     return meeting;
   }
@@ -361,25 +354,15 @@ export abstract class MeetingService {
   }
 
   static async getUsage(userId: string) {
-    const subscription = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.userId, userId),
-    });
-
-    const plan = subscription?.plan ?? "free";
+    const { plan, currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
     const limits = getPlanLimits(plan);
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.userId, userId),
-          sql`${meetings.createdAt} >= ${startOfMonth}`,
-        ),
-      );
+    const { count } = await BillingService.getUserUsage(
+      userId,
+      "meetings_created",
+      { start: currentPeriodStart, end: currentPeriodEnd },
+    );
 
     return {
       plan,

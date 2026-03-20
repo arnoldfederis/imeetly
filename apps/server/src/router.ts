@@ -7,4 +7,5 @@ export const appRouter = {
   meeting: lazy(() => import("./modules/meeting")),
   actionItem: lazy(() => import("./modules/action-item")),
   billing: lazy(() => import("./modules/billing")),
+  admin: lazy(() => import("./modules/admin")),
 };

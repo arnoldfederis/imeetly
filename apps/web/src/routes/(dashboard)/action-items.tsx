@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClockIcon, TrashIcon } from "lucide-react";
-import { useState } from "react";
+import { ClockIcon, FileTextIcon, TrashIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -66,12 +66,69 @@ function ActionItemsPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="flex flex-col gap-2">
-          {items.map((item) => (
-            <ActionItemCard item={item} key={item.id} />
-          ))}
-        </div>
+        <GroupedActionItems items={items} />
       )}
+    </div>
+  );
+}
+
+type ActionItem = {
+  id: string;
+  meetingId: string;
+  title: string;
+  ownerName: string | null;
+  dueDate: Date | null;
+  status: string;
+  meetingTitle: string;
+};
+
+function GroupedActionItems({ items }: { items: ActionItem[] }) {
+  const grouped = useMemo(() => {
+    const map = new Map<string, { meetingId: string; meetingTitle: string; items: ActionItem[] }>();
+    for (const item of items) {
+      const existing = map.get(item.meetingId);
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        map.set(item.meetingId, {
+          meetingId: item.meetingId,
+          meetingTitle: item.meetingTitle,
+          items: [item],
+        });
+      }
+    }
+    // Sort items within each group: open first, done last
+    for (const group of map.values()) {
+      group.items.sort((a, b) => {
+        if (a.status === b.status) return 0;
+        return a.status === "open" ? -1 : 1;
+      });
+    }
+    return Array.from(map.values());
+  }, [items]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      {grouped.map((group) => (
+        <div className="flex flex-col gap-2" key={group.meetingId}>
+          <Link
+            className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground"
+            params={{ meetingId: group.meetingId }}
+            to="/meetings/$meetingId"
+          >
+            <FileTextIcon className="size-4" />
+            <span className="font-medium">{group.meetingTitle}</span>
+            <span className="text-xs">
+              ({group.items.length})
+            </span>
+          </Link>
+          <div className="flex flex-col gap-1.5 pl-6">
+            {group.items.map((item) => (
+              <ActionItemCard item={item} key={item.id} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -79,15 +136,7 @@ function ActionItemsPage() {
 function ActionItemCard({
   item,
 }: {
-  item: {
-    id: string;
-    meetingId: string;
-    title: string;
-    ownerName: string | null;
-    dueDate: Date | null;
-    status: string;
-    meetingTitle: string;
-  };
+  item: ActionItem;
 }) {
   const queryClient = useQueryClient();
 
@@ -133,30 +182,18 @@ function ActionItemCard({
         >
           {item.title}
         </p>
-        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-          <Link
-            className="hover:text-foreground hover:underline"
-            params={{ meetingId: item.meetingId }}
-            to="/meetings/$meetingId"
-          >
-            {item.meetingTitle}
-          </Link>
-          {item.ownerName && (
-            <>
-              <span>·</span>
-              <span>{item.ownerName}</span>
-            </>
-          )}
-          {item.dueDate && (
-            <>
-              <span>·</span>
+        {(item.ownerName || item.dueDate) && (
+          <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+            {item.ownerName && <span>{item.ownerName}</span>}
+            {item.ownerName && item.dueDate && <span>·</span>}
+            {item.dueDate && (
               <span className="flex items-center gap-1">
                 <ClockIcon className="size-3" />
                 {new Date(item.dueDate).toLocaleDateString()}
               </span>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
       <Button
         disabled={deleteMutation.isPending}

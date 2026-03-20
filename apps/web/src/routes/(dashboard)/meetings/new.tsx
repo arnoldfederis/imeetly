@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   CalendarIcon,
   FileAudioIcon,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -50,6 +51,7 @@ function NewMeetingPage() {
   const { data: planData } = useQuery(client.billing.getPlan.queryOptions());
   const limitReached = planData?.usage.limitReached ?? false;
 
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [meetingDate, setMeetingDate] = useState<Date>(new Date());
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -129,7 +131,16 @@ function NewMeetingPage() {
           params: { meetingId: meeting.id },
         });
       },
-      onError: (err) => toast.error(err.message),
+      onError: (err) => {
+        const isPlanLimit = err.message?.includes("limit reached");
+        if (isPlanLimit) {
+          toast.error("You've reached your plan limit. Upgrade to create more meetings.");
+          queryClient.invalidateQueries({ queryKey: client.billing.getPlan.key() });
+          setUpgradeOpen(true);
+        } else {
+          toast.error(err.message);
+        }
+      },
     }),
   );
 
@@ -154,18 +165,17 @@ function NewMeetingPage() {
           <CardContent className="flex items-center justify-between py-4">
             <div>
               <p className="font-medium text-sm">
-                Monthly meeting limit reached
+                You've reached your free plan limit
               </p>
               <p className="text-muted-foreground text-xs">
                 You've used {planData?.usage.meetingsThisMonth ?? 0} /{" "}
-                {planData?.limits.meetingsPerMonth ?? 10} meetings this month.
+                {planData?.limits.meetingsPerMonth ?? 5} meetings this month.
+                Upgrade to create more.
               </p>
             </div>
             <Button
-              nativeButton={false}
-              render={<Link to="/settings/billing" />}
+              onClick={() => setUpgradeOpen(true)}
               size="sm"
-              variant="outline"
             >
               <TrendingUpIcon data-icon="inline-start" />
               Upgrade
@@ -339,6 +349,8 @@ function NewMeetingPage() {
           )}
         </Button>
       </div>
+
+      <UpgradeDialog onOpenChange={setUpgradeOpen} open={upgradeOpen} />
     </div>
   );
 }

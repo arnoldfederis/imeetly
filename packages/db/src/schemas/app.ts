@@ -2,9 +2,11 @@ import {
   bigint,
   index,
   integer,
+  numeric,
   pgSchema,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
@@ -30,6 +32,13 @@ export const meetings = schema.table(
     processingStatus: text("processing_status"), // queued | extracting_audio | transcribing | summarizing | extracting_actions | completed | failed
     failureReason: text("failure_reason"),
     language: text("language"),
+    // Cost tracking (internal analytics)
+    durationMinutes: numeric("duration_minutes", { precision: 10, scale: 2 }),
+    fileSizeMb: numeric("file_size_mb", { precision: 10, scale: 2 }),
+    estimatedCost: numeric("estimated_cost", { precision: 10, scale: 4 })
+      .default("0")
+      .notNull(),
+    actualCost: numeric("actual_cost", { precision: 10, scale: 4 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -149,6 +158,10 @@ export const subscriptions = schema.table(
     providerSubscriptionId: text("provider_subscription_id"),
     plan: text("plan").notNull().default("free"), // free | pro | team
     status: text("status").notNull().default("active"), // active | canceled | past_due | trialing | inactive
+    currentPeriodStart: timestamp("current_period_start", {
+      withTimezone: true,
+    }),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -160,10 +173,43 @@ export const subscriptions = schema.table(
   (table) => [index("subscriptions_user_id_idx").on(table.userId)],
 );
 
+// --- usage_tracking ---
+
+export const usageTracking = schema.table(
+  "usage_tracking",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    metric: text("metric").notNull(), // meetings_created
+    count: integer("count").notNull().default(0),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("usage_tracking_user_metric_period_idx").on(
+      table.userId,
+      table.metric,
+      table.periodStart,
+    ),
+  ],
+);
+
 export const appSchema = {
   meetings,
   meetingFiles,
   meetingSummaries,
   actionItems,
   subscriptions,
+  usageTracking,
 };

@@ -4,6 +4,7 @@ import {
   CalendarIcon,
   CircleDotIcon,
   ClockIcon,
+  CreditCardIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
@@ -11,6 +12,8 @@ import {
   PlusIcon,
   TrendingUpIcon,
 } from "lucide-react";
+import { useState } from "react";
+import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,12 +37,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
+import { formatBytes } from "@/lib/utils";
 
 export const Route = createFileRoute("/(dashboard)/")({
   component: DashboardPage,
 });
 
 function DashboardPage() {
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { data, isLoading } = useQuery({
     ...client.meeting.dashboard.queryOptions(),
     refetchInterval: (query) => {
@@ -65,6 +70,7 @@ function DashboardPage() {
 
   const stats = data?.stats;
   const recent = data?.recent ?? [];
+  const isFree = (planData?.plan ?? "free") === "free";
 
   const storageUsed =
     planData?.usage.storageUsedBytes ?? stats?.storageUsedBytes ?? 0;
@@ -212,7 +218,7 @@ function DashboardPage() {
                     /{" "}
                     {planData?.limits.meetingsPerMonth === -1
                       ? "∞"
-                      : (planData?.limits.meetingsPerMonth ?? 10)}
+                      : (planData?.limits.meetingsPerMonth ?? 5)}
                   </span>
                 </div>
                 {planData?.usage.limitReached && (
@@ -222,7 +228,7 @@ function DashboardPage() {
                 )}
                 {!planData?.usage.limitReached &&
                   planData?.usage.meetingsRemaining !== -1 &&
-                  (planData?.usage.meetingsRemaining ?? 10) <= 3 && (
+                  (planData?.usage.meetingsRemaining ?? 5) <= 3 && (
                     <p className="text-orange-500 text-xs">
                       {planData?.usage.meetingsRemaining} meeting
                       {planData?.usage.meetingsRemaining === 1 ? "" : "s"}{" "}
@@ -237,21 +243,35 @@ function DashboardPage() {
                     }
                   </ProgressValue>
                 </Progress>
-                <Button
-                  className="mt-2 w-full"
-                  nativeButton={false}
-                  render={<Link to="/settings/billing" />}
-                  size="sm"
-                  variant="outline"
-                >
-                  <TrendingUpIcon data-icon="inline-start" />
-                  Upgrade Plan
-                </Button>
+                {isFree ? (
+                  <Button
+                    className="mt-2 w-full"
+                    onClick={() => setUpgradeOpen(true)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <TrendingUpIcon data-icon="inline-start" />
+                    Upgrade Plan
+                  </Button>
+                ) : (
+                  <Button
+                    className="mt-2 w-full"
+                    nativeButton={false}
+                    render={<Link to="/settings/billing" />}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <CreditCardIcon data-icon="inline-start" />
+                    Manage Billing
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <UpgradeDialog onOpenChange={setUpgradeOpen} open={upgradeOpen} />
     </div>
   );
 }
@@ -338,12 +358,4 @@ function StatusBadge({ status }: { status: string }) {
     variant: "outline" as const,
   };
   return <Badge variant={variant}>{label}</Badge>;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }

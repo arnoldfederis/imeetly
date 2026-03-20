@@ -107,7 +107,7 @@ function UserAvatar({ user }: Props) {
       {user.image ? (
         <Image
           alt={user.name}
-          className="rounded-full hover:opacity-80"
+          className="size-8.75 rounded-full hover:opacity-80"
           height={35}
           src={user.image ?? ""}
           width={35}

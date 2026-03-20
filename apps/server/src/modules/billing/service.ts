@@ -1,13 +1,9 @@
 import { db } from "@repo/db";
-import { subscriptions } from "@repo/db/schemas/app";
-import { eq } from "drizzle-orm";
-
-const PRODUCT_TO_PLAN: Record<string, string> = {
-  "d93a06d1-5b31-4102-a022-b5de81f4802f": "pro", // pro-monthly
-  "abb029b2-d36d-4bb3-b2bc-eaea327495a6": "pro", // pro-yearly
-  "4d0aeb3a-d855-48f3-94bc-a61196c2f4dc": "team", // team-monthly
-  "0c27c0d4-a299-4a00-8325-f4f8bad4c67a": "team", // team-yearly
-};
+import { subscriptions, usageTracking } from "@repo/db/schemas/app";
+import { and, eq, sql } from "drizzle-orm";
+import type { BillingModel } from "./model";
+import { productIdToPlan } from "./model";
+import type { PlanName } from "./plans";
 
 const STATUS_MAP: Record<string, string> = {
   active: "active",
@@ -18,22 +14,125 @@ const STATUS_MAP: Record<string, string> = {
   revoked: "inactive",
 };
 
+// ── Billing period helpers ──
+
+function getCurrentPeriod() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return { start, end };
+}
+
+// ── Service ──
+
 export abstract class BillingService {
   /**
-   * Syncs a Polar subscription event to the local subscriptions table.
-   * Creates a new record if none exists for the customer, otherwise updates.
+   * Resolves the user's current plan, status, and billing period.
+   * - Active paid subscription → uses subscription plan + period
+   * - No subscription or inactive → "free" with calendar month boundaries
    */
-  static async syncSubscription(payload: {
-    customerId: string;
-    subscriptionId?: string;
-    productId?: string;
-    userId?: string;
-    status: string;
-  }) {
+  static async resolveUserPlan(userId: string) {
+    const subscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.userId, userId),
+    });
+
+    const plan: PlanName =
+      subscription?.status === "active"
+        ? ((subscription.plan as PlanName) ?? "free")
+        : "free";
+
+    const period = getCurrentPeriod();
+
+    return {
+      plan,
+      status: subscription?.status ?? "active",
+      currentPeriodStart: subscription?.currentPeriodStart ?? period.start,
+      currentPeriodEnd: subscription?.currentPeriodEnd ?? period.end,
+    };
+  }
+
+  /**
+   * Returns the usage window for a user (subscription period or calendar month).
+   */
+  static async getUsageWindow(userId: string) {
+    const { currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
+    return { start: currentPeriodStart, end: currentPeriodEnd };
+  }
+
+  /**
+   * Gets current usage for a given metric in the current billing period.
+   */
+  static async getUserUsage(
+    userId: string,
+    metric: string,
+    period?: { start: Date; end: Date },
+  ) {
+    const { start, end } = period ?? getCurrentPeriod();
+
+    const record = await db.query.usageTracking.findFirst({
+      where: and(
+        eq(usageTracking.userId, userId),
+        eq(usageTracking.metric, metric),
+        eq(usageTracking.periodStart, start),
+      ),
+    });
+
+    return {
+      count: record?.count ?? 0,
+      periodStart: start,
+      periodEnd: end,
+    };
+  }
+
+  /**
+   * Atomically increments usage for a metric. Creates the record if it doesn't exist.
+   * Supports any metric string (meetings_created, minutes_processed, storage_bytes, etc.)
+   */
+  static async incrementUsage(userId: string, metric: string) {
+    const { start, end } = getCurrentPeriod();
+
+    await db
+      .insert(usageTracking)
+      .values({
+        userId,
+        metric,
+        count: 1,
+        periodStart: start,
+        periodEnd: end,
+      })
+      .onConflictDoUpdate({
+        target: [
+          usageTracking.userId,
+          usageTracking.metric,
+          usageTracking.periodStart,
+        ],
+        set: {
+          count: sql`${usageTracking.count} + 1`,
+        },
+      });
+  }
+
+  /**
+   * Syncs a Polar subscription event to the local subscriptions table.
+   * Idempotent — repeated calls with same data produce same result.
+   */
+  static async syncSubscription(
+    payload: BillingModel["syncSubscriptionPayload"],
+  ) {
     const plan = payload.productId
-      ? (PRODUCT_TO_PLAN[payload.productId] ?? "free")
+      ? productIdToPlan(payload.productId)
       : "free";
     const status = STATUS_MAP[payload.status] ?? "active";
+
+    const periodFields = {
+      ...(payload.currentPeriodStart && {
+        currentPeriodStart: new Date(payload.currentPeriodStart),
+      }),
+      ...(payload.currentPeriodEnd && {
+        currentPeriodEnd: new Date(payload.currentPeriodEnd),
+      }),
+    };
 
     // Try to find existing subscription by provider customer ID
     const existing = await db.query.subscriptions.findFirst({
@@ -48,6 +147,7 @@ export abstract class BillingService {
           status,
           providerSubscriptionId:
             payload.subscriptionId ?? existing.providerSubscriptionId,
+          ...periodFields,
         })
         .where(eq(subscriptions.id, existing.id));
       console.log(
@@ -67,6 +167,7 @@ export abstract class BillingService {
           providerSubscriptionId: payload.subscriptionId ?? null,
           plan,
           status,
+          ...periodFields,
         })
         .onConflictDoUpdate({
           target: subscriptions.userId,
@@ -75,6 +176,7 @@ export abstract class BillingService {
             providerSubscriptionId: payload.subscriptionId ?? null,
             plan,
             status,
+            ...periodFields,
           },
         });
       console.log(
