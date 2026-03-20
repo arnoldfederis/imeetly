@@ -1,12 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  BellIcon,
+  CheckSquareIcon,
   ChevronRight,
   CreditCardIcon,
   LayoutDashboardIcon,
   ProjectorIcon,
   SettingsIcon,
-  StarIcon,
 } from "lucide-react";
 import {
   Collapsible,
@@ -44,27 +43,15 @@ const navs: SidebarNav[] = [
   },
   {
     title: "Meetings",
-    url: "#",
+    url: "/meetings",
     icon: <ProjectorIcon size={14} />,
     rootPath: "/meetings",
   },
   {
-    title: "Favorites",
-    url: "#",
-    icon: <StarIcon size={14} />,
-    rootPath: "/favorites",
-  },
-  {
-    title: "Billing",
-    url: "#",
-    icon: <CreditCardIcon size={14} />,
-    rootPath: "/billing",
-  },
-  {
-    title: "Notifications",
-    url: "#",
-    icon: <BellIcon size={14} />,
-    rootPath: "/notifications",
+    title: "Action Items",
+    url: "/action-items",
+    icon: <CheckSquareIcon size={14} />,
+    rootPath: "/action-items",
   },
   {
     title: "Settings",
@@ -86,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {sidebar.state === "collapsed" ? (
           <div className="flex items-center justify-center rounded-lg p-2 hover:bg-secondary">
             {/*Todo: Create app icon*/}
-            <BellIcon size={14} />
+            <ProjectorIcon size={14} />
           </div>
         ) : (
           <Link

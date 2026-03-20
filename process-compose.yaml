@@ -155,6 +155,43 @@ processes:
       success_threshold: 1
       failure_threshold: 3
 
+  garage:
+    command: "garage -c tools/garage/config.toml server"
+    namespace: "tools"
+    environment:
+      - "RUST_LOG=garage=info,garage_rpc::layout::version=error"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 3903
+        scheme: "http"
+        path: "/health"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      http_get:
+        host: "localhost"
+        port: 3903
+        scheme: "http"
+        path: "/health"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+
+  garage-setup:
+    command: "./tools/garage/setup.sh"
+    namespace: "tools"
+    depends_on:
+      garage:
+        condition: process_healthy
+    availability:
+      restart: "no"
+
   web:
     command: "bun dev -F @repo/web"
     namespace: "web"
@@ -193,7 +230,7 @@ processes:
         host: "localhost"
         port: 4000
         scheme: "http"
-        path: "/health/ready"
+        path: "/rpc/health/ready"
       initial_delay_seconds: 3
       period_seconds: 5
       timeout_seconds: 3
@@ -204,7 +241,7 @@ processes:
         host: "localhost"
         port: 4000
         scheme: "http"
-        path: "/health/live"
+        path: "/rpc/health/live"
       initial_delay_seconds: 3
       period_seconds: 5
       timeout_seconds: 3

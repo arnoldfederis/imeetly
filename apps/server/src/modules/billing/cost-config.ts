@@ -1,0 +1,75 @@
+/**
+ * Central cost configuration for internal analytics.
+ * All costs in USD. Adjust values here — they propagate everywhere.
+ */
+export const costConfig = {
+  /** Cost per minute of transcription (e.g. Whisper / Groq) */
+  transcriptionCostPerMinute: 0.01,
+  /** Cost per meeting for AI extraction (summary, actions, etc.) */
+  extractionCostPerMeeting: 0.02,
+  /** Cost per GB of storage per month */
+  storageCostPerGb: 0.01,
+  /** Infrastructure cost per meeting (compute, queues, etc.) */
+  infraCostPerMeeting: 0.01,
+} as const;
+
+/**
+ * Monthly subscription prices (what the user pays).
+ * Used for profit calculation. Keep in sync with Polar.
+ */
+export const planPricing: Record<string, number> = {
+  free: 0,
+  pro: 19,
+  team: 49,
+};
+
+/**
+ * Payment processor fee formula.
+ * Polar/Stripe: 4% + $0.40 per transaction.
+ */
+export function getProcessorFee(price: number): number {
+  if (price <= 0) return 0;
+  return price * 0.04 + 0.4;
+}
+
+/**
+ * Net revenue after processor fees.
+ */
+export function getNetRevenue(price: number): number {
+  return Math.max(0, price - getProcessorFee(price));
+}
+
+export interface MeetingCostBreakdown {
+  transcriptionCost: number;
+  extractionCost: number;
+  storageCost: number;
+  infraCost: number;
+  totalCost: number;
+}
+
+/**
+ * Estimates the cost of processing a single meeting.
+ */
+export function getEstimatedMeetingCost(
+  durationMinutes: number,
+  fileSizeMb: number,
+): MeetingCostBreakdown {
+  const transcriptionCost =
+    durationMinutes * costConfig.transcriptionCostPerMinute;
+  const extractionCost = costConfig.extractionCostPerMeeting;
+  const storageCost = (fileSizeMb / 1024) * costConfig.storageCostPerGb;
+  const infraCost = costConfig.infraCostPerMeeting;
+  const totalCost = transcriptionCost + extractionCost + storageCost + infraCost;
+
+  return {
+    transcriptionCost: round(transcriptionCost),
+    extractionCost: round(extractionCost),
+    storageCost: round(storageCost),
+    infraCost: round(infraCost),
+    totalCost: round(totalCost),
+  };
+}
+
+function round(n: number): number {
+  return Math.round(n * 10000) / 10000;
+}

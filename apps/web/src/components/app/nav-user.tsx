@@ -1,10 +1,10 @@
 import { authClient } from "@repo/server/lib/auth-client";
 import { Link } from "@tanstack/react-router";
+import { Image } from "@unpic/react";
 import { LoaderCircleIcon, LogOut } from "lucide-react";
 import type { MouseEvent } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Props {
-  user: typeof authClient.$Infer.Session.user;
+  user: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image?: string | null | undefined;
+  };
 }
 
 export function NavUser({ user }: Props) {
@@ -43,7 +51,7 @@ export function NavUser({ user }: Props) {
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger className="border-0">
         <UserAvatar user={user} />
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -55,12 +63,12 @@ export function NavUser({ user }: Props) {
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="mb-1">
               <Link
-                className="flex items-start gap-2 px-2 py-2 text-left text-popover-foreground text-sm hover:rounded-md hover:bg-secondary hover:bg-opacity-10"
+                className="group flex items-start gap-2 px-2 py-2 text-left text-black text-sm hover:rounded-md hover:bg-accent hover:text-popover-foreground dark:text-popover-foreground"
                 onClick={() => setIsOpen(false)}
                 to={"/settings/profile"}
               >
                 <UserAvatar user={user} />
-                <div className="w-full space-y-1">
+                <div className="w-full space-y-1 group-hover:text-white">
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">
                       {user.name || "--"}
@@ -73,7 +81,10 @@ export function NavUser({ user }: Props) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem
+          className="hover:rounded-md hover:bg-secondary"
+          onClick={handleLogout}
+        >
           {isPending ? (
             <LoaderCircleIcon className="animate-spin" />
           ) : (
@@ -92,15 +103,20 @@ function UserAvatar({ user }: Props) {
     : `${user.email[0]}${user.email[1]}`;
 
   return (
-    <Avatar className="h-9 w-9 cursor-pointer rounded-full">
-      <AvatarImage
-        alt={user.name}
-        className="select-none rounded-full"
-        src={user.image ?? ""}
-      />
-      <AvatarFallback className="select-none rounded-full bg-sidebar-primary text-sidebar-primary-foreground uppercase">
-        {fallbackImage}
-      </AvatarFallback>
-    </Avatar>
+    <div className="size-9 cursor-pointer">
+      {user.image ? (
+        <Image
+          alt={user.name}
+          className="size-8.75 rounded-full hover:opacity-80"
+          height={35}
+          src={user.image ?? ""}
+          width={35}
+        />
+      ) : (
+        <div className="flex size-8.75 items-center justify-center rounded-full bg-secondary uppercase hover:bg-secondary/80">
+          {fallbackImage}
+        </div>
+      )}
+    </div>
   );
 }

@@ -19,10 +19,9 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useEden } from "@/lib/eden";
+import { client } from "@/lib/orpc";
 
 export function LoginForm() {
-  const eden = useEden();
   const { isPasskeySigningIn, isSocialSigningIn } = useAtomValue(loginAtom);
   const navigate = useNavigate();
   const setLoginAtom = useSetAtom(loginAtom);
@@ -36,7 +35,7 @@ export function LoginForm() {
   });
 
   const login = useMutation(
-    eden.signIn.simple.post.mutationOptions({
+    client.auth.signInSimple.mutationOptions({
       onSuccess: () => {
         setLoginAtom((prevState) => ({
           ...prevState,
@@ -46,7 +45,7 @@ export function LoginForm() {
 
         form.reset();
       },
-      onError: (error) => toast.error(`Failed to login. ${error.value}`),
+      onError: (error) => toast.error(`Failed to login. ${error.message}`),
     }),
   );
 

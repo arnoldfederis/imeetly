@@ -1,0 +1,433 @@
+import { db } from "@repo/db";
+import {
+  actionItems,
+  meetingFiles,
+  meetingSummaries,
+  meetings,
+} from "@repo/db/schemas/app";
+import { createPresignedUploadUrl } from "@repo/server/lib/s3";
+import { startMeetingProcessing } from "@repo/server/lib/temporal";
+import { getPlanLimits } from "@repo/server/modules/billing/plans";
+import { BillingService } from "@repo/server/modules/billing/service";
+import { env } from "@repo/env";
+import { ORPCError } from "@orpc/server";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+
+export abstract class MeetingService {
+  static async checkUsageLimit(userId: string) {
+    const { plan, currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
+    const { meetingsPerMonth: limit } = getPlanLimits(plan);
+
+    if (limit === -1) return; // unlimited
+
+    const { count } = await BillingService.getUserUsage(
+      userId,
+      "meetings_created",
+      { start: currentPeriodStart, end: currentPeriodEnd },
+    );
+
+    if (count >= limit) {
+      throw new ORPCError("FORBIDDEN", {
+        message: `Monthly meeting limit reached (${count}/${limit}). Upgrade your plan for more.`,
+        data: { code: "PLAN_LIMIT_REACHED", plan, used: count, limit },
+      });
+    }
+  }
+
+  static async create(
+    userId: string,
+    input: {
+      title: string;
+      meetingDate: string;
+      participantsText?: string;
+      sourceType: string;
+      transcriptText?: string;
+    },
+  ) {
+    await MeetingService.checkUsageLimit(userId);
+
+    const [meeting] = await db
+      .insert(meetings)
+      .values({
+        userId,
+        title: input.title,
+        meetingDate: new Date(input.meetingDate),
+        participantsText: input.participantsText,
+        sourceType: input.sourceType,
+        transcriptText: input.transcriptText,
+        status:
+          input.sourceType === "text" && input.transcriptText
+            ? "pending"
+            : "draft",
+      })
+      .returning();
+
+    // Increment usage only after successful creation
+    await BillingService.incrementUsage(userId, "meetings_created");
+
+    return meeting;
+  }
+
+  static async list(
+    userId: string,
+    query: {
+      search?: string;
+      status?: string;
+      limit: number;
+      offset: number;
+    },
+  ) {
+    const conditions = [eq(meetings.userId, userId)];
+
+    if (query.status) {
+      conditions.push(eq(meetings.status, query.status));
+    }
+
+    if (query.search) {
+      const pattern = `%${query.search}%`;
+      const searchCondition = or(
+        ilike(meetings.title, pattern),
+        ilike(meetings.transcriptText, pattern),
+      );
+      if (searchCondition) conditions.push(searchCondition);
+    }
+
+    const where = and(...conditions);
+
+    const [items, [{ count }]] = await Promise.all([
+      db
+        .select()
+        .from(meetings)
+        .where(where)
+        .orderBy(desc(meetings.createdAt))
+        .limit(query.limit)
+        .offset(query.offset),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(meetings)
+        .where(where),
+    ]);
+
+    return { items, total: count };
+  }
+
+  static async getById(userId: string, meetingId: string) {
+    return (
+      (await db.query.meetings.findFirst({
+        where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
+        with: {
+          files: true,
+          summary: true,
+          actionItems: true,
+        },
+      })) ?? null
+    );
+  }
+
+  static async update(
+    userId: string,
+    input: {
+      id: string;
+      title?: string;
+      meetingDate?: string;
+      participantsText?: string;
+      transcriptText?: string;
+    },
+  ) {
+    const [updated] = await db
+      .update(meetings)
+      .set({
+        ...(input.title && { title: input.title }),
+        ...(input.meetingDate && { meetingDate: new Date(input.meetingDate) }),
+        ...(input.participantsText !== undefined && {
+          participantsText: input.participantsText,
+        }),
+        ...(input.transcriptText !== undefined && {
+          transcriptText: input.transcriptText,
+        }),
+      })
+      .where(and(eq(meetings.id, input.id), eq(meetings.userId, userId)))
+      .returning();
+
+    return updated ?? null;
+  }
+
+  static async remove(userId: string, meetingId: string) {
+    const [deleted] = await db
+      .delete(meetings)
+      .where(and(eq(meetings.id, meetingId), eq(meetings.userId, userId)))
+      .returning({ id: meetings.id });
+
+    return deleted ?? null;
+  }
+
+  static async process(userId: string, meetingId: string) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) return null;
+
+    await db
+      .update(meetings)
+      .set({
+        status: "pending",
+        processingStatus: "queued",
+        failureReason: null,
+      })
+      .where(eq(meetings.id, meetingId));
+
+    try {
+      await startMeetingProcessing(meetingId);
+    } catch (err) {
+      // Revert status so user can retry
+      const reason =
+        err instanceof Error ? err.message : "Failed to start processing";
+      await db
+        .update(meetings)
+        .set({
+          status: "failed",
+          processingStatus: "failed",
+          failureReason: reason,
+        })
+        .where(eq(meetings.id, meetingId));
+
+      throw new ORPCError("INTERNAL_SERVER_ERROR", {
+        message: "Failed to start meeting processing. Please try again.",
+      });
+    }
+
+    return { meetingId, status: "queued" as const };
+  }
+
+  static async getStatus(userId: string, meetingId: string) {
+    return (
+      (await db.query.meetings.findFirst({
+        where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
+        columns: {
+          id: true,
+          status: true,
+          processingStatus: true,
+        },
+      })) ?? null
+    );
+  }
+
+  static async getSummary(userId: string, meetingId: string) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
+      columns: { id: true },
+    });
+    if (!meeting) return null;
+
+    return (
+      (await db.query.meetingSummaries.findFirst({
+        where: eq(meetingSummaries.meetingId, meetingId),
+      })) ?? null
+    );
+  }
+
+  static async updateSummary(
+    userId: string,
+    input: {
+      meetingId: string;
+      summaryMd?: string;
+      decisionsMd?: string;
+      blockersMd?: string;
+      followupsMd?: string;
+    },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+      columns: { id: true },
+    });
+    if (!meeting) return null;
+
+    const existing = await db.query.meetingSummaries.findFirst({
+      where: eq(meetingSummaries.meetingId, input.meetingId),
+    });
+
+    if (existing) {
+      const [updated] = await db
+        .update(meetingSummaries)
+        .set({
+          summaryMd: input.summaryMd,
+          decisionsMd: input.decisionsMd,
+          blockersMd: input.blockersMd,
+          followupsMd: input.followupsMd,
+        })
+        .where(eq(meetingSummaries.meetingId, input.meetingId))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db
+      .insert(meetingSummaries)
+      .values({
+        meetingId: input.meetingId,
+        summaryMd: input.summaryMd,
+        decisionsMd: input.decisionsMd,
+        blockersMd: input.blockersMd,
+        followupsMd: input.followupsMd,
+      })
+      .returning();
+    return created;
+  }
+
+  static async requestUpload(
+    userId: string,
+    input: {
+      meetingId: string;
+      fileName: string;
+      mimeType: string;
+      fileSize: number;
+    },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    const storageKey = `meetings/${userId}/${input.meetingId}/${Date.now()}-${input.fileName}`;
+
+    const [file] = await db
+      .insert(meetingFiles)
+      .values({
+        meetingId: input.meetingId,
+        bucketName: env.S3_BUCKET,
+        storageKey,
+        fileName: input.fileName,
+        mimeType: input.mimeType,
+        fileSize: input.fileSize,
+        uploadStatus: "pending",
+      })
+      .returning();
+
+    const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType);
+
+    return { fileId: file.id, storageKey, uploadUrl };
+  }
+
+  static async completeUpload(
+    userId: string,
+    input: { meetingId: string; fileId: string },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    await db
+      .update(meetingFiles)
+      .set({ uploadStatus: "completed" })
+      .where(eq(meetingFiles.id, input.fileId));
+
+    // Set meeting to pending and trigger workflow
+    await db
+      .update(meetings)
+      .set({
+        status: "pending",
+        processingStatus: "queued",
+        failureReason: null,
+      })
+      .where(eq(meetings.id, input.meetingId));
+
+    try {
+      const result = await startMeetingProcessing(input.meetingId);
+      return { meetingId: input.meetingId, status: "queued" as const, ...result };
+    } catch (err) {
+      const reason =
+        err instanceof Error ? err.message : "Failed to start processing";
+      await db
+        .update(meetings)
+        .set({ status: "failed", processingStatus: "failed", failureReason: reason })
+        .where(eq(meetings.id, input.meetingId));
+
+      throw new ORPCError("INTERNAL_SERVER_ERROR", {
+        message: "Failed to start meeting processing. Please try again.",
+      });
+    }
+  }
+
+  static async getUsage(userId: string) {
+    const { plan, currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
+    const limits = getPlanLimits(plan);
+
+    const { count } = await BillingService.getUserUsage(
+      userId,
+      "meetings_created",
+      { start: currentPeriodStart, end: currentPeriodEnd },
+    );
+
+    return {
+      plan,
+      used: count,
+      limit: limits.meetingsPerMonth,
+      remaining:
+        limits.meetingsPerMonth === -1
+          ? -1
+          : Math.max(0, limits.meetingsPerMonth - count),
+    };
+  }
+
+  static async getDashboardStats(userId: string) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [meetingsThisMonth] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(meetings)
+      .where(
+        and(
+          eq(meetings.userId, userId),
+          sql`${meetings.createdAt} >= ${startOfMonth}`,
+        ),
+      );
+
+    const [processingNow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(meetings)
+      .where(
+        and(
+          eq(meetings.userId, userId),
+          or(eq(meetings.status, "pending"), eq(meetings.status, "processing")),
+        ),
+      );
+
+    const [openActions] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(actionItems)
+      .where(
+        and(eq(actionItems.userId, userId), eq(actionItems.status, "open")),
+      );
+
+    const [totalFiles] = await db
+      .select({
+        total: sql<number>`coalesce(sum(${meetingFiles.fileSize}), 0)::bigint`,
+      })
+      .from(meetingFiles)
+      .innerJoin(meetings, eq(meetingFiles.meetingId, meetings.id))
+      .where(eq(meetings.userId, userId));
+
+    return {
+      meetingsThisMonth: meetingsThisMonth.count,
+      processingNow: processingNow.count,
+      openActionItems: openActions.count,
+      storageUsedBytes: Number(totalFiles.total),
+    };
+  }
+
+  static async getRecentMeetings(userId: string, limit = 5) {
+    return db
+      .select()
+      .from(meetings)
+      .where(eq(meetings.userId, userId))
+      .orderBy(desc(meetings.createdAt))
+      .limit(limit);
+  }
+}

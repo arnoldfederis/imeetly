@@ -19,6 +19,8 @@
     "temporal-cli@latest",
     "temporal-ui-server@latest",
     "redis@latest",
-    "nodejs@latest"
+    "nodejs@latest",
+    "garage@latest",
+    "cloudflared@latest"
   ]
 }

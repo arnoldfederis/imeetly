@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const fetchSession = createServerFn({ method: "GET" }).handler(
-  async () => await auth.api.getSession({ headers: getRequestHeaders() })
+  async () => await auth.api.getSession({ headers: getRequestHeaders() }),
 );
 
 const authMiddleware = createMiddleware().server(async ({ next }) => {
@@ -31,10 +31,6 @@ const authMiddleware = createMiddleware().server(async ({ next }) => {
 export const Route = createFileRoute("/(dashboard)")({
   component: RouteComponent,
   loader: () => fetchSession(),
-  headers: () => ({
-    "Cache-Control":
-      "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-  }),
   server: {
     middleware: [authMiddleware],
   },

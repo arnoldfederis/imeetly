@@ -14,13 +14,20 @@ import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as dashboardIndexRouteImport } from './routes/(dashboard)/index'
 import { Route as HealthReadyRouteImport } from './routes/health/ready'
 import { Route as HealthLiveRouteImport } from './routes/health/live'
+import { Route as dashboardActionItemsRouteImport } from './routes/(dashboard)/action-items'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as dashboardSettingsRouteRouteImport } from './routes/(dashboard)/settings/route'
+import { Route as dashboardAdminRouteRouteImport } from './routes/(dashboard)/admin/route'
 import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
+import { Route as dashboardMeetingsIndexRouteImport } from './routes/(dashboard)/meetings/index'
 import { Route as dashboardSettingsSecurityRouteImport } from './routes/(dashboard)/settings/security'
 import { Route as dashboardSettingsProfileRouteImport } from './routes/(dashboard)/settings/profile'
+import { Route as dashboardSettingsPortalReturnRouteImport } from './routes/(dashboard)/settings/portal-return'
 import { Route as dashboardSettingsNotificationsRouteImport } from './routes/(dashboard)/settings/notifications'
 import { Route as dashboardSettingsBillingRouteImport } from './routes/(dashboard)/settings/billing'
+import { Route as dashboardMeetingsNewRouteImport } from './routes/(dashboard)/meetings/new'
+import { Route as dashboardMeetingsMeetingIdRouteImport } from './routes/(dashboard)/meetings/$meetingId'
+import { Route as dashboardAdminMetricsRouteImport } from './routes/(dashboard)/admin/metrics'
 
 const dashboardRouteRoute = dashboardRouteRouteImport.update({
   id: '/(dashboard)',
@@ -45,6 +52,11 @@ const HealthLiveRoute = HealthLiveRouteImport.update({
   path: '/health/live',
   getParentRoute: () => rootRouteImport,
 } as any)
+const dashboardActionItemsRoute = dashboardActionItemsRouteImport.update({
+  id: '/action-items',
+  path: '/action-items',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
 const authLoginRoute = authLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -55,10 +67,20 @@ const dashboardSettingsRouteRoute = dashboardSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
+const dashboardAdminRouteRoute = dashboardAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
 const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => dashboardSettingsRouteRoute,
+} as any)
+const dashboardMeetingsIndexRoute = dashboardMeetingsIndexRouteImport.update({
+  id: '/meetings/',
+  path: '/meetings/',
+  getParentRoute: () => dashboardRouteRoute,
 } as any)
 const dashboardSettingsSecurityRoute =
   dashboardSettingsSecurityRouteImport.update({
@@ -70,6 +92,12 @@ const dashboardSettingsProfileRoute =
   dashboardSettingsProfileRouteImport.update({
     id: '/profile',
     path: '/profile',
+    getParentRoute: () => dashboardSettingsRouteRoute,
+  } as any)
+const dashboardSettingsPortalReturnRoute =
+  dashboardSettingsPortalReturnRouteImport.update({
+    id: '/portal-return',
+    path: '/portal-return',
     getParentRoute: () => dashboardSettingsRouteRoute,
   } as any)
 const dashboardSettingsNotificationsRoute =
@@ -84,82 +112,140 @@ const dashboardSettingsBillingRoute =
     path: '/billing',
     getParentRoute: () => dashboardSettingsRouteRoute,
   } as any)
+const dashboardMeetingsNewRoute = dashboardMeetingsNewRouteImport.update({
+  id: '/meetings/new',
+  path: '/meetings/new',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
+const dashboardMeetingsMeetingIdRoute =
+  dashboardMeetingsMeetingIdRouteImport.update({
+    id: '/meetings/$meetingId',
+    path: '/meetings/$meetingId',
+    getParentRoute: () => dashboardRouteRoute,
+  } as any)
+const dashboardAdminMetricsRoute = dashboardAdminMetricsRouteImport.update({
+  id: '/metrics',
+  path: '/metrics',
+  getParentRoute: () => dashboardAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/admin': typeof dashboardAdminRouteRouteWithChildren
   '/settings': typeof dashboardSettingsRouteRouteWithChildren
   '/login': typeof authLoginRoute
+  '/action-items': typeof dashboardActionItemsRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/': typeof dashboardIndexRoute
+  '/admin/metrics': typeof dashboardAdminMetricsRoute
+  '/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
+  '/meetings/new': typeof dashboardMeetingsNewRoute
   '/settings/billing': typeof dashboardSettingsBillingRoute
   '/settings/notifications': typeof dashboardSettingsNotificationsRoute
+  '/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/settings/profile': typeof dashboardSettingsProfileRoute
   '/settings/security': typeof dashboardSettingsSecurityRoute
+  '/meetings/': typeof dashboardMeetingsIndexRoute
   '/settings/': typeof dashboardSettingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/admin': typeof dashboardAdminRouteRouteWithChildren
   '/login': typeof authLoginRoute
+  '/action-items': typeof dashboardActionItemsRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/': typeof dashboardIndexRoute
+  '/admin/metrics': typeof dashboardAdminMetricsRoute
+  '/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
+  '/meetings/new': typeof dashboardMeetingsNewRoute
   '/settings/billing': typeof dashboardSettingsBillingRoute
   '/settings/notifications': typeof dashboardSettingsNotificationsRoute
+  '/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/settings/profile': typeof dashboardSettingsProfileRoute
   '/settings/security': typeof dashboardSettingsSecurityRoute
+  '/meetings': typeof dashboardMeetingsIndexRoute
   '/settings': typeof dashboardSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(auth)': typeof authRouteRouteWithChildren
   '/(dashboard)': typeof dashboardRouteRouteWithChildren
+  '/(dashboard)/admin': typeof dashboardAdminRouteRouteWithChildren
   '/(dashboard)/settings': typeof dashboardSettingsRouteRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
+  '/(dashboard)/action-items': typeof dashboardActionItemsRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/(dashboard)/': typeof dashboardIndexRoute
+  '/(dashboard)/admin/metrics': typeof dashboardAdminMetricsRoute
+  '/(dashboard)/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
+  '/(dashboard)/meetings/new': typeof dashboardMeetingsNewRoute
   '/(dashboard)/settings/billing': typeof dashboardSettingsBillingRoute
   '/(dashboard)/settings/notifications': typeof dashboardSettingsNotificationsRoute
+  '/(dashboard)/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/(dashboard)/settings/profile': typeof dashboardSettingsProfileRoute
   '/(dashboard)/settings/security': typeof dashboardSettingsSecurityRoute
+  '/(dashboard)/meetings/': typeof dashboardMeetingsIndexRoute
   '/(dashboard)/settings/': typeof dashboardSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/admin'
     | '/settings'
     | '/login'
+    | '/action-items'
     | '/health/live'
     | '/health/ready'
     | '/'
+    | '/admin/metrics'
+    | '/meetings/$meetingId'
+    | '/meetings/new'
     | '/settings/billing'
     | '/settings/notifications'
+    | '/settings/portal-return'
     | '/settings/profile'
     | '/settings/security'
+    | '/meetings/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/admin'
     | '/login'
+    | '/action-items'
     | '/health/live'
     | '/health/ready'
     | '/'
+    | '/admin/metrics'
+    | '/meetings/$meetingId'
+    | '/meetings/new'
     | '/settings/billing'
     | '/settings/notifications'
+    | '/settings/portal-return'
     | '/settings/profile'
     | '/settings/security'
+    | '/meetings'
     | '/settings'
   id:
     | '__root__'
     | '/(auth)'
     | '/(dashboard)'
+    | '/(dashboard)/admin'
     | '/(dashboard)/settings'
     | '/(auth)/login'
+    | '/(dashboard)/action-items'
     | '/health/live'
     | '/health/ready'
     | '/(dashboard)/'
+    | '/(dashboard)/admin/metrics'
+    | '/(dashboard)/meetings/$meetingId'
+    | '/(dashboard)/meetings/new'
     | '/(dashboard)/settings/billing'
     | '/(dashboard)/settings/notifications'
+    | '/(dashboard)/settings/portal-return'
     | '/(dashboard)/settings/profile'
     | '/(dashboard)/settings/security'
+    | '/(dashboard)/meetings/'
     | '/(dashboard)/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -207,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealthLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(dashboard)/action-items': {
+      id: '/(dashboard)/action-items'
+      path: '/action-items'
+      fullPath: '/action-items'
+      preLoaderRoute: typeof dashboardActionItemsRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
     '/(auth)/login': {
       id: '/(auth)/login'
       path: '/login'
@@ -221,12 +314,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardSettingsRouteRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
+    '/(dashboard)/admin': {
+      id: '/(dashboard)/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof dashboardAdminRouteRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
     '/(dashboard)/settings/': {
       id: '/(dashboard)/settings/'
       path: '/'
       fullPath: '/settings/'
       preLoaderRoute: typeof dashboardSettingsIndexRouteImport
       parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/meetings/': {
+      id: '/(dashboard)/meetings/'
+      path: '/meetings'
+      fullPath: '/meetings/'
+      preLoaderRoute: typeof dashboardMeetingsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/settings/security': {
       id: '/(dashboard)/settings/security'
@@ -240,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/settings/profile'
       preLoaderRoute: typeof dashboardSettingsProfileRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/settings/portal-return': {
+      id: '/(dashboard)/settings/portal-return'
+      path: '/portal-return'
+      fullPath: '/settings/portal-return'
+      preLoaderRoute: typeof dashboardSettingsPortalReturnRouteImport
       parentRoute: typeof dashboardSettingsRouteRoute
     }
     '/(dashboard)/settings/notifications': {
@@ -256,6 +370,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardSettingsBillingRouteImport
       parentRoute: typeof dashboardSettingsRouteRoute
     }
+    '/(dashboard)/meetings/new': {
+      id: '/(dashboard)/meetings/new'
+      path: '/meetings/new'
+      fullPath: '/meetings/new'
+      preLoaderRoute: typeof dashboardMeetingsNewRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/meetings/$meetingId': {
+      id: '/(dashboard)/meetings/$meetingId'
+      path: '/meetings/$meetingId'
+      fullPath: '/meetings/$meetingId'
+      preLoaderRoute: typeof dashboardMeetingsMeetingIdRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/admin/metrics': {
+      id: '/(dashboard)/admin/metrics'
+      path: '/metrics'
+      fullPath: '/admin/metrics'
+      preLoaderRoute: typeof dashboardAdminMetricsRouteImport
+      parentRoute: typeof dashboardAdminRouteRoute
+    }
   }
 }
 
@@ -271,9 +406,21 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
 )
 
+interface dashboardAdminRouteRouteChildren {
+  dashboardAdminMetricsRoute: typeof dashboardAdminMetricsRoute
+}
+
+const dashboardAdminRouteRouteChildren: dashboardAdminRouteRouteChildren = {
+  dashboardAdminMetricsRoute: dashboardAdminMetricsRoute,
+}
+
+const dashboardAdminRouteRouteWithChildren =
+  dashboardAdminRouteRoute._addFileChildren(dashboardAdminRouteRouteChildren)
+
 interface dashboardSettingsRouteRouteChildren {
   dashboardSettingsBillingRoute: typeof dashboardSettingsBillingRoute
   dashboardSettingsNotificationsRoute: typeof dashboardSettingsNotificationsRoute
+  dashboardSettingsPortalReturnRoute: typeof dashboardSettingsPortalReturnRoute
   dashboardSettingsProfileRoute: typeof dashboardSettingsProfileRoute
   dashboardSettingsSecurityRoute: typeof dashboardSettingsSecurityRoute
   dashboardSettingsIndexRoute: typeof dashboardSettingsIndexRoute
@@ -283,6 +430,7 @@ const dashboardSettingsRouteRouteChildren: dashboardSettingsRouteRouteChildren =
   {
     dashboardSettingsBillingRoute: dashboardSettingsBillingRoute,
     dashboardSettingsNotificationsRoute: dashboardSettingsNotificationsRoute,
+    dashboardSettingsPortalReturnRoute: dashboardSettingsPortalReturnRoute,
     dashboardSettingsProfileRoute: dashboardSettingsProfileRoute,
     dashboardSettingsSecurityRoute: dashboardSettingsSecurityRoute,
     dashboardSettingsIndexRoute: dashboardSettingsIndexRoute,
@@ -294,13 +442,23 @@ const dashboardSettingsRouteRouteWithChildren =
   )
 
 interface dashboardRouteRouteChildren {
+  dashboardAdminRouteRoute: typeof dashboardAdminRouteRouteWithChildren
   dashboardSettingsRouteRoute: typeof dashboardSettingsRouteRouteWithChildren
+  dashboardActionItemsRoute: typeof dashboardActionItemsRoute
   dashboardIndexRoute: typeof dashboardIndexRoute
+  dashboardMeetingsMeetingIdRoute: typeof dashboardMeetingsMeetingIdRoute
+  dashboardMeetingsNewRoute: typeof dashboardMeetingsNewRoute
+  dashboardMeetingsIndexRoute: typeof dashboardMeetingsIndexRoute
 }
 
 const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
+  dashboardAdminRouteRoute: dashboardAdminRouteRouteWithChildren,
   dashboardSettingsRouteRoute: dashboardSettingsRouteRouteWithChildren,
+  dashboardActionItemsRoute: dashboardActionItemsRoute,
   dashboardIndexRoute: dashboardIndexRoute,
+  dashboardMeetingsMeetingIdRoute: dashboardMeetingsMeetingIdRoute,
+  dashboardMeetingsNewRoute: dashboardMeetingsNewRoute,
+  dashboardMeetingsIndexRoute: dashboardMeetingsIndexRoute,
 }
 
 const dashboardRouteRouteWithChildren = dashboardRouteRoute._addFileChildren(
