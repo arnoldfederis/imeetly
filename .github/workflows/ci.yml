@@ -16,16 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    services:
-      temporal:
-        image: temporalio/auto-setup:latest
-        ports:
-          - 7233:7233
-        env:
-          DB: sqlite
-          DEFAULT_NAMESPACE: default
-          TEMPORAL_ADDRESS: 0.0.0.0:7233
-
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +31,14 @@ jobs:
 
       - name: Typecheck
         run: bun run turbo check-types
+
+      - name: Install Temporal CLI
+        run: |
+          curl -sSf https://temporal.download/cli.sh | sh
+          echo "${HOME}/.temporalio/bin" >> $GITHUB_PATH
+
+      - name: Start Temporal dev server
+        run: temporal server start-dev --namespace default --log-format json &
 
       - name: Wait for Temporal
         run: |

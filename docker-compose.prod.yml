@@ -73,20 +73,19 @@ services:
           memory: 1G
 
   temporal:
-    image: temporalio/auto-setup:latest
+    image: temporalio/cli:latest
     restart: unless-stopped
     ports:
       - "7233:7233"
-    environment:
-      - DB=sqlite
-      - DEFAULT_NAMESPACE=default
-      - TEMPORAL_ADDRESS=0.0.0.0:7233
+    command: ["temporal", "server", "start-dev", "--ip", "0.0.0.0", "--namespace", "default", "--db-filename", "/data/temporal.db", "--log-format", "json"]
+    volumes:
+      - temporal-data:/data
     healthcheck:
       test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "localhost:7233"]
       interval: 10s
       timeout: 5s
-      start_period: 30s
-      retries: 10
+      start_period: 15s
+      retries: 5
     deploy:
       resources:
         limits:
@@ -103,3 +102,6 @@ services:
     depends_on:
       temporal:
         condition: service_healthy
+
+volumes:
+  temporal-data:
