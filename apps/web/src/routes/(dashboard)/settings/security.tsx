@@ -3,7 +3,6 @@ import { authClient } from "@repo/server/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  FingerprintIcon,
   KeyIcon,
   KeyRoundIcon,
   LoaderCircleIcon,

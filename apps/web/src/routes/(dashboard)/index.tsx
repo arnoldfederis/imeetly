@@ -237,7 +237,7 @@ function DashboardPage() {
                   <Button
                     className="mt-2 w-full"
                     nativeButton={false}
-                    render={<Link to="/settings/billing" />}
+                    render={<Link search={{}} to="/settings/billing" />}
                     size="sm"
                     variant="outline"
                   >

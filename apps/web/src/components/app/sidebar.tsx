@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   CheckSquareIcon,
   ChevronRight,
-  CreditCardIcon,
   LayoutDashboardIcon,
   ProjectorIcon,
   SettingsIcon,

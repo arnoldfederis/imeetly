@@ -9,7 +9,7 @@
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
     "pre:push": "bun lint && bun format",
-    "check-types": "bunx tsc --noEmit",
+    "check-types": "bunx tsc --project tsconfig.check.json",
     "clean": "rm -rf node_modules lib"
   },
   "nodemonConfig": {
