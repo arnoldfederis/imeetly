@@ -82,11 +82,11 @@ services:
       - DEFAULT_NAMESPACE=default
       - TEMPORAL_ADDRESS=0.0.0.0:7233
     healthcheck:
-      test: ["CMD", "tctl", "--address", "localhost:7233", "cluster", "health"]
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "localhost:7233"]
       interval: 10s
       timeout: 5s
-      start_period: 15s
-      retries: 5
+      start_period: 30s
+      retries: 10
     deploy:
       resources:
         limits:

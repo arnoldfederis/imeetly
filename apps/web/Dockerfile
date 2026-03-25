@@ -24,4 +24,4 @@ ENV PORT=4001
 
 EXPOSE 4001
 WORKDIR /app/apps/web
-CMD ["bun", "run", "dist/server/server.js"]
+CMD ["bun", "--require", "reflect-metadata", "dist/server/server.js"]
