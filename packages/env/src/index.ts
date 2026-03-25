@@ -66,12 +66,19 @@ export const env = createEnv({
   runtimeEnv: process.env,
 });
 
-export const clientEnv = object({
+const clientSchema = object({
   VITE_APP_BASE_URL: string().check(
     minLength(1, "VITE_APP_BASE_URL is required"),
   ),
   VITE_SERVER_URL: string().check(minLength(1, "VITE_SERVER_URL is required")),
-}).parse(import.meta.env);
+});
+
+// During SSR, VITE_* vars may not be in process.env — skip strict validation
+// since they're only used in client-side code paths (Vite inlines them at build time).
+const isSSR = typeof window === "undefined";
+export const clientEnv = isSSR
+  ? (import.meta.env as unknown as { VITE_APP_BASE_URL: string; VITE_SERVER_URL: string })
+  : clientSchema.parse(import.meta.env);
 
 // Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
 export const isProduction = () => env.APP_ENV === "production";

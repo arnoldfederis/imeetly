@@ -1,10 +1,6 @@
-version: "3.8"
-
 services:
   web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+    image: ghcr.io/ProghubLabs/aimeetly-web:latest
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-4001}:4001"
@@ -27,9 +23,7 @@ services:
           memory: 512M
 
   server:
-    build:
-      context: .
-      dockerfile: apps/server/Dockerfile
+    image: ghcr.io/ProghubLabs/aimeetly-server:latest
     restart: unless-stopped
     ports:
       - "${SERVER_PORT:-4000}:4000"
@@ -40,6 +34,8 @@ services:
       - APP_ENV=production
       - APP_MODULE=server
       - SERVER_PORT=4000
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_NAMESPACE=default
     healthcheck:
       test: ["CMD", "bun", "--eval", "fetch('http://localhost:4000/rpc/health/live').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
       interval: 15s
@@ -52,9 +48,7 @@ services:
           memory: 1G
 
   worker:
-    build:
-      context: .
-      dockerfile: apps/worker/Dockerfile
+    image: ghcr.io/ProghubLabs/aimeetly-worker:latest
     restart: unless-stopped
     env_file:
       - .env
@@ -62,6 +56,11 @@ services:
       - NODE_ENV=production
       - APP_ENV=production
       - APP_MODULE=worker
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+    depends_on:
+      temporal:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "process.exit(0)"]
       interval: 30s
@@ -72,3 +71,35 @@ services:
       resources:
         limits:
           memory: 1G
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    restart: unless-stopped
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=sqlite
+      - DEFAULT_NAMESPACE=default
+      - TEMPORAL_ADDRESS=0.0.0.0:7233
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "localhost:7233", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    restart: unless-stopped
+    ports:
+      - "8233:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      temporal:
+        condition: service_healthy

@@ -33,6 +33,7 @@
         "mailchecker": "catalog:",
         "nodemailer": "8.0.4",
         "pino": "catalog:",
+        "reflect-metadata": "^0.2.2",
         "resend": "latest",
         "zod": "catalog:",
       },
