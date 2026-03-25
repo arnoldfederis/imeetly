@@ -72,20 +72,46 @@ services:
         limits:
           memory: 1G
 
+  temporal-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   temporal:
-    image: temporalio/cli:latest
+    image: temporalio/auto-setup:latest
     restart: unless-stopped
     ports:
       - "7233:7233"
-    command: ["temporal", "server", "start-dev", "--ip", "0.0.0.0", "--namespace", "default", "--db-filename", "/data/temporal.db", "--log-format", "json"]
-    volumes:
-      - temporal-data:/data
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-db
+      - DEFAULT_NAMESPACE=default
+    depends_on:
+      temporal-db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "localhost:7233"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:7233/health | grep -q SERVING || exit 1"]
       interval: 10s
       timeout: 5s
-      start_period: 15s
-      retries: 5
+      start_period: 30s
+      retries: 10
     deploy:
       resources:
         limits:
