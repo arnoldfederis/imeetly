@@ -1,36 +1,31 @@
-FROM oven/bun:1 AS build
-
+FROM oven/bun:1 AS deps
 WORKDIR /app
 
-COPY package.json bun.lock ./
-COPY apps/server/package.json ./apps/server/package.json
-COPY packages/db/package.json ./packages/db/package.json
-COPY packages/env/package.json ./packages/env/package.json
+COPY package.json bun.lock turbo.json ./
+COPY apps/server/package.json apps/server/package.json
+COPY apps/web/package.json apps/web/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/db/package.json packages/db/package.json
+COPY packages/env/package.json packages/env/package.json
 
 RUN bun install --frozen-lockfile
 
-COPY apps/server ./apps/server
-COPY packages/db ./packages/db
-COPY packages/env ./packages/env
-
-ENV NODE_ENV=production
+FROM deps AS build
+COPY . .
 
 RUN bun build \
-	--compile \
-	--target=bun \
-	--minify-whitespace \
-	--minify-syntax \
-	--outfile server \
-	./apps/server/src/index.ts
+  --compile \
+  --target=bun \
+  --minify-whitespace \
+  --minify-syntax \
+  --outfile server \
+  ./apps/server/src/index.ts
 
-FROM oven/bun:1-slim
-
+FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
-COPY --from=build /app/server server
+COPY --from=build /app/server /app/server
 
 ENV NODE_ENV=production
-
 EXPOSE 4000
-
 CMD ["./server"]
