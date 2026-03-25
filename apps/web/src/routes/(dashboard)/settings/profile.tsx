@@ -125,7 +125,7 @@ function AvatarCard({
                 width={80}
               />
             ) : (
-              <div className="flex size-full items-center justify-center bg-secondary text-xl font-medium uppercase">
+              <div className="flex size-full items-center justify-center bg-secondary font-medium text-xl uppercase">
                 {fallback}
               </div>
             )}

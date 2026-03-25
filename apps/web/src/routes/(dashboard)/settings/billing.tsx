@@ -31,8 +31,8 @@ import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/settings/billing")({
   component: BillingPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    checkout: (search.checkout as string) ?? undefined,
+  validateSearch: (search: Record<string, unknown>): { checkout?: string } => ({
+    checkout: (search.checkout as string) || undefined,
   }),
 });
 

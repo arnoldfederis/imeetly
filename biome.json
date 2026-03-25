@@ -9,6 +9,7 @@
     "ignoreUnknown": true,
     "includes": [
       "**",
+      "!**/routeTree.gen.ts",
       "!apps/**/src/components/ui",
       "!**/apps/**/src/components/ui",
       "!apps/**/.next",
