@@ -290,7 +290,11 @@ export abstract class MeetingService {
       throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
-    const storageKey = `meetings/${userId}/${input.meetingId}/${Date.now()}-${input.fileName}`;
+    // Storage key: userId/yyyy/mm/meetingId/original-filename
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const storageKey = `${userId}/${yyyy}/${mm}/${input.meetingId}/${input.fileName}`;
 
     const [file] = await db
       .insert(meetingFiles)
@@ -307,7 +311,13 @@ export abstract class MeetingService {
 
     const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType);
 
-    return { fileId: file.id, storageKey, uploadUrl };
+    return {
+      fileId: file.id,
+      storageKey,
+      uploadUrl,
+      method: "PUT" as const,
+      headers: { "Content-Type": input.mimeType },
+    };
   }
 
   static async completeUpload(
@@ -406,19 +416,10 @@ export abstract class MeetingService {
         and(eq(actionItems.userId, userId), eq(actionItems.status, "open")),
       );
 
-    const [totalFiles] = await db
-      .select({
-        total: sql<number>`coalesce(sum(${meetingFiles.fileSize}), 0)::bigint`,
-      })
-      .from(meetingFiles)
-      .innerJoin(meetings, eq(meetingFiles.meetingId, meetings.id))
-      .where(eq(meetings.userId, userId));
-
     return {
       meetingsThisMonth: meetingsThisMonth.count,
       processingNow: processingNow.count,
       openActionItems: openActions.count,
-      storageUsedBytes: Number(totalFiles.total),
     };
   }
 

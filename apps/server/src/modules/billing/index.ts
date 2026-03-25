@@ -1,9 +1,6 @@
-import { db } from "@repo/db";
-import { meetingFiles, meetings } from "@repo/db/schemas/app";
 import { env } from "@repo/env";
 import { polarClient } from "@repo/server/lib/polar-client";
 import { base, privateProcedure } from "@repo/server/procedure";
-import { eq, sql } from "drizzle-orm";
 import { billingModel, POLAR_PRODUCTS } from "./model";
 import { getPlanLimits } from "./plans";
 import { BillingService } from "./service";
@@ -20,20 +17,11 @@ export const billingController = base.router({
       await BillingService.resolveUserPlan(userId);
     const limits = getPlanLimits(plan);
 
-    const [{ count: meetingsThisMonth }, [{ storageUsedBytes }]] =
-      await Promise.all([
-        BillingService.getUserUsage(userId, "meetings_created", {
-          start: currentPeriodStart,
-          end: currentPeriodEnd,
-        }),
-        db
-          .select({
-            storageUsedBytes: sql<number>`coalesce(sum(${meetingFiles.fileSize}), 0)::bigint`,
-          })
-          .from(meetingFiles)
-          .innerJoin(meetings, eq(meetingFiles.meetingId, meetings.id))
-          .where(eq(meetings.userId, userId)),
-      ]);
+    const { count: meetingsThisMonth } =
+      await BillingService.getUserUsage(userId, "meetings_created", {
+        start: currentPeriodStart,
+        end: currentPeriodEnd,
+      });
 
     const meetingsRemaining =
       limits.meetingsPerMonth === -1
@@ -47,7 +35,6 @@ export const billingController = base.router({
       usage: {
         meetingsThisMonth,
         meetingsRemaining,
-        storageUsedBytes: Number(storageUsedBytes),
         limitReached: limits.meetingsPerMonth !== -1 && meetingsRemaining <= 0,
       },
       period: {

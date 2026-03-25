@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   FingerprintIcon,
   KeyIcon,
+  KeyRoundIcon,
   LoaderCircleIcon,
   PlusIcon,
   Trash2Icon,
@@ -283,7 +284,7 @@ function PasskeysCard({
         <CardContent>
           {passkeys.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-6 text-center">
-              <FingerprintIcon className="size-10 text-muted-foreground" />
+              <KeyRoundIcon className="size-10 text-muted-foreground" />
               <p className="text-muted-foreground text-sm">
                 No passkeys registered yet. Add one for passwordless sign-in.
               </p>

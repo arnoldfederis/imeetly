@@ -4,14 +4,17 @@
 
 **Hybrid: Subscription tiers with usage limits.**
 
-This SaaS has fixed infrastructure costs (AI processing, transcription, storage) that
+This SaaS has fixed infrastructure costs (AI processing, transcription) that
 scale per meeting. A pure subscription model leaves revenue unpredictable at scale;
 pure usage-based is hard for users to budget. The hybrid model gives users predictable
 pricing while protecting against runaway costs:
 
-- **Free**: 10 meetings/mo, 500MB storage, 100MB max file — onboarding & evaluation
-- **Pro**: 100 meetings/mo, 10GB storage, 500MB max file — individual power users
-- **Team**: Unlimited meetings, 50GB storage, 1GB max file — teams/orgs
+- **Free**: 5 meetings/mo, 100MB max file — onboarding & evaluation
+- **Pro**: 50 meetings/mo, 500MB max file — individual power users
+- **Team**: 150 meetings/mo, 1GB max file — teams/orgs
+
+Note: Storage is internal-only (temporary processing). Raw files are deleted after
+successful processing. Storage is not a user-facing product feature.
 
 Future extension: usage-based overage billing for Pro/Team via Polar's metered usage API.
 
@@ -140,9 +143,8 @@ The `organization` plugin is already configured in Better Auth. To add team bill
 2. Add `organizationId` to the subscriptions table
 3. Update `checkUsageLimit` to check org-level usage for team plans
 
-### Adding storage limits
+### Storage
 
-1. `checkStorageLimit(userId)` in MeetingService
-2. Sum `meetingFiles.fileSize` for user's meetings
-3. Compare against `limits.storageBytes`
-4. Enforce before file upload, not just meeting creation
+Storage is internal-only. Raw uploaded files are deleted after successful processing.
+There are no user-facing storage limits, quotas, or billing. The `meeting_files` table
+tracks source file metadata for provenance only.

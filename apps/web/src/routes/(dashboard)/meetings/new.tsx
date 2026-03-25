@@ -8,7 +8,7 @@ import {
   UploadIcon,
   XIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { client, server } from "@/lib/orpc";
@@ -58,13 +59,57 @@ function NewMeetingPage() {
   const [participants, setParticipants] = useState("");
   const [transcriptText, setTranscriptText] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadState, setUploadState] = useState<
+    "idle" | "preparing" | "uploading" | "completing" | "done"
+  >("idle");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const abortRef = useRef<XMLHttpRequest | null>(null);
 
   const sourceType = file
     ? file.type.startsWith("video/")
       ? "video"
       : "audio"
     : "text";
+
+  /** Upload file directly to object storage using a signed URL with progress tracking */
+  const uploadFileToStorage = useCallback(
+    (url: string, body: File, contentType: string): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        abortRef.current = xhr;
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          abortRef.current = null;
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed: ${xhr.statusText || xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener("error", () => {
+          abortRef.current = null;
+          reject(new Error("Upload failed — check your connection and try again"));
+        });
+
+        xhr.addEventListener("abort", () => {
+          abortRef.current = null;
+          reject(new Error("Upload cancelled"));
+        });
+
+        xhr.open("PUT", url);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(body);
+      });
+    },
+    [],
+  );
 
   const invalidateAll = () =>
     Promise.all([
@@ -80,9 +125,10 @@ function NewMeetingPage() {
     client.meeting.create.mutationOptions({
       onSuccess: async (meeting) => {
         if (file) {
-          // Upload file to S3 via presigned URL
-          setUploading(true);
           try {
+            // Step 1: Request signed upload target
+            setUploadState("preparing");
+            setUploadProgress(0);
             const uploadInfo = await server.meeting.requestUpload({
               meetingId: meeting.id,
               fileName: file.name,
@@ -90,26 +136,27 @@ function NewMeetingPage() {
               fileSize: file.size,
             });
 
-            // Upload directly to S3
-            const uploadRes = await fetch(uploadInfo.uploadUrl, {
-              method: "PUT",
-              body: file,
-              headers: { "Content-Type": file.type },
-            });
+            // Step 2: Upload directly to object storage with progress
+            setUploadState("uploading");
+            await uploadFileToStorage(
+              uploadInfo.uploadUrl,
+              file,
+              file.type,
+            );
 
-            if (!uploadRes.ok) {
-              throw new Error(`Upload failed: ${uploadRes.statusText}`);
-            }
-
-            // Complete upload and trigger processing
+            // Step 3: Notify server that upload completed
+            setUploadState("completing");
             await server.meeting.completeUpload({
               meetingId: meeting.id,
               fileId: uploadInfo.fileId,
             });
+
+            setUploadState("done");
           } catch (err) {
             const msg = err instanceof Error ? err.message : "Upload failed";
             toast.error(msg);
-            setUploading(false);
+            setUploadState("idle");
+            setUploadProgress(0);
             // Still navigate — meeting was created, just upload failed
             await invalidateAll();
             navigate({
@@ -118,7 +165,6 @@ function NewMeetingPage() {
             });
             return;
           }
-          setUploading(false);
         } else if (transcriptText) {
           // Text-only: trigger processing directly
           await server.meeting.process({ id: meeting.id });
@@ -132,6 +178,8 @@ function NewMeetingPage() {
         });
       },
       onError: (err) => {
+        setUploadState("idle");
+        setUploadProgress(0);
         const isPlanLimit = err.message?.includes("limit reached");
         if (isPlanLimit) {
           toast.error("You've reached your plan limit. Upgrade to create more meetings.");
@@ -149,7 +197,18 @@ function NewMeetingPage() {
     title.trim().length > 0 &&
     (file || transcriptText.trim().length > 0);
 
-  const isPending = createMutation.isPending || uploading;
+  const isPending = createMutation.isPending || uploadState !== "idle";
+
+  const uploadLabel =
+    uploadState === "preparing"
+      ? "Preparing upload..."
+      : uploadState === "uploading"
+        ? `Uploading ${uploadProgress}%`
+        : uploadState === "completing"
+          ? "Starting processing..."
+          : uploadState === "done"
+            ? "Done"
+            : null;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -280,6 +339,7 @@ function NewMeetingPage() {
                   </p>
                 </div>
                 <Button
+                  disabled={isPending}
                   onClick={() => {
                     setFile(null);
                     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -323,8 +383,16 @@ function NewMeetingPage() {
         </CardContent>
       </Card>
 
+      {uploadState === "uploading" && (
+        <Progress className="h-2" value={uploadProgress} />
+      )}
+
       <div className="flex items-center justify-between">
-        <Button onClick={() => navigate({ to: "/meetings" })} variant="outline">
+        <Button
+          disabled={isPending}
+          onClick={() => navigate({ to: "/meetings" })}
+          variant="outline"
+        >
           Cancel
         </Button>
         <Button
@@ -342,7 +410,7 @@ function NewMeetingPage() {
           {isPending ? (
             <>
               <Spinner data-icon="inline-start" />
-              {uploading ? "Uploading..." : "Creating..."}
+              {uploadLabel ?? "Creating..."}
             </>
           ) : (
             "Create & Process"

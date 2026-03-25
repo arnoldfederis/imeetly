@@ -177,7 +177,7 @@ function MeetingDetailPage() {
       {meeting.files && meeting.files.length > 0 && (
         <Card size="sm">
           <CardHeader>
-            <CardTitle>Uploaded Files</CardTitle>
+            <CardTitle>Source File</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
@@ -195,9 +195,15 @@ function MeetingDetailPage() {
                   <span className="text-muted-foreground text-xs">
                     {(Number(f.fileSize) / 1024 / 1024).toFixed(1)} MB
                   </span>
-                  <Badge className="text-xs" variant="outline">
-                    {f.uploadStatus}
-                  </Badge>
+                  {f.retentionStatus === "deleted" ? (
+                    <Badge className="text-xs" variant="secondary">
+                      Cleaned up
+                    </Badge>
+                  ) : (
+                    <Badge className="text-xs" variant="outline">
+                      {f.uploadStatus}
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>

@@ -73,8 +73,14 @@ export const meetingFiles = schema.table(
     durationSeconds: integer("duration_seconds"),
     uploadStatus: text("upload_status").notNull().default("pending"), // pending | uploading | completed | failed
     processingStatus: text("processing_status").notNull().default("pending"), // pending | queued | processing | completed | failed
+    retentionStatus: text("retention_status").notNull().default("active"), // active | pending_deletion | deleted
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index("meeting_files_meeting_id_idx").on(table.meetingId)],

@@ -25,9 +25,9 @@ import {
   ProgressValue,
 } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+
 import { Spinner } from "@/components/ui/spinner";
 import { client, server } from "@/lib/orpc";
-import { formatBytes } from "@/lib/utils";
 
 export const Route = createFileRoute("/(dashboard)/settings/billing")({
   component: BillingPage,
@@ -42,11 +42,10 @@ const PLANS = [
     plan: "free",
     icon: <ZapIcon className="size-5" />,
     meetings: 5,
-    storage: "500 MB",
     features: [
       "5 meetings per month",
-      "500 MB storage",
       "AI summaries & action items",
+      "100 MB max file size",
     ],
   },
   {
@@ -54,11 +53,9 @@ const PLANS = [
     plan: "pro",
     icon: <CrownIcon className="size-5" />,
     meetings: 50,
-    storage: "10 GB",
     monthlySlug: "pro-monthly" as const,
     features: [
       "50 meetings per month",
-      "10 GB storage",
       "500 MB max file size",
       "Priority processing",
     ],
@@ -68,11 +65,9 @@ const PLANS = [
     plan: "team",
     icon: <UsersIcon className="size-5" />,
     meetings: 150,
-    storage: "50 GB",
     monthlySlug: "team-monthly" as const,
     features: [
       "150 meetings per month",
-      "50 GB storage",
       "1 GB max file size",
       "Team collaboration",
     ],
@@ -216,11 +211,10 @@ function UsageCard({
     | {
         plan: string;
         status: string;
-        limits: { meetingsPerMonth: number; storageBytes: number };
+        limits: { meetingsPerMonth: number };
         usage: {
           meetingsThisMonth: number;
           meetingsRemaining: number;
-          storageUsedBytes: number;
           limitReached: boolean;
         };
         period: { start: string; end: string };
@@ -230,11 +224,6 @@ function UsageCard({
   const used = planData?.usage.meetingsThisMonth ?? 0;
   const limit = planData?.limits.meetingsPerMonth ?? 5;
   const meetingPercent = limit > 0 ? Math.round((used / limit) * 100) : 0;
-
-  const storageUsed = planData?.usage.storageUsedBytes ?? 0;
-  const storageLimit = planData?.limits.storageBytes ?? 500 * 1024 * 1024;
-  const storagePercent =
-    storageLimit > 0 ? Math.round((storageUsed / storageLimit) * 100) : 0;
 
   return (
     <Card>
@@ -256,12 +245,6 @@ function UsageCard({
           <ProgressLabel>Meetings</ProgressLabel>
           <ProgressValue>
             {() => `${used} / ${limit === -1 ? "∞" : limit}`}
-          </ProgressValue>
-        </Progress>
-        <Progress value={Math.min(storagePercent, 100)}>
-          <ProgressLabel>Storage</ProgressLabel>
-          <ProgressValue>
-            {() => `${formatBytes(storageUsed)} / ${formatBytes(storageLimit)}`}
           </ProgressValue>
         </Progress>
         {planData?.usage.limitReached && (
@@ -318,7 +301,7 @@ function PlanCard({
           {isCurrent && <Badge>Current</Badge>}
         </div>
         <CardDescription>
-          {`${plan.meetings} meetings`} / month · {plan.storage} storage
+          {`${plan.meetings} meetings`} / month
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

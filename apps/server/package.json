@@ -3,12 +3,15 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -- bun run --hot src/index.ts",
+    "build": "bun build --compile --target=bun --minify-whitespace --minify-syntax --outfile dist/server ./src/index.ts",
+    "start": "./dist/server",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
     "pre:push": "bun lint && bun format",
     "auth:generate": "dotenv -e ../../.env -- bunx @better-auth/cli generate --config=./src/lib/auth.ts -y",
-    "clean": "rm -rf node_modules"
+    "check-types": "bunx tsc --noEmit",
+    "clean": "rm -rf node_modules dist"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1010.0",
@@ -40,14 +43,17 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./server": "./src/server.ts",
     "./types": "./src/types.ts",
     "./router": "./src/router.ts",
     "./lib/*": "./src/lib/*",
-    "./modules/auth/*": "./src/modules/auth/*",
-    "./modules/user/*": "./src/modules/user/*",
-    "./modules/meeting/*": "./src/modules/meeting/*",
     "./modules/action-item/*": "./src/modules/action-item/*",
+    "./modules/admin/*": "./src/modules/admin/*",
+    "./modules/auth/*": "./src/modules/auth/*",
     "./modules/billing/*": "./src/modules/billing/*",
+    "./modules/health/*": "./src/modules/health/*",
+    "./modules/meeting/*": "./src/modules/meeting/*",
+    "./modules/user/*": "./src/modules/user/*",
     "./lib/temporal": "./src/lib/temporal.ts",
     "./modules/*/model": "./src/modules/*/model.ts",
     "./procedure": "./src/procedure.ts"

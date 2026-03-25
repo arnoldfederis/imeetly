@@ -1,8 +1,8 @@
+import { env } from "@repo/db/env";
 import { appRelations } from "@repo/db/relations/app";
 import { authRelations } from "@repo/db/relations/auth";
 import { appSchema } from "@repo/db/schemas/app";
 import { authSchema } from "@repo/db/schemas/auth";
-import { env } from "@repo/env";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { ConsoleLogWriter, DefaultLogger } from "drizzle-orm/logger";

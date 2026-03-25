@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -6,6 +7,10 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@repo/env";
 
+// Hetzner Object Storage (Helsinki) — colocated with VPS for low internal latency.
+// Used for temporary file storage only: raw uploads are deleted after processing.
+// requestChecksumCalculation disabled: AWS SDK v3 adds x-amz-checksum-* headers/params
+// by default, which cause CORS preflight failures on browser direct uploads to Hetzner.
 export const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,
@@ -15,7 +20,6 @@ export const s3 = new S3Client({
   },
   forcePathStyle: true,
   requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 export async function createPresignedUploadUrl(
@@ -40,4 +44,12 @@ export async function createPresignedDownloadUrl(
     Key: key,
   });
   return getSignedUrl(s3, command, { expiresIn });
+}
+
+export async function deleteObject(key: string) {
+  const command = new DeleteObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: key,
+  });
+  await s3.send(command);
 }

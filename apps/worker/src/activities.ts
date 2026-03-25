@@ -1,6 +1,8 @@
-import { actionItems, meetingSummaries, meetings } from "@repo/db/schemas/app";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { actionItems, meetingFiles, meetingSummaries, meetings } from "@repo/db/schemas/app";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
+import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { transcribeMeeting } from "./services/ai/transcription";
 import type { ExtractionResult, TranscriptionResult } from "./services/ai/types";
@@ -84,6 +86,17 @@ export async function generateExtractionResult(transcript: string): Promise<Extr
   return extractMeetingData(transcript);
 }
 
+// Hetzner Object Storage (Helsinki) — worker downloads raw files for processing, then deletes them.
+const s3 = new S3Client({
+  endpoint: env.S3_ENDPOINT,
+  region: env.S3_REGION,
+  credentials: {
+    accessKeyId: env.S3_ACCESS_KEY_ID,
+    secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: true,
+});
+
 // --- Persistence ---
 
 export async function saveProcessingResults(
@@ -133,4 +146,47 @@ export async function saveProcessingResults(
   console.log(
     `[${meetingId}] Saved results (${results.actionItems.length} action items, extraction: ${results.extractionProvider ?? "unknown"}, transcription: ${results.transcriptionProvider ?? "n/a"})`,
   );
+}
+
+// --- Cleanup ---
+
+export async function deleteSourceFile(meetingId: string): Promise<void> {
+  const files = await db.query.meetingFiles.findMany({
+    where: eq(meetingFiles.meetingId, meetingId),
+  });
+
+  for (const file of files) {
+    if (file.retentionStatus === "deleted") continue;
+
+    try {
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: file.bucketName,
+          Key: file.storageKey,
+        }),
+      );
+
+      await db
+        .update(meetingFiles)
+        .set({
+          retentionStatus: "deleted",
+          deletedAt: new Date(),
+        })
+        .where(eq(meetingFiles.id, file.id));
+
+      console.log(
+        `[${meetingId}] Deleted source file: ${file.storageKey}`,
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(
+        `[${meetingId}] Failed to delete source file ${file.storageKey}: ${msg}`,
+      );
+      // Mark as pending_deletion so a cleanup job can retry later
+      await db
+        .update(meetingFiles)
+        .set({ retentionStatus: "pending_deletion" })
+        .where(eq(meetingFiles.id, file.id));
+    }
+  }
 }

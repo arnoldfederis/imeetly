@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- bun --bun vite dev --port 4001",
     "build": "vite build",
-    "preview": "vite preview",
+    "start": "bun run dist/server/server.js",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
     "pre:push": "bun lint && bun format",
+    "check-types": "bunx tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
