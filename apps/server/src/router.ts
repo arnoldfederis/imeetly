@@ -1,11 +1,17 @@
-import { lazy } from "@orpc/server";
+import actionItemController from "./modules/action-item";
+import adminController from "./modules/admin";
+import authController from "./modules/auth";
+import billingController from "./modules/billing";
+import healthController from "./modules/health";
+import meetingController from "./modules/meeting";
+import userController from "./modules/user";
 
 export const appRouter = {
-  auth: lazy(() => import("./modules/auth")),
-  health: lazy(() => import("./modules/health")),
-  user: lazy(() => import("./modules/user")),
-  meeting: lazy(() => import("./modules/meeting")),
-  actionItem: lazy(() => import("./modules/action-item")),
-  billing: lazy(() => import("./modules/billing")),
-  admin: lazy(() => import("./modules/admin")),
+  actionItem: actionItemController,
+  admin: adminController,
+  auth: authController,
+  billing: billingController,
+  health: healthController,
+  meeting: meetingController,
+  user: userController,
 };

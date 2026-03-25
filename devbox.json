@@ -20,7 +20,7 @@
     "temporal-ui-server@latest",
     "redis@latest",
     "nodejs@latest",
-    "garage@latest",
-    "cloudflared@latest"
+    "cloudflared@latest",
+    "docker@latest"
   ]
 }

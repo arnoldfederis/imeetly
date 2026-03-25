@@ -8,6 +8,7 @@ const {
   transcribeAudio,
   generateExtractionResult,
   saveProcessingResults,
+  deleteSourceFile,
 } = proxyActivities<typeof activities>({
   startToCloseTimeout: "10 minutes",
   retry: {
@@ -81,6 +82,17 @@ export async function processMeeting(meetingId: string): Promise<void> {
     });
 
     await updateMeetingStatus(meetingId, "completed", "completed", null);
+
+    // Clean up raw source file after successful processing
+    try {
+      await deleteSourceFile(meetingId);
+    } catch (cleanupErr) {
+      // Do not fail the meeting if cleanup fails — log only
+      console.warn(
+        `[${meetingId}] Source file cleanup failed:`,
+        cleanupErr instanceof Error ? cleanupErr.message : cleanupErr,
+      );
+    }
   } catch (err) {
     const reason =
       err instanceof Error ? err.message : "An unexpected error occurred";

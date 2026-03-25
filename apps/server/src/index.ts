@@ -1,25 +1,17 @@
-import { wrap } from "@bogeychan/elysia-logger";
-import cors from "@elysiajs/cors";
+import cluster from "node:cluster";
+import os from "node:os";
+import process from "node:process";
 import { env } from "@repo/env";
-import { baseController } from "@repo/server/modules/base";
-import { Elysia } from "elysia";
-import pino from "pino";
-import pretty from "pino-pretty";
 
-const logger = pino(env.APP_ENV === "development" ? pretty() : undefined);
-
-export const app = new Elysia()
-  .use(wrap(logger))
-  .use(
-    cors({
-      origin: env.CORS_ORIGIN,
-      allowedHeaders: env.CORS_ALLOW_HEADERS.split(","),
-      methods: env.CORS_ALLOW_METHODS.split(","),
-      credentials: Boolean(env.CORS_ALLOW_CREDENTIALS),
-      maxAge: Number(env.CORS_MAX_AGE),
-    }),
-  )
-  .use(baseController)
-  .listen(Number(env.SERVER_PORT));
-
-console.log(`Server is running at ${env.SERVER_URL} 🔥 🦊`);
+if (env.APP_ENV === "production") {
+  if (cluster.isPrimary) {
+    for (let i = 0; i < os.availableParallelism(); i++) {
+      cluster.fork();
+    }
+  } else {
+    await import("./server");
+    console.log(`Worker ${process.pid} started`);
+  }
+} else {
+  await import("./server");
+}

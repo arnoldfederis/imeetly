@@ -39,7 +39,7 @@ export abstract class AdminService {
     ) ?? 0;
     const fileSizeMb = totalFileSize / (1024 * 1024);
 
-    const cost = getEstimatedMeetingCost(durationMinutes, fileSizeMb);
+    const cost = getEstimatedMeetingCost(durationMinutes);
 
     await db
       .update(meetings)

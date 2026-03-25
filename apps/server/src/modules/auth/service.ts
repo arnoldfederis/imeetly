@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import { auth } from "@repo/server/lib/auth";
 import { mailer } from "@repo/server/lib/mailer";
 import type { AuthModel } from "@repo/server/modules/auth/model";
@@ -19,6 +20,23 @@ export abstract class AuthService {
         body: { email, type: "sign-in" },
       });
     } else {
+      try {
+        await auth.api.createUser({
+          body: { email, name: email.split("@")[0] },
+        });
+      } catch (e) {
+        let message = "Failed to create user";
+        const error = e instanceof Error ? e : new Error(message);
+
+        if (error.message.includes("Polar customer creation failed")) {
+          message = `${email} is not a valid email address`;
+        }
+
+        throw new ORPCError("BAD_REQUEST", {
+          message,
+        });
+      }
+
       await auth.api.signInMagicLink({
         body: { email },
         headers,

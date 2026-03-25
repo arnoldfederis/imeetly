@@ -7,8 +7,6 @@ export const costConfig = {
   transcriptionCostPerMinute: 0.01,
   /** Cost per meeting for AI extraction (summary, actions, etc.) */
   extractionCostPerMeeting: 0.02,
-  /** Cost per GB of storage per month */
-  storageCostPerGb: 0.01,
   /** Infrastructure cost per meeting (compute, queues, etc.) */
   infraCostPerMeeting: 0.01,
 } as const;
@@ -42,7 +40,6 @@ export function getNetRevenue(price: number): number {
 export interface MeetingCostBreakdown {
   transcriptionCost: number;
   extractionCost: number;
-  storageCost: number;
   infraCost: number;
   totalCost: number;
 }
@@ -52,19 +49,16 @@ export interface MeetingCostBreakdown {
  */
 export function getEstimatedMeetingCost(
   durationMinutes: number,
-  fileSizeMb: number,
 ): MeetingCostBreakdown {
   const transcriptionCost =
     durationMinutes * costConfig.transcriptionCostPerMinute;
   const extractionCost = costConfig.extractionCostPerMeeting;
-  const storageCost = (fileSizeMb / 1024) * costConfig.storageCostPerGb;
   const infraCost = costConfig.infraCostPerMeeting;
-  const totalCost = transcriptionCost + extractionCost + storageCost + infraCost;
+  const totalCost = transcriptionCost + extractionCost + infraCost;
 
   return {
     transcriptionCost: round(transcriptionCost),
     extractionCost: round(extractionCost),
-    storageCost: round(storageCost),
     infraCost: round(infraCost),
     totalCost: round(totalCost),
   };

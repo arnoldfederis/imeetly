@@ -6,7 +6,7 @@ export const env = createEnv({
     APP_ENV: string().check(minLength(1, "APP_ENV is required")),
     DATABASE_URL: string().check(minLength(1, "DATABASE_URL is required")),
 
-    // S3 / Garage
+    // S3 / Object Storage (Hetzner)
     S3_ENDPOINT: string().check(minLength(1, "S3_ENDPOINT is required")),
     S3_ACCESS_KEY_ID: string().check(minLength(1, "S3_ACCESS_KEY_ID is required")),
     S3_SECRET_ACCESS_KEY: string().check(minLength(1, "S3_SECRET_ACCESS_KEY is required")),

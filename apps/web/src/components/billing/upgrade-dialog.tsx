@@ -27,7 +27,7 @@ const UPGRADE_PLANS = [
     slug: "pro-monthly" as const,
     icon: <CrownIcon className="size-5" />,
     meetings: "50 meetings / month",
-    highlights: ["10 GB storage", "500 MB max file", "Priority processing"],
+    highlights: ["500 MB max file", "Priority processing"],
   },
   {
     name: "Team",
@@ -35,7 +35,7 @@ const UPGRADE_PLANS = [
     slug: "team-monthly" as const,
     icon: <UsersIcon className="size-5" />,
     meetings: "150 meetings / month",
-    highlights: ["50 GB storage", "1 GB max file", "Team collaboration"],
+    highlights: ["1 GB max file", "Team collaboration"],
   },
 ] as const;
 
@@ -76,7 +76,7 @@ export function UpgradeDialog({
         <DialogHeader>
           <DialogTitle>Upgrade Your Plan</DialogTitle>
           <DialogDescription>
-            Get more meetings, storage, and features with a paid plan.
+            Get more meetings and features with a paid plan.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">

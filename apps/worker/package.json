@@ -3,11 +3,14 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -- tsx watch src/worker.ts",
+    "build": "tsc --project tsconfig.json",
+    "start": "node -r tsconfig-paths/register lib/worker.js",
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
     "pre:push": "bun lint && bun format",
-    "clean": "rm -rf node_modules"
+    "check-types": "bunx tsc --noEmit",
+    "clean": "rm -rf node_modules lib"
   },
   "nodemonConfig": {
     "execMap": {

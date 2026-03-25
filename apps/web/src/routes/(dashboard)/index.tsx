@@ -8,7 +8,7 @@ import {
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
-  HardDriveIcon,
+  ListChecksIcon,
   PlusIcon,
   TrendingUpIcon,
 } from "lucide-react";
@@ -29,15 +29,9 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
-import { formatBytes } from "@/lib/utils";
 
 export const Route = createFileRoute("/(dashboard)/")({
   component: DashboardPage,
@@ -72,12 +66,6 @@ function DashboardPage() {
   const recent = data?.recent ?? [];
   const isFree = (planData?.plan ?? "free") === "free";
 
-  const storageUsed =
-    planData?.usage.storageUsedBytes ?? stats?.storageUsedBytes ?? 0;
-  const storageLimit = planData?.limits.storageBytes ?? 500 * 1024 * 1024;
-  const storagePercent =
-    storageLimit > 0 ? Math.round((storageUsed / storageLimit) * 100) : 0;
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -110,9 +98,9 @@ function DashboardPage() {
           value={stats?.openActionItems ?? 0}
         />
         <StatsCard
-          icon={<HardDriveIcon />}
-          title="Storage Used"
-          value={formatBytes(stats?.storageUsedBytes ?? 0)}
+          icon={<ListChecksIcon />}
+          title="Completed"
+          value={stats?.meetingsThisMonth ?? 0}
         />
       </div>
 
@@ -235,14 +223,6 @@ function DashboardPage() {
                       remaining this month
                     </p>
                   )}
-                <Progress value={storagePercent}>
-                  <ProgressLabel>Storage</ProgressLabel>
-                  <ProgressValue>
-                    {() =>
-                      `${formatBytes(storageUsed)} / ${formatBytes(storageLimit)}`
-                    }
-                  </ProgressValue>
-                </Progress>
                 {isFree ? (
                   <Button
                     className="mt-2 w-full"
