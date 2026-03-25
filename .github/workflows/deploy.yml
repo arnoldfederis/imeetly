@@ -14,6 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    services:
+      temporal:
+        image: temporalio/auto-setup:latest
+        ports:
+          - 7233:7233
+        env:
+          DB: sqlite
+          DEFAULT_NAMESPACE: default
+          TEMPORAL_ADDRESS: 0.0.0.0:7233
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,9 +40,23 @@ jobs:
       - name: Typecheck
         run: bun run turbo check-types
 
+      - name: Wait for Temporal
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z localhost 7233 2>/dev/null; then
+              echo "Temporal is ready"
+              break
+            fi
+            echo "Waiting for Temporal... ($i/30)"
+            sleep 1
+          done
+
       - name: Test
         run: bun run test
         continue-on-error: true
+        env:
+          TEMPORAL_ADDRESS: localhost:7233
+          TEMPORAL_NAMESPACE: default
 
   build-and-push:
     name: Build and Push Images
