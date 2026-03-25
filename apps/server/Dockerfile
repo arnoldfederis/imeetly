@@ -13,15 +13,14 @@ RUN bun install --frozen-lockfile
 FROM deps AS build
 COPY . .
 
-WORKDIR /app/apps/server
 RUN bun build \
   --compile \
   --target=bun \
   --minify-whitespace \
   --minify-syntax \
   --external @tanstack/react-start \
-  --outfile /app/server \
-  ./src/index.ts
+  --outfile server \
+  ./apps/server/src/index.ts
 
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
