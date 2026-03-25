@@ -10,17 +10,10 @@ COPY packages/env/package.json packages/env/package.json
 
 RUN bun install --frozen-lockfile
 
-FROM node:22-slim AS build
-WORKDIR /app
-
-COPY --from=deps /app/node_modules /app/node_modules
-COPY --from=deps /app/apps/worker/node_modules /app/apps/worker/node_modules
-COPY --from=deps /app/packages/db/node_modules /app/packages/db/node_modules
-COPY --from=deps /app/packages/env/node_modules /app/packages/env/node_modules
-
+FROM deps AS build
 COPY . .
 
-RUN cd apps/worker && npx tsc --project tsconfig.json
+RUN cd apps/worker && bunx tsc --project tsconfig.json
 
 FROM node:22-slim AS runner
 WORKDIR /app
