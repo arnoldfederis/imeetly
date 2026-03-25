@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/ProghubLabs/aimeetly-web:latest
+    image: ghcr.io/proghublabs/aimeetly-web:latest
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-4001}:4001"
@@ -23,7 +23,7 @@ services:
           memory: 512M
 
   server:
-    image: ghcr.io/ProghubLabs/aimeetly-server:latest
+    image: ghcr.io/proghublabs/aimeetly-server:latest
     restart: unless-stopped
     ports:
       - "${SERVER_PORT:-4000}:4000"
@@ -48,7 +48,7 @@ services:
           memory: 1G
 
   worker:
-    image: ghcr.io/ProghubLabs/aimeetly-worker:latest
+    image: ghcr.io/proghublabs/aimeetly-worker:latest
     restart: unless-stopped
     env_file:
       - .env
