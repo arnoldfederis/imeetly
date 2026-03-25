@@ -11,12 +11,6 @@ services:
       - APP_ENV=production
       - APP_MODULE=web
       - PORT=4001
-    healthcheck:
-      test: ["CMD", "bun", "--eval", "fetch('http://localhost:4001/health/live').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
     deploy:
       resources:
         limits:
@@ -36,12 +30,8 @@ services:
       - SERVER_PORT=4000
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
-    healthcheck:
-      test: ["CMD", "bun", "--eval", "fetch('http://localhost:4000/rpc/health/live').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
+    depends_on:
+      - temporal
     deploy:
       resources:
         limits:
@@ -59,14 +49,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      temporal:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "-e", "process.exit(0)"]
-      interval: 30s
-      timeout: 5s
-      start_period: 30s
-      retries: 3
+      - temporal
     deploy:
       resources:
         limits:
@@ -106,12 +89,6 @@ services:
     depends_on:
       temporal-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "cat < /dev/tcp/localhost/7233"]
-      interval: 10s
-      timeout: 5s
-      start_period: 45s
-      retries: 15
     deploy:
       resources:
         limits:
@@ -126,8 +103,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:4001
     depends_on:
-      temporal:
-        condition: service_healthy
+      - temporal
 
 volumes:
   temporal-data:
