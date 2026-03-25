@@ -361,7 +361,7 @@ function AddPasskeyDialog({
       });
 
       if (res?.error) {
-        throw new Error(res.error.message);
+        throw new Error(String(res.error.message));
       }
 
       toast.success("Passkey added successfully.");
