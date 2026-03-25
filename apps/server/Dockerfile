@@ -13,18 +13,26 @@ RUN bun install --frozen-lockfile
 FROM deps AS build
 COPY . .
 
+WORKDIR /app/apps/server
 RUN bun build \
   --compile \
   --target=bun \
   --minify-whitespace \
   --minify-syntax \
-  --outfile server \
-  ./apps/server/src/index.ts
+  --external @tanstack/react-start \
+  --outfile /app/server \
+  ./src/index.ts
 
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
 COPY --from=build /app/server /app/server
+
+# Shim for better-auth/tanstack-start dynamic import —
+# the Elysia server doesn't run inside TanStack Start,
+# so the setCookie call is a no-op here.
+RUN mkdir -p node_modules/@tanstack/react-start && \
+    echo 'export function setCookie() {}' > node_modules/@tanstack/react-start/server.js
 
 ENV NODE_ENV=production
 EXPOSE 4000
