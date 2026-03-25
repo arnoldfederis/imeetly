@@ -107,11 +107,11 @@ services:
       temporal-db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:7233/health | grep -q SERVING || exit 1"]
+      test: ["CMD", "tctl", "--address", "localhost:7233", "cluster", "health"]
       interval: 10s
       timeout: 5s
-      start_period: 30s
-      retries: 10
+      start_period: 45s
+      retries: 15
     deploy:
       resources:
         limits:
