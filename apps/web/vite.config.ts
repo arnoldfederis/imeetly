@@ -15,6 +15,9 @@ const config = defineConfig({
   optimizeDeps: {
     include: ["solid-js", "solid-js/web"],
   },
+  ssr: {
+    external: ["reflect-metadata", "tsyringe", "@peculiar/x509"],
+  },
   plugins: [
     devtools(),
     tsconfigPaths({
