@@ -3,7 +3,7 @@ services:
     image: ghcr.io/proghublabs/aimeetly-web:latest
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-4001}:4001"
+      - "4001:4001"
     env_file:
       - .env
     environment:
@@ -20,7 +20,7 @@ services:
     image: ghcr.io/proghublabs/aimeetly-server:latest
     restart: unless-stopped
     ports:
-      - "${SERVER_PORT:-4000}:4000"
+      - "4000:4000"
     env_file:
       - .env
     environment:
@@ -77,8 +77,6 @@ services:
   temporal:
     image: temporalio/auto-setup:latest
     restart: unless-stopped
-    ports:
-      - "7233:7233"
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -98,10 +96,9 @@ services:
     image: temporalio/ui:latest
     restart: unless-stopped
     ports:
-      - "8233:8233"
+      - "8233:8080"
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:4001
     depends_on:
       - temporal
 
