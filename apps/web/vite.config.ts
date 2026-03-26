@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -15,8 +16,14 @@ const config = defineConfig({
   optimizeDeps: {
     include: ["solid-js", "solid-js/web"],
   },
-  ssr: {
-    external: ["reflect-metadata", "tsyringe", "@peculiar/x509"],
+  environments: {
+    ssr: {
+      build: {
+        rollupOptions: {
+          external: ["bun"],
+        },
+      },
+    },
   },
   plugins: [
     devtools(),
@@ -25,6 +32,12 @@ const config = defineConfig({
     }),
     tailwindcss(),
     tanstackStart(),
+    nitro({
+      preset: "bun",
+      rollupConfig: {
+        external: ["bun"],
+      },
+    }),
     viteReact(),
   ],
 });

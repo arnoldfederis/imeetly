@@ -11,6 +11,7 @@
     "auth:generate": "turbo auth:generate",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
+    "check-types": "turbo check-types",
     "clean": "rm -rf node_modules && turbo clean",
     "test": "turbo test",
     "remove": "turbo remove",

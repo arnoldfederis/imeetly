@@ -25,6 +25,9 @@
     "pre:push": {
       "cache": false
     },
+    "check-types": {
+      "cache": false
+    },
     "clean": {
       "cache": false
     },

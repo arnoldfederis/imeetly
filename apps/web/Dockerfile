@@ -17,11 +17,10 @@ RUN cd apps/web && bun run build
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
-COPY --from=build /app /app
+COPY --from=build /app/apps/web/.output /app/.output
 
 ENV NODE_ENV=production
 ENV PORT=4001
 
 EXPOSE 4001
-WORKDIR /app/apps/web
-CMD ["bun", "--require", "reflect-metadata", "dist/server/server.js"]
+CMD ["bun", ".output/server/index.mjs"]
