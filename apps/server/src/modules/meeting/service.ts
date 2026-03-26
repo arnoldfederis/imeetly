@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
 import {
   actionItems,
@@ -5,12 +6,11 @@ import {
   meetingSummaries,
   meetings,
 } from "@repo/db/schemas/app";
+import { env } from "@repo/env";
 import { createPresignedUploadUrl } from "@repo/server/lib/s3";
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { getPlanLimits } from "@repo/server/modules/billing/plans";
 import { BillingService } from "@repo/server/modules/billing/service";
-import { env } from "@repo/env";
-import { ORPCError } from "@orpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 
 export abstract class MeetingService {
@@ -157,7 +157,7 @@ export abstract class MeetingService {
     const [deleted] = await db
       .delete(meetings)
       .where(and(eq(meetings.id, meetingId), eq(meetings.userId, userId)))
-      .returning({ id: meetings.id });
+      .returning();
 
     return deleted ?? null;
   }
@@ -309,7 +309,10 @@ export abstract class MeetingService {
       })
       .returning();
 
-    const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType);
+    const uploadUrl = await createPresignedUploadUrl(
+      storageKey,
+      input.mimeType,
+    );
 
     return {
       fileId: file.id,
@@ -348,13 +351,21 @@ export abstract class MeetingService {
 
     try {
       const result = await startMeetingProcessing(input.meetingId);
-      return { meetingId: input.meetingId, status: "queued" as const, ...result };
+      return {
+        meetingId: input.meetingId,
+        status: "queued" as const,
+        ...result,
+      };
     } catch (err) {
       const reason =
         err instanceof Error ? err.message : "Failed to start processing";
       await db
         .update(meetings)
-        .set({ status: "failed", processingStatus: "failed", failureReason: reason })
+        .set({
+          status: "failed",
+          processingStatus: "failed",
+          failureReason: reason,
+        })
         .where(eq(meetings.id, input.meetingId));
 
       throw new ORPCError("INTERNAL_SERVER_ERROR", {

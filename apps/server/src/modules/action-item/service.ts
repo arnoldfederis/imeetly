@@ -43,7 +43,7 @@ export abstract class ActionItemService {
     const [deleted] = await db
       .delete(actionItems)
       .where(eq(actionItems.id, itemId))
-      .returning({ id: actionItems.id });
+      .returning();
 
     return deleted;
   }
