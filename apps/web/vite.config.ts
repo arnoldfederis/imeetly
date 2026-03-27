@@ -20,7 +20,7 @@ const config = defineConfig({
     ssr: {
       build: {
         rollupOptions: {
-          external: ["bun"],
+          external: ["bun", "tslib"],
         },
       },
     },
@@ -35,7 +35,7 @@ const config = defineConfig({
     nitro({
       preset: "bun",
       rollupConfig: {
-        external: ["bun"],
+        external: ["bun", "tslib"],
       },
     }),
     viteReact(),
