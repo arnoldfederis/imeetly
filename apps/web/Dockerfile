@@ -18,10 +18,8 @@ FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
 COPY --from=build /app/apps/web/.output /app/.output
-COPY --from=deps /app/node_modules /app/node_modules
 
 ENV NODE_ENV=production
-ENV NODE_PATH=/app/node_modules
 ENV PORT=4001
 
 EXPOSE 4001

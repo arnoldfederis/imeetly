@@ -12,6 +12,9 @@ const config = defineConfig({
   },
   resolve: {
     dedupe: ["solid-js"],
+    alias: {
+      tslib: "tslib/tslib.es6.js",
+    },
   },
   optimizeDeps: {
     include: ["solid-js", "solid-js/web"],
@@ -20,7 +23,7 @@ const config = defineConfig({
     ssr: {
       build: {
         rollupOptions: {
-          external: ["bun", "tslib"],
+          external: ["bun"],
         },
       },
     },
@@ -35,7 +38,7 @@ const config = defineConfig({
     nitro({
       preset: "bun",
       rollupConfig: {
-        external: ["bun", "tslib"],
+        external: ["bun"],
       },
     }),
     viteReact(),
