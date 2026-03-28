@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -14,6 +15,7 @@ const config = defineConfig({
     dedupe: ["solid-js"],
     alias: {
       tslib: "tslib/tslib.es6.js",
+      tsyringe: resolve(__dirname, "src/stubs/tsyringe.ts"),
     },
   },
   optimizeDeps: {
