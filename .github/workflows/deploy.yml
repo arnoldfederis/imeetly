@@ -85,6 +85,9 @@ jobs:
           file: ./apps/web/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.owner }}/aimeetly-web:latest
+          build-args: |
+            VITE_APP_BASE_URL=${{ secrets.VITE_APP_BASE_URL }}
+            VITE_SERVER_URL=${{ secrets.VITE_SERVER_URL }}
 
       - name: Build and push server
         uses: docker/build-push-action@v6

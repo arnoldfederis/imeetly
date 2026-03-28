@@ -11,6 +11,13 @@ COPY packages/env/package.json packages/env/package.json
 RUN bun install --frozen-lockfile
 
 FROM deps AS build
+
+ARG VITE_APP_BASE_URL
+ARG VITE_SERVER_URL
+
+ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
+ENV VITE_SERVER_URL=$VITE_SERVER_URL
+
 COPY . .
 RUN cd apps/web && bun run build
 
