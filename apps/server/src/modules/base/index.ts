@@ -30,4 +30,6 @@ export const baseController = new Elysia()
     },
     { parse: "none" },
   )
-  .mount(auth.handler);
+  .all("/api/auth/*", async ({ request }: { request: Request }) => {
+    return auth.handler(request);
+  });

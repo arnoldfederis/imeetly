@@ -73,11 +73,13 @@ const clientSchema = object({
   VITE_SERVER_URL: string().check(minLength(1, "VITE_SERVER_URL is required")),
 });
 
-// During SSR, VITE_* vars may not be in process.env — skip strict validation
-// since they're only used in client-side code paths (Vite inlines them at build time).
+// During SSR, VITE_* vars are not in import.meta.env — read from process.env instead.
 const isSSR = typeof window === "undefined";
 export const clientEnv = isSSR
-  ? (import.meta.env as unknown as { VITE_APP_BASE_URL: string; VITE_SERVER_URL: string })
+  ? ({
+      VITE_APP_BASE_URL: process.env.VITE_APP_BASE_URL ?? import.meta.env.VITE_APP_BASE_URL,
+      VITE_SERVER_URL: process.env.VITE_SERVER_URL ?? import.meta.env.VITE_SERVER_URL,
+    } as { VITE_APP_BASE_URL: string; VITE_SERVER_URL: string })
   : clientSchema.parse(import.meta.env);
 
 // Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
