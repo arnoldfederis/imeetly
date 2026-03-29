@@ -30,6 +30,17 @@ export const baseController = new Elysia()
     },
     { parse: "none" },
   )
-  .all("/api/auth/*", async ({ request }: { request: Request }) => {
-    return auth.handler(request);
-  });
+  .all(
+    "/api/auth/*",
+    async ({ request, set }: { request: Request; set: any }) => {
+      const response = await auth.handler(request);
+      // Copy auth response headers/status so Elysia's CORS plugin can add its headers
+      for (const [key, value] of response.headers) {
+        set.headers[key] = value;
+      }
+      set.status = response.status;
+
+      console.log(env.CORS_ORIGIN, `here... ${env.CORS_ORIGIN}`);
+      return response.text();
+    },
+  );
