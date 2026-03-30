@@ -8,6 +8,6 @@ if ! sudo hostctl &> /dev/null; then
   exit 1
 fi
 
-sudo hostctl remove aimeetly --quiet > /dev/null 2>&1
-sudo hostctl add aimeetly --quiet --from ./.etchosts
+sudo hostctl remove imeetly --quiet > /dev/null 2>&1
+sudo hostctl add imeetly --quiet --from ./.etchosts
 hostctl list

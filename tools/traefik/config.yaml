@@ -3,48 +3,48 @@ http:
     traefik:
       entryPoints:
         - websecure
-      rule: "Host(`traefik.aimeetly.dev`)"
+      rule: "Host(`traefik.imeetly.dev`)"
       service: traefik
       tls:
-        options: aimeetly
+        options: imeetly
         domains:
-          - main: "aimeetly.dev"
+          - main: "imeetly.dev"
     mailpit:
       entryPoints:
         - websecure
-      rule: "Host(`mailpit.aimeetly.dev`)"
+      rule: "Host(`mailpit.imeetly.dev`)"
       service: mailpit
       tls:
-        options: aimeetly
+        options: imeetly
         domains:
-          - main: "aimeetly.dev"
+          - main: "imeetly.dev"
     temporal:
       entryPoints:
         - websecure
-      rule: "Host(`temporal.aimeetly.dev`)"
+      rule: "Host(`temporal.imeetly.dev`)"
       service: temporal
       tls:
-        options: aimeetly
+        options: imeetly
         domains:
-          - main: "aimeetly.dev"
+          - main: "imeetly.dev"
     server:
       entryPoints:
         - websecure
-      rule: "Host(`server.aimeetly.dev`)"
+      rule: "Host(`server.imeetly.dev`)"
       service: server
       tls:
-        options: aimeetly
+        options: imeetly
         domains:
-          - main: "aimeetly.dev"
+          - main: "imeetly.dev"
     web:
       entryPoints:
         - websecure
-      rule: "Host(`app.aimeetly.dev`)"
+      rule: "Host(`app.imeetly.dev`)"
       service: web
       tls:
-        options: aimeetly
+        options: imeetly
         domains:
-          - main: "aimeetly.dev"
+          - main: "imeetly.dev"
 
   services:
     traefik:
@@ -71,10 +71,10 @@ tls:
   stores:
     default:
       defaultCertificate:
-        certFile: ./tools/certs/aimeetly.dev.pem
-        keyFile: ./tools/certs/aimeetly.dev-key.pem
+        certFile: ./tools/certs/imeetly.dev.pem
+        keyFile: ./tools/certs/imeetly.dev-key.pem
   options:
-    aimeetly:
+    imeetly:
       cipherSuites:
         - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256

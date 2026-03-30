@@ -84,7 +84,7 @@ jobs:
           context: .
           file: ./apps/web/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/aimeetly-web:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:latest
           build-args: |
             VITE_APP_BASE_URL=${{ secrets.VITE_APP_BASE_URL }}
             VITE_SERVER_URL=${{ secrets.VITE_SERVER_URL }}
@@ -95,7 +95,7 @@ jobs:
           context: .
           file: ./apps/server/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/aimeetly-server:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:latest
 
       - name: Build and push worker
         uses: docker/build-push-action@v6
@@ -103,7 +103,7 @@ jobs:
           context: .
           file: ./apps/worker/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/aimeetly-worker:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:latest
 
   deploy:
     name: Trigger Dokploy deployment

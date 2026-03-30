@@ -78,7 +78,7 @@ processes:
       failure_threshold: 3
 
   mailpit:
-    command: "mailpit --smtp-auth-file ./.mailpit --smtp-auth-allow-insecure --smtp-tls-cert ./tools/certs/aimeetly.dev.pem --smtp-tls-key ./tools/certs/aimeetly.dev-key.pem"
+    command: "mailpit --smtp-auth-file ./.mailpit --smtp-auth-allow-insecure --smtp-tls-cert ./tools/certs/imeetly.dev.pem --smtp-tls-key ./tools/certs/imeetly.dev-key.pem"
     namespace: "tools"
     availability:
       restart: "always"

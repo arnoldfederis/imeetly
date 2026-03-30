@@ -10,7 +10,7 @@ cd tools/certs
 
 # Generate root CA and certificates using mkcert
 mkcert -install
-mkcert -cert-file aimeetly.dev.pem -key-file aimeetly.dev-key.pem "*.aimeetly.dev" "aimeetly.dev"
+mkcert -cert-file imeetly.dev.pem -key-file imeetly.dev-key.pem "*.imeetly.dev" "imeetly.dev"
 
 # Copy root CA
 cp "$(mkcert -CAROOT)/rootCA.pem" ./rootCA.pem

@@ -23,7 +23,7 @@ interface EmailPayload {
 }
 
 async function sendMail(payload: EmailPayload) {
-  const from = "noreply@aimeetly.io";
+  const from = "noreply@imeetly.io";
 
   if (env.APP_ENV === "development") {
     await mailerClient.sendMail({

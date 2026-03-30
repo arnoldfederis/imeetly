@@ -8,5 +8,5 @@ if ! sudo hostctl &> /dev/null; then
   exit 1
 fi
 
-sudo hostctl remove aimeetly
+sudo hostctl remove imeetly
 sudo hostctl list

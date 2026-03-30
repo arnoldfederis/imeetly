@@ -2,14 +2,18 @@
  * Configure CORS on Hetzner Object Storage bucket to allow direct browser uploads.
  * Run once per bucket:  bun run tools/s3/setup-cors.ts
  */
-import { PutBucketCorsCommand, GetBucketCorsCommand, S3Client } from "../../apps/server/node_modules/@aws-sdk/client-s3";
+import {
+  GetBucketCorsCommand,
+  PutBucketCorsCommand,
+  S3Client,
+} from "../../apps/server/node_modules/@aws-sdk/client-s3";
 
 const endpoint = process.env.S3_ENDPOINT;
 const bucket = process.env.S3_BUCKET;
 const accessKeyId = process.env.S3_ACCESS_KEY_ID;
 const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
 const region = process.env.S3_REGION;
-const corsOrigin = process.env.CORS_ORIGIN ?? "https://app.aimeetly.dev";
+const corsOrigin = process.env.CORS_ORIGIN ?? "https://app.imeetly.dev";
 
 if (!endpoint || !bucket || !accessKeyId || !secretAccessKey || !region) {
   console.error("Missing required S3 env vars. Ensure .env is loaded.");

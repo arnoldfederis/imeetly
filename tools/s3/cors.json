@@ -1,7 +1,11 @@
 {
   "CORSRules": [
     {
-      "AllowedOrigins": ["https://app.aimeetly.dev", "https://aimeetly.com"],
+      "AllowedOrigins": [
+        "https://app.imeetly.dev",
+        "https://app.imeetly.app",
+        "https://staging.imeetly.app"
+      ],
       "AllowedMethods": ["PUT"],
       "AllowedHeaders": ["Content-Type"],
       "ExposeHeaders": ["ETag"],

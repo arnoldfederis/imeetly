@@ -13,10 +13,10 @@ createuser -s -r postgres
 psql -U postgres -c "ALTER ROLE postgres WITH PASSWORD 'postgres';"
 
 # Create databases owned by the role that will run migrations
-createdb -O postgres aimeetly
+createdb -O postgres imeetly
 
 # Ensure the migrator role can create objects in the default schema
-for db in aimeetly; do
+for db in imeetly; do
   psql -d "$db" -c "
     CREATE SCHEMA IF NOT EXISTS app;
     CREATE SCHEMA IF NOT EXISTS auth;

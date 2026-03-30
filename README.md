@@ -1,4 +1,4 @@
-# Aimeetly
+# Imeetly
 
 ## Getting Started
 
@@ -57,7 +57,7 @@ direnv allow
 ## run the env-decrypt script
 env-decrypt
 
-# Rename all instances of `aimeetly` to your project name
+# Rename all instances of `imeetly` to your project name
 # then proceed to Getting Started
 
 ## run the init-local script
@@ -101,7 +101,7 @@ direnv allow
 ## run the env-decrypt script
 env-decrypt
 
-# Rename all instances of `aimeetly` to your project name
+# Rename all instances of `imeetly` to your project name
 # then proceed to Getting Started
 ```
 
@@ -198,7 +198,7 @@ dev logs server
 
 ## Access services
 
-To access the web app, navigate to [https://app.aimeetly.dev](https://app.aimeetly.dev) with your browser.
+To access the web app, navigate to [https://app.imeetly.dev](https://app.imeetly.dev) with your browser.
 
 ## Add a package to the project
 ```bash

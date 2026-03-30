@@ -47,7 +47,7 @@ export const authPlugins = [
     advanced: {
       webAuthnChallengeCookie: `${env.AUTH_TOKEN_NAME}_passkey`,
     },
-    rpID: "aimeetly.dev",
+    rpID: "imeetly.dev",
     origin: env.APP_BASE_URL,
   }),
   polar({

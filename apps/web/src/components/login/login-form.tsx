@@ -124,7 +124,7 @@ export function LoginForm() {
                 aria-invalid={fieldState.invalid}
                 id={field.name}
                 name={field.name}
-                placeholder="me@aimeetly.app"
+                placeholder="me@imeetly.app"
                 type="email"
               />
               {fieldState.invalid ? (
