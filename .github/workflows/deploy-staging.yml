@@ -1,11 +1,11 @@
-name: Deploy
+name: Deploy Staging
 
 on:
   push:
     branches: [main]
 
 concurrency:
-  group: deploy-production
+  group: deploy-staging
   cancel-in-progress: false
 
 jobs:
@@ -56,10 +56,11 @@ jobs:
           TEMPORAL_ADDRESS: localhost:7233
           TEMPORAL_NAMESPACE: default
 
-  build-and-push:
-    name: Build and Push Images
+  build:
+    name: Build Staging Images
     needs: ci
     runs-on: ubuntu-latest
+    environment: staging
     permissions:
       contents: read
       packages: write
@@ -84,10 +85,10 @@ jobs:
           context: .
           file: ./apps/web/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging
           build-args: |
-            VITE_APP_BASE_URL=${{ secrets.VITE_APP_BASE_URL }}
-            VITE_SERVER_URL=${{ secrets.VITE_SERVER_URL }}
+            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
+            VITE_SERVER_URL=${{ vars.VITE_SERVER_URL }}
 
       - name: Build and push server
         uses: docker/build-push-action@v6
@@ -95,7 +96,7 @@ jobs:
           context: .
           file: ./apps/server/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:staging
 
       - name: Build and push worker
         uses: docker/build-push-action@v6
@@ -103,13 +104,13 @@ jobs:
           context: .
           file: ./apps/worker/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:latest
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:staging
 
   deploy:
-    name: Trigger Dokploy deployment
-    needs: build-and-push
+    name: Deploy Staging
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    environment: staging
 
     steps:
       - name: Trigger Dokploy deployment

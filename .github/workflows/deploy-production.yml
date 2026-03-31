@@ -1,0 +1,60 @@
+name: Build Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Production Images
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract lowercase repo owner
+        id: vars
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Build and push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:latest
+          build-args: |
+            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
+            VITE_SERVER_URL=${{ vars.VITE_SERVER_URL }}
+
+      - name: Build and push server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/server/Dockerfile
+          push: true
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:latest
+
+      - name: Build and push worker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/worker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:latest
