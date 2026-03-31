@@ -47,7 +47,7 @@ export const authPlugins = [
     advanced: {
       webAuthnChallengeCookie: `${env.AUTH_TOKEN_NAME}_passkey`,
     },
-    rpID: env.DOMAIN_NAME,
+    rpID: env.DOMAIN_NAME.replace(/^\./, ""),
     origin: env.APP_BASE_URL,
   }),
   polar({
