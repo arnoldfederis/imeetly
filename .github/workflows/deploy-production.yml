@@ -1,4 +1,4 @@
-name: Build Production
+name: Deploy Production
 
 on:
   workflow_dispatch:
@@ -6,12 +6,60 @@ on:
     branches: [main]
 
 concurrency:
-  group: build-production
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
+  ci:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run turbo check-types
+
+      - name: Install Temporal CLI
+        run: |
+          curl -sSf https://temporal.download/cli.sh | sh
+          echo "${HOME}/.temporalio/bin" >> $GITHUB_PATH
+
+      - name: Start Temporal dev server
+        run: temporal server start-dev --namespace default --log-format json &
+
+      - name: Wait for Temporal
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z localhost 7233 2>/dev/null; then
+              echo "Temporal is ready"
+              break
+            fi
+            echo "Waiting for Temporal... ($i/30)"
+            sleep 1
+          done
+
+      - name: Test
+        run: bun run test
+        continue-on-error: true
+        env:
+          TEMPORAL_ADDRESS: localhost:7233
+          TEMPORAL_NAMESPACE: default
+
   build:
     name: Build Production Images
+    needs: ci
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -58,3 +106,22 @@ jobs:
           file: ./apps/worker/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:latest
+
+  deploy:
+    name: Deploy Production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Trigger Dokploy deployment
+        run: |
+          curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: push" \
+            --data "{
+              \"ref\": \"${{ github.ref }}\",
+              \"repository\": {
+                \"full_name\": \"${{ github.repository }}\"
+              }
+            }"
