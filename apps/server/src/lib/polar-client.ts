@@ -1,7 +1,7 @@
 import { Polar } from "@polar-sh/sdk";
 import { env } from "@repo/env";
 
-const server = env.APP_ENV === "development" ? "sandbox" : "production";
+const server = env.APP_ENV === "production" ? "production" : "sandbox";
 
 console.log(`[polar] Using Polar ${server} server`);
 

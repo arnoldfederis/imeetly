@@ -64,6 +64,7 @@ export abstract class AuthService {
 
   static async sendVerificationOTP({ email, otp }: SendVerificationOTP[0]) {
     await mailer.sendMail({
+      from: 'verify',
       subject: "Sign in to your account",
       email,
       html: otp,
