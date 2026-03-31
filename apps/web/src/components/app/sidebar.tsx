@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             className="rounded-md p-2 font-bold text-lg hover:bg-secondary"
             to={"/"}
           >
-            AiMeetly
+            imeetly
           </Link>
         )}
       </SidebarHeader>
