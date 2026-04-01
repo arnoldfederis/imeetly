@@ -62,6 +62,8 @@ export const env = createEnv({
     AI_EXTRACTION_PROVIDER: optional(string()),
     AI_TRANSCRIPTION_FALLBACK: optional(string()),
     AI_EXTRACTION_FALLBACK: optional(string()),
+    SMTP_HOST: optional(string()),
+    SMTP_PORT: optional(string()),
   },
   runtimeEnv: process.env,
 });

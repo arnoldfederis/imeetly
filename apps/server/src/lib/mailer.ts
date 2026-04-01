@@ -3,12 +3,8 @@ import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
 const mailerClient = nodemailer.createTransport({
-  host: "localhost",
-  port: 1025,
-  auth: {
-    user: "user",
-    pass: "password",
-  },
+  host: env.SMTP_HOST || "localhost",
+  port: Number(env.SMTP_PORT) || 1025,
   tls: {
     rejectUnauthorized: false,
   },
