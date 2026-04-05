@@ -33,7 +33,8 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      - temporal
+      temporal:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -52,7 +53,8 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      - temporal
+      temporal:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -90,6 +92,12 @@ services:
     depends_on:
       temporal-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -99,7 +107,7 @@ services:
     image: temporalio/ui:latest
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8234:8080"
+      - "8234:8080"
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
     depends_on:
