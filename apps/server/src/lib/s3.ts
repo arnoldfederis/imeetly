@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  PutBucketCorsCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -52,4 +53,29 @@ export async function deleteObject(key: string) {
     Key: key,
   });
   await s3.send(command);
+}
+
+export async function ensureBucketCors() {
+  const origins = [env.APP_BASE_URL, env.CORS_ORIGIN].filter(Boolean);
+
+  const command = new PutBucketCorsCommand({
+    Bucket: env.S3_BUCKET,
+    CORSConfiguration: {
+      CORSRules: [
+        {
+          AllowedOrigins: origins,
+          AllowedMethods: ["GET", "PUT", "HEAD"],
+          AllowedHeaders: ["*"],
+          MaxAgeSeconds: 3600,
+        },
+      ],
+    },
+  });
+
+  try {
+    await s3.send(command);
+    console.log(`[s3] Bucket CORS configured for: ${origins.join(", ")}`);
+  } catch (err) {
+    console.warn("[s3] Failed to set bucket CORS:", err);
+  }
 }
