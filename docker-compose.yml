@@ -33,8 +33,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      temporal:
-        condition: service_healthy
+      - temporal
     deploy:
       resources:
         limits:
@@ -53,8 +52,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      temporal:
-        condition: service_healthy
+      - temporal
     deploy:
       resources:
         limits:
@@ -92,12 +90,6 @@ services:
     depends_on:
       temporal-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "temporal", "operator", "cluster", "health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
     deploy:
       resources:
         limits:
