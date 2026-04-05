@@ -63,9 +63,6 @@ export abstract class MeetingService {
       })
       .returning();
 
-    // Increment usage only after successful creation
-    await BillingService.incrementUsage(userId, "meetings_created");
-
     return meeting;
   }
 
@@ -196,6 +193,9 @@ export abstract class MeetingService {
         message: "Failed to start meeting processing. Please try again.",
       });
     }
+
+    // Only count usage after processing successfully starts
+    await BillingService.incrementUsage(userId, "meetings_created");
 
     return { meetingId, status: "queued" as const };
   }
@@ -351,6 +351,10 @@ export abstract class MeetingService {
 
     try {
       const result = await startMeetingProcessing(input.meetingId);
+
+      // Only count usage after processing successfully starts
+      await BillingService.incrementUsage(userId, "meetings_created");
+
       return {
         meetingId: input.meetingId,
         status: "queued" as const,
