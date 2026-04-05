@@ -190,7 +190,8 @@ export abstract class MeetingService {
         .where(eq(meetings.id, meetingId));
 
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Failed to start meeting processing. Please try again.",
+        message:
+          "Failed to start meeting processing. Please try again. This attempt was not counted towards your monthly quota.",
       });
     }
 
@@ -373,7 +374,8 @@ export abstract class MeetingService {
         .where(eq(meetings.id, input.meetingId));
 
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Failed to start meeting processing. Please try again.",
+        message:
+          "Failed to start meeting processing. Please try again. This attempt was not counted towards your monthly quota.",
       });
     }
   }
