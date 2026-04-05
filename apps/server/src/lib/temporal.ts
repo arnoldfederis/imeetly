@@ -7,12 +7,29 @@ import {
 
 let cachedClient: Client | null = null;
 
+async function connectWithRetry(
+  address: string,
+  retries = 5,
+  delayMs = 2000,
+): Promise<Connection> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await Connection.connect({ address });
+    } catch (err) {
+      console.warn(
+        `[temporal] Connection attempt ${attempt}/${retries} to ${address} failed`,
+      );
+      if (attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  throw new Error("Unreachable");
+}
+
 async function getTemporalClient(): Promise<Client> {
   if (cachedClient) return cachedClient;
 
-  const connection = await Connection.connect({
-    address: env.TEMPORAL_ADDRESS,
-  });
+  const connection = await connectWithRetry(env.TEMPORAL_ADDRESS);
 
   cachedClient = new Client({
     connection,
