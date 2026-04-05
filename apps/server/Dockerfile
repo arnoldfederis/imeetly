@@ -19,9 +19,6 @@ RUN bun build \
   --minify-whitespace \
   --minify-syntax \
   --external @tanstack/react-start \
-  --external @temporalio/client \
-  --external @grpc/grpc-js \
-  --external @grpc/proto-loader \
   --outfile server \
   ./apps/server/src/index.ts
 
@@ -29,7 +26,6 @@ FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
 COPY --from=build /app/server /app/server
-COPY --from=deps /app/node_modules /app/node_modules
 
 # Shim for better-auth/tanstack-start dynamic import —
 # the Elysia server doesn't run inside TanStack Start,
