@@ -1,25 +1,28 @@
-import { createClient } from "@deepgram/sdk";
+import { DeepgramClient } from "@deepgram/sdk";
 import type { TranscriptionProviderImpl } from "../types";
 
 export function createDeepgramTranscription(
   apiKey: string,
 ): TranscriptionProviderImpl {
-  const client = createClient(apiKey);
+  const client = new DeepgramClient({ apiKey });
 
   return {
     name: "deepgram",
-    async transcribe(fileBytes, fileName, mimeType) {
-      const { result } = await client.listen.prerecorded.transcribeFile(
+    async transcribe(fileBytes, _fileName, _mimeType) {
+      const response = await client.listen.v1.media.transcribeFile(
         Buffer.from(fileBytes),
         {
           model: "nova-3",
           smart_format: true,
-          mime_type: mimeType,
         },
       );
 
+      if (!("results" in response)) {
+        throw new Error("Deepgram returned unexpected response");
+      }
+
       const transcript =
-        result?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+        response.results?.channels?.[0]?.alternatives?.[0]?.transcript;
 
       if (!transcript) {
         throw new Error("Deepgram returned empty transcript");
