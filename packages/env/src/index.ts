@@ -62,6 +62,8 @@ export const env = createEnv({
     AI_EXTRACTION_PROVIDER: optional(string()),
     AI_TRANSCRIPTION_FALLBACK: optional(string()),
     AI_EXTRACTION_FALLBACK: optional(string()),
+    SMTP_HOST: optional(string()),
+    SMTP_PORT: optional(string()),
   },
   runtimeEnv: process.env,
 });
@@ -85,3 +87,4 @@ export const clientEnv = isSSR
 // Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
 export const isProduction = () => env.APP_ENV === "production";
 export const isDevelopment = () => env.APP_ENV === "development";
+

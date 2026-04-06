@@ -1,5 +1,6 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env } from "../../env";
+import { createDeepgramTranscription } from "./providers/deepgram-transcription";
 import { createGroqTranscription } from "./providers/groq-transcription";
 import { createMockTranscription } from "./providers/mock-transcription";
 import { createOpenAITranscription } from "./providers/openai-transcription";
@@ -10,7 +11,7 @@ import {
   type TranscriptionResult,
 } from "./types";
 
-// Hetzner Object Storage (Helsinki) — downloads media files for transcription.
+// Cloudflare R2 — downloads media files for transcription.
 const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,
@@ -18,12 +19,13 @@ const s3 = new S3Client({
     accessKeyId: env.S3_ACCESS_KEY_ID,
     secretAccessKey: env.S3_SECRET_ACCESS_KEY,
   },
-  forcePathStyle: true,
+  forcePathStyle: false,
 });
 
 // --- Provider key map ---
 
 const PROVIDER_KEYS: Record<TranscriptionProvider, string | undefined> = {
+  deepgram: env.DEEPGRAM_API_KEY,
   openai: env.OPENAI_API_KEY,
   groq: env.GROQ_API_KEY,
   mock: "mock",
@@ -40,6 +42,8 @@ function buildProvider(
   if (!key) return null;
 
   switch (name) {
+    case "deepgram":
+      return createDeepgramTranscription(key);
     case "openai":
       return createOpenAITranscription(key);
     case "groq":
@@ -51,8 +55,8 @@ function buildProvider(
 
 // --- Auto strategy ---
 
-const AUTO_DEV: TranscriptionProvider[] = ["openai", "mock"];
-const AUTO_PROD: TranscriptionProvider[] = ["openai", "groq", "mock"];
+const AUTO_DEV: TranscriptionProvider[] = ["deepgram", "openai", "mock"];
+const AUTO_PROD: TranscriptionProvider[] = ["deepgram", "openai", "groq", "mock"];
 
 function resolveChain(): TranscriptionProvider[] {
   const isDev = env.APP_ENV === "development";

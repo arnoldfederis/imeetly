@@ -7,7 +7,7 @@
     "format:file": "bunx biome format --write",
     "pre:push": "bun lint && bun format",
     "db:generate": "dotenv -e ../../.env -- drizzle-kit generate",
-    "db:migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:migrate": "dotenv -e ../../.env -e .env -- tsx ./src/migration.ts",
     "clean": "rm -rf node_modules"
   },
   "dependencies": {

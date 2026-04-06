@@ -77,6 +77,32 @@ export const meetingController = base.router({
       MeetingService.completeUpload(context.user.id, input),
     ),
 
+  // --- Multipart upload ---
+
+  initiateMultipartUpload: privateProcedure
+    .input(meetingModel.initiateMultipartUpload)
+    .handler(async ({ input, context }) =>
+      MeetingService.initiateMultipartUpload(context.user.id, input),
+    ),
+
+  getPartUrls: privateProcedure
+    .input(meetingModel.getPartUrls)
+    .handler(async ({ input, context }) =>
+      MeetingService.getPartUrls(context.user.id, input),
+    ),
+
+  completeMultipartUpload: privateProcedure
+    .input(meetingModel.completeMultipartUpload)
+    .handler(async ({ input, context }) =>
+      MeetingService.completeMultipartUpload(context.user.id, input),
+    ),
+
+  abortMultipartUpload: privateProcedure
+    .input(meetingModel.abortMultipartUpload)
+    .handler(async ({ input, context }) =>
+      MeetingService.abortMultipartUpload(context.user.id, input),
+    ),
+
   usage: privateProcedure.handler(async ({ context }) =>
     MeetingService.getUsage(context.user.id),
   ),

@@ -1,49 +1,59 @@
 import { env } from "@repo/env";
-import {
-  Client,
-  Connection,
-  WorkflowExecutionAlreadyStartedError,
-} from "@temporalio/client";
 
-let cachedClient: Client | null = null;
+const TEMPORAL_HTTP_PORT = 7243;
 
-async function getTemporalClient(): Promise<Client> {
-  if (cachedClient) return cachedClient;
-
-  const connection = await Connection.connect({
-    address: env.TEMPORAL_ADDRESS,
-  });
-
-  cachedClient = new Client({
-    connection,
-    namespace: env.TEMPORAL_NAMESPACE,
-  });
-
-  return cachedClient;
+function getTemporalHttpUrl(): string {
+  // Convert gRPC address (temporal:7233) to HTTP API address (temporal:7243)
+  const grpcAddress = env.TEMPORAL_ADDRESS;
+  const host = grpcAddress.split(":")[0];
+  return `http://${host}:${TEMPORAL_HTTP_PORT}`;
 }
 
 export async function startMeetingProcessing(meetingId: string) {
-  const client = await getTemporalClient();
   const workflowId = `meeting-${meetingId}`;
+  const baseUrl = getTemporalHttpUrl();
+  const namespace = env.TEMPORAL_NAMESPACE;
 
-  try {
-    const handle = await client.workflow.start("processMeeting", {
-      taskQueue: "meeting-processing",
-      args: [meetingId],
-      workflowId,
-    });
+  const url = `${baseUrl}/api/v1/namespaces/${namespace}/workflows/${encodeURIComponent(workflowId)}`;
 
-    console.log(`[temporal] Started workflow ${handle.workflowId}`);
-    return { workflowId: handle.workflowId, runId: handle.firstExecutionRunId };
-  } catch (err) {
-    if (err instanceof WorkflowExecutionAlreadyStartedError) {
-      // Workflow already running for this meeting — idempotent, return existing
-      console.log(`[temporal] Workflow already running: ${workflowId}`);
-      return { workflowId, runId: null };
-    }
-    // Reset cached client on connection errors so next call retries
-    cachedClient = null;
-    console.error(`[temporal] Failed to start workflow ${workflowId}:`, err);
-    throw err;
+  const body = {
+    workflowType: { name: "processMeeting" },
+    taskQueue: { name: "meeting-processing" },
+    input: {
+      payloads: [
+        {
+          metadata: {
+            encoding: Buffer.from("json/plain").toString("base64"),
+          },
+          data: Buffer.from(JSON.stringify(meetingId)).toString("base64"),
+        },
+      ],
+    },
+    workflowId,
+    requestId: crypto.randomUUID(),
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (response.ok) {
+    const data = (await response.json()) as { runId?: string };
+    console.log(`[temporal] Started workflow ${workflowId}`);
+    return { workflowId, runId: data.runId ?? null };
   }
+
+  // Workflow already running — treat as idempotent success
+  if (response.status === 409) {
+    console.log(`[temporal] Workflow already running: ${workflowId}`);
+    return { workflowId, runId: null };
+  }
+
+  const errorText = await response.text();
+  console.error(
+    `[temporal] Failed to start workflow ${workflowId}: ${response.status} ${errorText}`,
+  );
+  throw new Error(`Temporal API error: ${response.status} ${errorText}`);
 }

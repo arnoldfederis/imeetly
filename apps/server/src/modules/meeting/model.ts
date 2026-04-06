@@ -41,4 +41,35 @@ export const meetingModel = {
     meetingId: z.string(),
     fileId: z.string(),
   }),
+
+  // --- Multipart upload ---
+
+  initiateMultipartUpload: z.object({
+    meetingId: z.string(),
+    fileName: z.string().min(1),
+    mimeType: z.string().min(1),
+    fileSize: z.number().min(1),
+    totalParts: z.number().min(1).max(10000),
+  }),
+  getPartUrls: z.object({
+    meetingId: z.string(),
+    fileId: z.string(),
+    partNumbers: z.array(z.number().min(1).max(10000)).min(1).max(20),
+  }),
+  completeMultipartUpload: z.object({
+    meetingId: z.string(),
+    fileId: z.string(),
+    parts: z
+      .array(
+        z.object({
+          partNumber: z.number().min(1),
+          etag: z.string().min(1),
+        }),
+      )
+      .min(1),
+  }),
+  abortMultipartUpload: z.object({
+    meetingId: z.string(),
+    fileId: z.string(),
+  }),
 } as const;

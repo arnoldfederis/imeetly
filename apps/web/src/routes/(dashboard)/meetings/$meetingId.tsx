@@ -161,6 +161,28 @@ function MeetingDetailPage() {
         </div>
       </div>
 
+      {meeting.status === "draft" && (
+        <Card size="sm">
+          <CardContent className="flex items-center justify-between py-4">
+            <p className="text-muted-foreground text-sm">
+              This meeting hasn't been processed yet.
+            </p>
+            <Button
+              size="sm"
+              onClick={() => retryMutation.mutate({ id: meetingId })}
+              disabled={retryMutation.isPending}
+            >
+              {retryMutation.isPending ? (
+                <Spinner className="mr-2 size-3.5" />
+              ) : (
+                <PlayIcon className="mr-2 size-3.5" />
+              )}
+              {retryMutation.isPending ? "Starting..." : "Process Meeting"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {meeting.status !== "completed" && meeting.status !== "draft" && (
         <ProcessingTimeline
           meeting={meeting}

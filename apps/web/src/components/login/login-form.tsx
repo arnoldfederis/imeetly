@@ -107,7 +107,7 @@ export function LoginForm() {
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="font-bold text-2xl">Login to AiMeetly</h1>
+          <h1 className="font-bold text-2xl">Login to imeetly</h1>
           <p className="text-balance text-muted-foreground text-sm">
             Enter your email below to login to your account
           </p>

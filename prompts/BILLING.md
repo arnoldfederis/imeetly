@@ -1,4 +1,4 @@
-# Billing Implementation Guide — AiMeetly
+# Billing Implementation Guide — imeetly
 
 ## Billing Model Recommendation
 

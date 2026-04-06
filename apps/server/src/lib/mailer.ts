@@ -3,12 +3,8 @@ import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
 const mailerClient = nodemailer.createTransport({
-  host: "localhost",
-  port: 1025,
-  auth: {
-    user: "user",
-    pass: "password",
-  },
+  host: env.SMTP_HOST || "localhost",
+  port: Number(env.SMTP_PORT) || 1025,
   tls: {
     rejectUnauthorized: false,
   },
@@ -17,16 +13,17 @@ const mailerClient = nodemailer.createTransport({
 const resendClient = new Resend(env.RESEND_API_KEY);
 
 interface EmailPayload {
+  from: string;
   email: string;
   html: string;
   subject: string;
 }
 
 async function sendMail(payload: EmailPayload) {
-  const from = "noreply@imeetly.io";
+  const from = `${payload.from}@imeetly.app`;
 
-  if (env.APP_ENV === "development") {
-    await mailerClient.sendMail({
+  if (env.APP_ENV === "production") {
+    await resendClient.emails.send({
       from,
       to: payload.email,
       subject: payload.subject,
@@ -34,7 +31,7 @@ async function sendMail(payload: EmailPayload) {
     });
   }
 
-  await resendClient.emails.send({
+  await mailerClient.sendMail({
     from,
     to: payload.email,
     subject: payload.subject,

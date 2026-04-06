@@ -8,7 +8,7 @@ import {
   UploadIcon,
   XIcon,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { useMultipartUpload } from "@/hooks/use-multipart-upload";
 import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/new")({
@@ -59,57 +60,14 @@ function NewMeetingPage() {
   const [participants, setParticipants] = useState("");
   const [transcriptText, setTranscriptText] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [uploadState, setUploadState] = useState<
-    "idle" | "preparing" | "uploading" | "completing" | "done"
-  >("idle");
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const abortRef = useRef<XMLHttpRequest | null>(null);
+  const multipartUpload = useMultipartUpload();
+  const { state: uploadState, progress: uploadProgress } = multipartUpload;
 
   const sourceType = file
     ? file.type.startsWith("video/")
       ? "video"
       : "audio"
     : "text";
-
-  /** Upload file directly to object storage using a signed URL with progress tracking */
-  const uploadFileToStorage = useCallback(
-    (url: string, body: File, contentType: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        abortRef.current = xhr;
-
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            setUploadProgress(Math.round((e.loaded / e.total) * 100));
-          }
-        });
-
-        xhr.addEventListener("load", () => {
-          abortRef.current = null;
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed: ${xhr.statusText || xhr.status}`));
-          }
-        });
-
-        xhr.addEventListener("error", () => {
-          abortRef.current = null;
-          reject(new Error("Upload failed — check your connection and try again"));
-        });
-
-        xhr.addEventListener("abort", () => {
-          abortRef.current = null;
-          reject(new Error("Upload cancelled"));
-        });
-
-        xhr.open("PUT", url);
-        xhr.setRequestHeader("Content-Type", contentType);
-        xhr.send(body);
-      });
-    },
-    [],
-  );
 
   const invalidateAll = () =>
     Promise.all([
@@ -126,37 +84,11 @@ function NewMeetingPage() {
       onSuccess: async (meeting) => {
         if (file) {
           try {
-            // Step 1: Request signed upload target
-            setUploadState("preparing");
-            setUploadProgress(0);
-            const uploadInfo = await server.meeting.requestUpload({
-              meetingId: meeting.id,
-              fileName: file.name,
-              mimeType: file.type,
-              fileSize: file.size,
-            });
-
-            // Step 2: Upload directly to object storage with progress
-            setUploadState("uploading");
-            await uploadFileToStorage(
-              uploadInfo.uploadUrl,
-              file,
-              file.type,
-            );
-
-            // Step 3: Notify server that upload completed
-            setUploadState("completing");
-            await server.meeting.completeUpload({
-              meetingId: meeting.id,
-              fileId: uploadInfo.fileId,
-            });
-
-            setUploadState("done");
+            await multipartUpload.upload(meeting.id, file);
           } catch (err) {
             const msg = err instanceof Error ? err.message : "Upload failed";
             toast.error(msg);
-            setUploadState("idle");
-            setUploadProgress(0);
+            multipartUpload.reset();
             // Still navigate — meeting was created, just upload failed
             await invalidateAll();
             navigate({
@@ -178,8 +110,7 @@ function NewMeetingPage() {
         });
       },
       onError: (err) => {
-        setUploadState("idle");
-        setUploadProgress(0);
+        multipartUpload.reset();
         const isPlanLimit = err.message?.includes("limit reached");
         if (isPlanLimit) {
           toast.error("You've reached your plan limit. Upgrade to create more meetings.");

@@ -180,6 +180,16 @@ function BillingPage() {
             <Separator />
             <div>
               <p className="font-medium text-foreground">
+                What if my meeting fails to process?
+              </p>
+              <p>
+                Failed processing attempts are not counted towards your monthly
+                quota. You can safely retry without losing a meeting credit.
+              </p>
+            </div>
+            <Separator />
+            <div>
+              <p className="font-medium text-foreground">
                 Is my payment information secure?
               </p>
               <p>

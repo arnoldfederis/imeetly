@@ -86,7 +86,9 @@ jobs:
           context: .
           file: ./apps/web/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging-${{ github.sha }}
           build-args: |
             VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
             VITE_SERVER_URL=${{ vars.VITE_SERVER_URL }}
@@ -97,7 +99,9 @@ jobs:
           context: .
           file: ./apps/server/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:staging
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:staging
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:staging-${{ github.sha }}
 
       - name: Build and push worker
         uses: docker/build-push-action@v6
@@ -105,7 +109,9 @@ jobs:
           context: .
           file: ./apps/worker/Dockerfile
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:staging
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:staging
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-worker:staging-${{ github.sha }}
 
   deploy:
     name: Deploy Staging
@@ -114,14 +120,16 @@ jobs:
     environment: staging
 
     steps:
-      - name: Trigger Dokploy deployment
+      - name: Stop compose
         run: |
-          curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+          curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.stop" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -H "X-GitHub-Event: push" \
-            --data "{
-              \"ref\": \"${{ github.ref }}\",
-              \"repository\": {
-                \"full_name\": \"${{ github.repository }}\"
-              }
-            }"
+            --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}'
+
+      - name: Redeploy compose
+        run: |
+          curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.redeploy" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}", "title": "Deploy ${{ github.sha }}", "description": "Automated deploy from GitHub Actions"}'

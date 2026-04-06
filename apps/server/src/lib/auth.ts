@@ -21,7 +21,9 @@ export const auth = betterAuth({
       enabled: true,
       domain: env.DOMAIN_NAME,
     },
+    useSecureCookies: true,
   },
+  trustedProxyOrigins: [env.SERVER_URL],
   appName: env.APP_NAME,
   baseURL: env.SERVER_URL,
   database: drizzleAdapter(db, {

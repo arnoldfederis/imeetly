@@ -86,7 +86,7 @@ export async function generateExtractionResult(transcript: string): Promise<Extr
   return extractMeetingData(transcript);
 }
 
-// Hetzner Object Storage (Helsinki) — worker downloads raw files for processing, then deletes them.
+// Cloudflare R2 — worker downloads raw files for processing, then deletes them.
 const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,
@@ -94,7 +94,7 @@ const s3 = new S3Client({
     accessKeyId: env.S3_ACCESS_KEY_ID,
     secretAccessKey: env.S3_SECRET_ACCESS_KEY,
   },
-  forcePathStyle: true,
+  forcePathStyle: false,
 });
 
 // --- Persistence ---
