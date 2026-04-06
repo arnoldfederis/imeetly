@@ -34,6 +34,9 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/$meetingId")({
   component: MeetingDetailPage,
+  head: () => ({
+    meta: [{ title: "Meeting — imeetly" }],
+  }),
 });
 
 function MeetingDetailPage() {

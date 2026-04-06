@@ -35,6 +35,9 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/")({
   component: DashboardPage,
+  head: () => ({
+    meta: [{ title: "Dashboard — imeetly" }],
+  }),
 });
 
 function DashboardPage() {

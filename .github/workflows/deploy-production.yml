@@ -80,6 +80,16 @@ jobs:
         id: vars
         run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
+      - name: Build and push site
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/site/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:latest
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:${{ github.sha }}
+
       - name: Build and push web
         uses: docker/build-push-action@v6
         with:
@@ -120,13 +130,6 @@ jobs:
     environment: production
 
     steps:
-      - name: Stop compose
-        run: |
-          curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.stop" \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}'
-
       - name: Redeploy compose
         run: |
           curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.redeploy" \

@@ -17,6 +17,9 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/action-items")({
   component: ActionItemsPage,
+  head: () => ({
+    meta: [{ title: "Action Items — imeetly" }],
+  }),
 });
 
 function ActionItemsPage() {

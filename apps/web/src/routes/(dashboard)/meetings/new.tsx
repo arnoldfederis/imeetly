@@ -40,6 +40,9 @@ import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/new")({
   component: NewMeetingPage,
+  head: () => ({
+    meta: [{ title: "New Meeting — imeetly" }],
+  }),
 });
 
 const ACCEPTED_TYPES =

@@ -35,6 +35,9 @@ import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/(dashboard)/settings/security")({
   component: SecurityPage,
+  head: () => ({
+    meta: [{ title: "Security — imeetly" }],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     error: (search.error as string | undefined) ?? undefined,
   }),

@@ -13,6 +13,26 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
+      {
+        rel: "icon",
+        href: "/favicon.ico",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/icons/icon-32.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: "/icons/icon-16.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/icons/icon-128.png",
+      },
     ],
     meta: [
       {
@@ -23,7 +43,16 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "imeetly",
+      },
+      {
+        name: "description",
+        content:
+          "AI meeting notes — summaries, decisions, blockers, and action items from every meeting.",
+      },
+      {
+        name: "robots",
+        content: "noindex, nofollow",
       },
     ],
   }),
