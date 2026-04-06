@@ -71,6 +71,8 @@ export const meetingFiles = schema.table(
     mimeType: text("mime_type").notNull(),
     fileSize: bigint("file_size", { mode: "number" }).notNull(),
     durationSeconds: integer("duration_seconds"),
+    uploadId: text("upload_id"), // S3 multipart upload ID (null for single-part uploads)
+    totalParts: integer("total_parts"), // number of parts (null for single-part uploads)
     uploadStatus: text("upload_status").notNull().default("pending"), // pending | uploading | completed | failed
     processingStatus: text("processing_status").notNull().default("pending"), // pending | queued | processing | completed | failed
     retentionStatus: text("retention_status").notNull().default("active"), // active | pending_deletion | deleted

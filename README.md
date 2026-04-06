@@ -18,18 +18,16 @@ devbox version
 
 ## Object Storage
 
-File uploads go directly from the browser to Hetzner Object Storage (S3-compatible) using signed URLs.
+File uploads go directly from the browser to Cloudflare R2 using signed URLs.
 The app server only issues signed upload instructions — it never proxies large file bodies.
 The worker downloads files from object storage for processing, then deletes the raw file after success.
 
-Both the VPS and object storage are in Helsinki for low internal latency.
-
 Configure the following env vars:
-- `S3_ENDPOINT` — Hetzner Object Storage endpoint (Helsinki, e.g. `https://hel1.your-objectstorage.com`)
-- `S3_ACCESS_KEY_ID` — access key
-- `S3_SECRET_ACCESS_KEY` — secret key
+- `S3_ENDPOINT` — Cloudflare R2 endpoint (e.g. `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`)
+- `S3_ACCESS_KEY_ID` — R2 access key
+- `S3_SECRET_ACCESS_KEY` — R2 secret key
 - `S3_BUCKET` — bucket name
-- `S3_REGION` — region (e.g. `hel1`)
+- `S3_REGION` — region (use `auto` for R2)
 
 The bucket must have CORS configured to allow PUT requests from the web app origin for direct browser uploads.
 
@@ -280,18 +278,18 @@ uiadd button apps/web
 | server | Bun (compiled binary) | 4000 | Yes | `apps/server/Dockerfile` |
 | worker | Node.js 22 | — | No | `apps/worker/Dockerfile` |
 
-External services: PostgreSQL, Temporal, Hetzner Object Storage (S3-compatible).
+External services: PostgreSQL, Temporal, Cloudflare R2.
 
 ### Infrastructure
 
-- **VPS**: Hetzner Helsinki (2 vCPU / 4 GB RAM starting)
+- **VPS**: Hetzner (2 vCPU / 4 GB RAM starting)
 - **Deployment**: Dokploy (manages containers on VPS)
 - **CI/CD**: GitHub Actions → Dokploy webhook
-- **Object Storage**: Hetzner Object Storage (Helsinki, colocated with VPS)
+- **Object Storage**: Cloudflare R2
 - **Database**: PostgreSQL (managed or self-hosted)
 - **Workflow Engine**: Temporal (self-hosted or Temporal Cloud)
 
-Upload flow: browser → signed PUT URL → Hetzner Object Storage → worker downloads → processes → deletes raw file.
+Upload flow: browser → signed PUT URL → Cloudflare R2 → worker downloads → processes → deletes raw file.
 The server never proxies large media uploads.
 
 ### Build & Start per Service
@@ -304,7 +302,7 @@ The server never proxies large media uploads.
 
 ### Deploy with Dokploy
 
-1. Install Dokploy on your Hetzner VPS
+1. Install Dokploy on your VPS
 2. Create a **Compose** project in Dokploy pointing to this repo
 3. Set compose file path to `docker-compose.prod.yml`
 4. Copy all env vars from `.env.example` into Dokploy environment settings

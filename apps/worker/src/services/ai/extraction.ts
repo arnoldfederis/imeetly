@@ -1,5 +1,6 @@
 import { env } from "../../env";
 import { createAnthropicExtraction } from "./providers/anthropic-extraction";
+import { createGroqChunkedExtraction } from "./providers/groq-chunked-extraction";
 import { createGroqExtraction } from "./providers/groq-extraction";
 import { createMockExtraction } from "./providers/mock-extraction";
 import { createOpenAIExtraction } from "./providers/openai-extraction";
@@ -16,6 +17,7 @@ const PROVIDER_KEYS: Record<ExtractionProvider, string | undefined> = {
   anthropic: env.ANTHROPIC_API_KEY,
   openai: env.OPENAI_API_KEY,
   groq: env.GROQ_API_KEY,
+  "groq-chunked": env.GROQ_API_KEY,
   mock: "mock",
 };
 
@@ -36,6 +38,8 @@ function buildProvider(
       return createOpenAIExtraction(key);
     case "groq":
       return createGroqExtraction(key);
+    case "groq-chunked":
+      return createGroqChunkedExtraction(key);
     case "mock":
       return createMockExtraction();
   }
@@ -43,8 +47,8 @@ function buildProvider(
 
 // --- Auto strategy ---
 // Development: skip Anthropic unless explicitly forced
-const AUTO_DEV: ExtractionProvider[] = ["openai", "groq", "mock"];
-const AUTO_PROD: ExtractionProvider[] = ["anthropic", "openai", "groq", "mock"];
+const AUTO_DEV: ExtractionProvider[] = ["groq-chunked", "openai", "groq", "mock"];
+const AUTO_PROD: ExtractionProvider[] = ["groq-chunked", "anthropic", "openai", "groq", "mock"];
 
 function resolveChain(): ExtractionProvider[] {
   const isDev = env.APP_ENV === "development";

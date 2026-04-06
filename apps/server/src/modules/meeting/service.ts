@@ -7,7 +7,13 @@ import {
   meetings,
 } from "@repo/db/schemas/app";
 import { env } from "@repo/env";
-import { createPresignedUploadUrl } from "@repo/server/lib/s3";
+import {
+  abortR2MultipartUpload,
+  completeR2MultipartUpload,
+  createPresignedPartUrl,
+  createPresignedUploadUrl,
+  initiateMultipartUpload,
+} from "@repo/server/lib/s3";
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { getPlanLimits } from "@repo/server/modules/billing/plans";
 import { BillingService } from "@repo/server/modules/billing/service";
@@ -340,7 +346,10 @@ export abstract class MeetingService {
       .set({ uploadStatus: "completed" })
       .where(eq(meetingFiles.id, input.fileId));
 
-    // Set meeting to pending and trigger workflow
+    return MeetingService._triggerProcessing(userId, input.meetingId);
+  }
+
+  private static async _triggerProcessing(userId: string, meetingId: string) {
     await db
       .update(meetings)
       .set({
@@ -348,16 +357,15 @@ export abstract class MeetingService {
         processingStatus: "queued",
         failureReason: null,
       })
-      .where(eq(meetings.id, input.meetingId));
+      .where(eq(meetings.id, meetingId));
 
     try {
-      const result = await startMeetingProcessing(input.meetingId);
+      const result = await startMeetingProcessing(meetingId);
 
-      // Only count usage after processing successfully starts
       await BillingService.incrementUsage(userId, "meetings_created");
 
       return {
-        meetingId: input.meetingId,
+        meetingId,
         status: "queued" as const,
         ...result,
       };
@@ -371,13 +379,182 @@ export abstract class MeetingService {
           processingStatus: "failed",
           failureReason: reason,
         })
-        .where(eq(meetings.id, input.meetingId));
+        .where(eq(meetings.id, meetingId));
 
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
         message:
           "Failed to start meeting processing. Please try again. This attempt was not counted towards your monthly quota.",
       });
     }
+  }
+
+  // --- Multipart upload ---
+
+  static async initiateMultipartUpload(
+    userId: string,
+    input: {
+      meetingId: string;
+      fileName: string;
+      mimeType: string;
+      fileSize: number;
+      totalParts: number;
+    },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const storageKey = `${userId}/${yyyy}/${mm}/${input.meetingId}/${input.fileName}`;
+
+    const uploadId = await initiateMultipartUpload(storageKey, input.mimeType);
+
+    const [file] = await db
+      .insert(meetingFiles)
+      .values({
+        meetingId: input.meetingId,
+        bucketName: env.S3_BUCKET,
+        storageKey,
+        fileName: input.fileName,
+        mimeType: input.mimeType,
+        fileSize: input.fileSize,
+        uploadId,
+        totalParts: input.totalParts,
+        uploadStatus: "pending",
+      })
+      .returning();
+
+    return {
+      fileId: file.id,
+      storageKey,
+      uploadId,
+    };
+  }
+
+  static async getPartUrls(
+    userId: string,
+    input: {
+      meetingId: string;
+      fileId: string;
+      partNumbers: number[];
+    },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    const file = await db.query.meetingFiles.findFirst({
+      where: and(
+        eq(meetingFiles.id, input.fileId),
+        eq(meetingFiles.meetingId, input.meetingId),
+      ),
+    });
+    if (!file || !file.uploadId) {
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
+    }
+    if (file.uploadStatus !== "pending" && file.uploadStatus !== "uploading") {
+      throw new ORPCError("BAD_REQUEST", {
+        message: `Upload is already ${file.uploadStatus}`,
+      });
+    }
+
+    if (file.uploadStatus === "pending") {
+      await db
+        .update(meetingFiles)
+        .set({ uploadStatus: "uploading" })
+        .where(eq(meetingFiles.id, input.fileId));
+    }
+
+    const urls = await Promise.all(
+      input.partNumbers.map(async (partNumber) => ({
+        partNumber,
+        url: await createPresignedPartUrl(
+          file.storageKey,
+          file.uploadId!,
+          partNumber,
+        ),
+      })),
+    );
+
+    return urls;
+  }
+
+  static async completeMultipartUpload(
+    userId: string,
+    input: {
+      meetingId: string;
+      fileId: string;
+      parts: Array<{ partNumber: number; etag: string }>;
+    },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    const file = await db.query.meetingFiles.findFirst({
+      where: and(
+        eq(meetingFiles.id, input.fileId),
+        eq(meetingFiles.meetingId, input.meetingId),
+      ),
+    });
+    if (!file || !file.uploadId) {
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
+    }
+
+    await completeR2MultipartUpload(
+      file.storageKey,
+      file.uploadId,
+      input.parts,
+    );
+
+    await db
+      .update(meetingFiles)
+      .set({ uploadStatus: "completed" })
+      .where(eq(meetingFiles.id, input.fileId));
+
+    return MeetingService._triggerProcessing(userId, input.meetingId);
+  }
+
+  static async abortMultipartUpload(
+    userId: string,
+    input: { meetingId: string; fileId: string },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+    });
+    if (!meeting) {
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
+    }
+
+    const file = await db.query.meetingFiles.findFirst({
+      where: and(
+        eq(meetingFiles.id, input.fileId),
+        eq(meetingFiles.meetingId, input.meetingId),
+      ),
+    });
+    if (!file || !file.uploadId) {
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
+    }
+
+    await abortR2MultipartUpload(file.storageKey, file.uploadId);
+
+    await db
+      .update(meetingFiles)
+      .set({ uploadStatus: "failed" })
+      .where(eq(meetingFiles.id, input.fileId));
+
+    return { success: true };
   }
 
   static async getUsage(userId: string) {

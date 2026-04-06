@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
-    "@aws-sdk/client-s3": "^3.1022.0",
+    "@aws-sdk/client-s3": "^3.1025.0",
+    "@deepgram/sdk": "5.0.0",
     "@neondatabase/serverless": "^1.0.0",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
@@ -40,7 +41,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@types/pg": "^8.20.0",
     "dotenv-cli": "catalog:dev",
     "nodemon": "^3.1.14",
