@@ -4,6 +4,9 @@ import { LoginContainer } from "@/components/login/container";
 
 export const Route = createFileRoute("/(auth)/login")({
   component: RouteComponent,
+  head: () => ({
+    meta: [{ title: "Log in — imeetly" }],
+  }),
 });
 
 function RouteComponent() {

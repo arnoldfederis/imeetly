@@ -27,6 +27,9 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/admin/metrics")({
   component: AdminMetricsPage,
+  head: () => ({
+    meta: [{ title: "Admin Metrics — imeetly" }],
+  }),
 });
 
 function usd(n: number) {

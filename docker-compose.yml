@@ -1,4 +1,26 @@
 services:
+  site:
+    image: ghcr.io/proghublabs/imeetly-site:staging
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5002:5002"
+    environment:
+      - NODE_ENV=staging
+      - APP_ENV=staging
+      - APP_MODULE=site
+      - PORT=5002
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5002/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   web:
     image: ghcr.io/proghublabs/imeetly-web:staging
     pull_policy: always
@@ -12,6 +34,12 @@ services:
       - APP_ENV=staging
       - APP_MODULE=web
       - PORT=5001
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5001/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     deploy:
       resources:
         limits:
@@ -34,6 +62,12 @@ services:
       - TEMPORAL_NAMESPACE=default
       - SMTP_HOST=mailpit
       - SMTP_PORT=1025
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
       - temporal
       - mailpit

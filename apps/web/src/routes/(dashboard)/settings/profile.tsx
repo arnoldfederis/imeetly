@@ -18,6 +18,9 @@ import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/(dashboard)/settings/profile")({
   component: ProfilePage,
+  head: () => ({
+    meta: [{ title: "Profile — imeetly" }],
+  }),
 });
 
 const dashboardRoute = getRouteApi("/(dashboard)");

@@ -11,7 +11,15 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUUID(segment: string) {
+  return UUID_RE.test(segment);
+}
+
 function formatSegment(segment: string) {
+  if (isUUID(segment)) return segment;
   return segment.replace(/-/g, " ");
 }
 
@@ -85,7 +93,9 @@ export function AppBreadcrumb() {
 
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage className="capitalize">
+          <BreadcrumbPage
+            className={`max-w-[200px] truncate ${isUUID(last) ? "font-mono text-xs" : "capitalize"}`}
+          >
             {formatSegment(last)}
           </BreadcrumbPage>
         </BreadcrumbItem>
