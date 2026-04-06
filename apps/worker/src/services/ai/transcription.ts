@@ -10,7 +10,7 @@ import {
   type TranscriptionResult,
 } from "./types";
 
-// Hetzner Object Storage (Helsinki) — downloads media files for transcription.
+// Cloudflare R2 — downloads media files for transcription.
 const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,

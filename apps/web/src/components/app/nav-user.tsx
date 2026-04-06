@@ -50,7 +50,7 @@ export function NavUser({ user }: Props) {
   }
 
   return (
-    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+    <DropdownMenu onOpenChange={(open) => !isPending && setIsOpen(open)} open={isOpen}>
       <DropdownMenuTrigger className="border-0">
         <UserAvatar user={user} />
       </DropdownMenuTrigger>

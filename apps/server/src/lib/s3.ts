@@ -1,17 +1,15 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
-  PutBucketCorsCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@repo/env";
 
-// Hetzner Object Storage (Helsinki) — colocated with VPS for low internal latency.
-// Used for temporary file storage only: raw uploads are deleted after processing.
+// Cloudflare R2 — used for temporary file storage only: raw uploads are deleted after processing.
 // requestChecksumCalculation disabled: AWS SDK v3 adds x-amz-checksum-* headers/params
-// by default, which cause CORS preflight failures on browser direct uploads to Hetzner.
+// by default, which cause CORS preflight failures on browser direct uploads.
 export const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,
@@ -53,29 +51,4 @@ export async function deleteObject(key: string) {
     Key: key,
   });
   await s3.send(command);
-}
-
-export async function ensureBucketCors() {
-  const origins = [env.APP_BASE_URL, env.CORS_ORIGIN].filter(Boolean);
-
-  const command = new PutBucketCorsCommand({
-    Bucket: env.S3_BUCKET,
-    CORSConfiguration: {
-      CORSRules: [
-        {
-          AllowedOrigins: origins,
-          AllowedMethods: ["GET", "PUT", "HEAD"],
-          AllowedHeaders: ["*"],
-          MaxAgeSeconds: 3600,
-        },
-      ],
-    },
-  });
-
-  try {
-    await s3.send(command);
-    console.log(`[s3] Bucket CORS configured for: ${origins.join(", ")}`);
-  } catch (err) {
-    console.warn("[s3] Failed to set bucket CORS:", err);
-  }
 }

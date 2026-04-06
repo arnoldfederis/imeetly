@@ -1,7 +1,6 @@
 import { wrap } from "@bogeychan/elysia-logger";
 import cors from "@elysiajs/cors";
 import { env } from "@repo/env";
-import { ensureBucketCors } from "@repo/server/lib/s3";
 import { baseController } from "@repo/server/modules/base";
 import { Elysia } from "elysia";
 import pino from "pino";
@@ -24,6 +23,3 @@ export const app = new Elysia()
   .listen(Number(env.SERVER_PORT));
 
 console.log(`Server is running at ${env.SERVER_URL} 🔥 🦊`);
-
-// Configure S3 bucket CORS on startup (non-blocking)
-ensureBucketCors();

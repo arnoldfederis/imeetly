@@ -87,3 +87,4 @@ export const clientEnv = isSSR
 // Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
 export const isProduction = () => env.APP_ENV === "production";
 export const isDevelopment = () => env.APP_ENV === "development";
+
