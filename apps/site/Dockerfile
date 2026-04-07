@@ -13,6 +13,9 @@ RUN bun install --frozen-lockfile
 
 FROM deps AS build
 
+ARG VITE_APP_BASE_URL
+ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
+
 COPY . .
 RUN cd apps/site && bun run build
 
