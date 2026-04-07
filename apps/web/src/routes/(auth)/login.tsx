@@ -23,7 +23,7 @@ export const Route = createFileRoute("/(auth)/login")({
 function RouteComponent() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 bg-gradient-to-br from-background via-background to-primary/5 p-6 dark:to-primary/10 md:p-10">
+      <div className="flex flex-col gap-4 bg-gradient-to-br from-background via-background to-primary/5 p-6 md:p-10 dark:to-primary/10">
         <div className="flex items-center justify-between">
           <a
             className="flex items-center gap-2 font-bold text-lg tracking-tight"

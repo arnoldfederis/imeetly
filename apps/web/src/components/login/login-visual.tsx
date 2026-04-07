@@ -63,7 +63,7 @@ export function LoginVisual() {
         <div className="text-center">
           <motion.h2
             animate={{ opacity: 1, y: 0 }}
-            className="font-bold text-2xl tracking-tight text-foreground/90 dark:text-white/90"
+            className="font-bold text-2xl text-foreground/90 tracking-tight dark:text-white/90"
             initial={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.6, delay: 0.1, ease }}
           >
@@ -71,7 +71,7 @@ export function LoginVisual() {
           </motion.h2>
           <motion.p
             animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-sm text-muted-foreground dark:text-white/50"
+            className="mt-2 text-muted-foreground text-sm dark:text-white/50"
             initial={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.6, delay: 0.25, ease }}
           >
@@ -125,7 +125,7 @@ export function LoginVisual() {
                   </span>
                   <EditIcon className="size-2.5 text-muted-foreground/50 dark:text-white/20" />
                 </div>
-                <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground/70 dark:text-white/35">
+                <p className="mt-1.5 text-[10px] text-muted-foreground/70 leading-relaxed dark:text-white/35">
                   The team aligned on the Q4 roadmap, prioritizing the dashboard
                   redesign and API v2.
                 </p>

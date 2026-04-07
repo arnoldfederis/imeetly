@@ -559,32 +559,32 @@ function MeetingDetailPage() {
       )}
 
       {meeting.status === "completed" && (
-      <Card>
-        <CardHeader>
-          <CardTitle>Action Items</CardTitle>
-          <CardDescription>
-            {meeting.actionItems?.length ?? 0} item
-            {(meeting.actionItems?.length ?? 0) !== 1 ? "s" : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!meeting.actionItems || meeting.actionItems.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
-              No action items found
-            </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {meeting.actionItems.map((item) => (
-                <ActionItemRow
-                  item={item}
-                  key={item.id}
-                  meetingId={meetingId}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Action Items</CardTitle>
+            <CardDescription>
+              {meeting.actionItems?.length ?? 0} item
+              {(meeting.actionItems?.length ?? 0) !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!meeting.actionItems || meeting.actionItems.length === 0 ? (
+              <p className="py-4 text-center text-muted-foreground text-sm">
+                No action items found
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {meeting.actionItems.map((item) => (
+                  <ActionItemRow
+                    item={item}
+                    key={item.id}
+                    meetingId={meetingId}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       <UpgradeDialog
