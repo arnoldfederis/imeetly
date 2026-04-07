@@ -56,7 +56,12 @@ function buildProvider(
 // --- Auto strategy ---
 
 const AUTO_DEV: TranscriptionProvider[] = ["deepgram", "openai", "mock"];
-const AUTO_PROD: TranscriptionProvider[] = ["deepgram", "openai", "groq", "mock"];
+const AUTO_PROD: TranscriptionProvider[] = [
+  "deepgram",
+  "openai",
+  "groq",
+  "mock",
+];
 
 function resolveChain(): TranscriptionProvider[] {
   const isDev = env.APP_ENV === "development";

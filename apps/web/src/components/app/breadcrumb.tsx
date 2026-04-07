@@ -2,7 +2,6 @@ import { useLocation } from "@tanstack/react-router";
 import { Fragment } from "react";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -68,33 +67,28 @@ export function AppBreadcrumb() {
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {isMobile && middle.length > 0 ? (
-          <>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbEllipsis />
-            </BreadcrumbItem>
-          </>
-        ) : (
-          middle.map((segment, i) => {
-            const href = `/${segments.slice(0, i + 2).join("/")}`;
-            return (
-              <Fragment key={segment}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink className="capitalize" href={href}>
-                    {formatSegment(segment)}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </Fragment>
-            );
-          })
-        )}
+        {middle.map((segment, i) => {
+          const href = `/${segments.slice(0, i + 2).join("/")}`;
+          return (
+            <Fragment key={segment}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink className="capitalize" href={href}>
+                  {formatSegment(segment)}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </Fragment>
+          );
+        })}
 
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage
-            className={`max-w-[200px] truncate ${isUUID(last) ? "font-mono text-xs" : "capitalize"}`}
+            className={
+              isUUID(last)
+                ? `font-mono text-xs ${isMobile ? "max-w-[120px] truncate" : ""}`
+                : "capitalize"
+            }
           >
             {formatSegment(last)}
           </BreadcrumbPage>

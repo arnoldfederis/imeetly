@@ -1,5 +1,8 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { SettingsSidebar } from "@/components/settings/sidebar";
+import {
+  SettingsMobileNav,
+  SettingsSidebar,
+} from "@/components/settings/sidebar";
 
 export const Route = createFileRoute("/(dashboard)/settings")({
   component: RouteComponent,
@@ -7,7 +10,8 @@ export const Route = createFileRoute("/(dashboard)/settings")({
 
 function RouteComponent() {
   return (
-    <div className="flex w-full gap-x-4">
+    <div className="flex w-full flex-col gap-4 md:flex-row">
+      <SettingsMobileNav />
       <SettingsSidebar />
       <div className="w-full">
         <Outlet />

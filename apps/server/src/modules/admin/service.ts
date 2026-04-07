@@ -1,8 +1,5 @@
 import { db } from "@repo/db";
-import {
-  meetings,
-  subscriptions,
-} from "@repo/db/schemas/app";
+import { meetings, subscriptions } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
 import {
   getEstimatedMeetingCost,
@@ -26,17 +23,13 @@ export abstract class AdminService {
     if (!meeting) return null;
 
     // Derive duration from meeting files
-    const totalDurationSeconds = meeting.files?.reduce(
-      (sum, f) => sum + (f.durationSeconds ?? 0),
-      0,
-    ) ?? 0;
+    const totalDurationSeconds =
+      meeting.files?.reduce((sum, f) => sum + (f.durationSeconds ?? 0), 0) ?? 0;
     const durationMinutes = totalDurationSeconds / 60;
 
     // Derive file size from meeting files
-    const totalFileSize = meeting.files?.reduce(
-      (sum, f) => sum + (f.fileSize ?? 0),
-      0,
-    ) ?? 0;
+    const totalFileSize =
+      meeting.files?.reduce((sum, f) => sum + (f.fileSize ?? 0), 0) ?? 0;
     const fileSizeMb = totalFileSize / (1024 * 1024);
 
     const cost = getEstimatedMeetingCost(durationMinutes);
@@ -82,14 +75,13 @@ export abstract class AdminService {
     });
 
     const plan = sub?.status === "active" ? (sub.plan ?? "free") : "free";
-    const price = planPricing[plan] ?? 0;
+    const price = planPricing.monthly[plan] ?? 0;
     const revenue = getNetRevenue(price);
 
     const { totalCost } = await AdminService.getUserCostSummary(userId);
 
     const profit = round(revenue - totalCost);
-    const marginPercentage =
-      revenue > 0 ? round((profit / revenue) * 100) : 0;
+    const marginPercentage = revenue > 0 ? round((profit / revenue) * 100) : 0;
 
     return {
       plan,
@@ -103,26 +95,28 @@ export abstract class AdminService {
   // ── Plan Profit Summary ──
 
   static async getPlanProfitSummary(plan: string) {
-    const price = planPricing[plan] ?? 0;
+    const price = planPricing.monthly[plan] ?? 0;
     const netRevenuePerUser = getNetRevenue(price);
 
     // Get all users on this plan
-    const userIds = plan === "free"
-      ? await AdminService.getFreeUserIds()
-      : await AdminService.getPaidUserIds(plan);
+    const userIds =
+      plan === "free"
+        ? await AdminService.getFreeUserIds()
+        : await AdminService.getPaidUserIds(plan);
 
     const totalUsers = userIds.length;
     const totalRevenue = round(netRevenuePerUser * totalUsers);
 
     // Get total cost for all these users
-    const [costResult] = userIds.length > 0
-      ? await db
-          .select({
-            totalCost: sql<number>`coalesce(sum(${meetings.estimatedCost}::numeric), 0)::float`,
-          })
-          .from(meetings)
-          .where(inArray(meetings.userId, userIds))
-      : [{ totalCost: 0 }];
+    const [costResult] =
+      userIds.length > 0
+        ? await db
+            .select({
+              totalCost: sql<number>`coalesce(sum(${meetings.estimatedCost}::numeric), 0)::float`,
+            })
+            .from(meetings)
+            .where(inArray(meetings.userId, userIds))
+        : [{ totalCost: 0 }];
 
     const totalCost = round(costResult.totalCost);
     const totalProfit = round(totalRevenue - totalCost);
@@ -159,7 +153,7 @@ export abstract class AdminService {
 
     let totalRevenue = 0;
     for (const sub of activeSubs) {
-      const price = planPricing[sub.plan] ?? 0;
+      const price = planPricing.monthly[sub.plan] ?? 0;
       totalRevenue += getNetRevenue(price) * sub.count;
     }
 
@@ -215,9 +209,7 @@ export abstract class AdminService {
 
     const paidSet = new Set(paidUserIds.map((r) => r.userId));
 
-    const allUsers = await db
-      .select({ id: users.id })
-      .from(users);
+    const allUsers = await db.select({ id: users.id }).from(users);
 
     return allUsers.filter((u) => !paidSet.has(u.id)).map((u) => u.id);
   }
@@ -227,10 +219,7 @@ export abstract class AdminService {
       .select({ userId: subscriptions.userId })
       .from(subscriptions)
       .where(
-        and(
-          eq(subscriptions.status, "active"),
-          eq(subscriptions.plan, plan),
-        ),
+        and(eq(subscriptions.status, "active"), eq(subscriptions.plan, plan)),
       );
     return result.map((r) => r.userId);
   }

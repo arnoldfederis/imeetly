@@ -1,7 +1,12 @@
 // --- Provider identifiers ---
 
 export type TranscriptionProvider = "openai" | "groq" | "deepgram" | "mock";
-export type ExtractionProvider = "anthropic" | "openai" | "groq" | "groq-chunked" | "mock";
+export type ExtractionProvider =
+  | "anthropic"
+  | "openai"
+  | "groq"
+  | "groq-chunked"
+  | "mock";
 export type ProviderSelector =
   | "auto"
   | TranscriptionProvider

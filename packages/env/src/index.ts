@@ -53,6 +53,7 @@ export const env = createEnv({
     TEMPORAL_NAMESPACE: string().check(
       minLength(1, "TEMPORAL_NAMESPACE is required"),
     ),
+    TEMPORAL_HTTP_URL: optional(string()),
     // AI Provider Keys (optional - providers are skipped if missing)
     OPENAI_API_KEY: optional(string()),
     ANTHROPIC_API_KEY: optional(string()),
@@ -64,6 +65,8 @@ export const env = createEnv({
     AI_EXTRACTION_FALLBACK: optional(string()),
     SMTP_HOST: optional(string()),
     SMTP_PORT: optional(string()),
+    SMTP_USER: optional(string()),
+    SMTP_PASS: optional(string()),
   },
   runtimeEnv: process.env,
 });
@@ -79,12 +82,13 @@ const clientSchema = object({
 const isSSR = typeof window === "undefined";
 export const clientEnv = isSSR
   ? ({
-      VITE_APP_BASE_URL: process.env.VITE_APP_BASE_URL ?? import.meta.env.VITE_APP_BASE_URL,
-      VITE_SERVER_URL: process.env.VITE_SERVER_URL ?? import.meta.env.VITE_SERVER_URL,
+      VITE_APP_BASE_URL:
+        process.env.VITE_APP_BASE_URL ?? import.meta.env.VITE_APP_BASE_URL,
+      VITE_SERVER_URL:
+        process.env.VITE_SERVER_URL ?? import.meta.env.VITE_SERVER_URL,
     } as { VITE_APP_BASE_URL: string; VITE_SERVER_URL: string })
   : clientSchema.parse(import.meta.env);
 
 // Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
 export const isProduction = () => env.APP_ENV === "production";
 export const isDevelopment = () => env.APP_ENV === "development";
-

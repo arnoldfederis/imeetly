@@ -8,6 +8,7 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { UsageBanner } from "@/components/billing/usage-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,16 +22,14 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Spinner } from "@/components/ui/spinner";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/")({
@@ -40,8 +39,8 @@ export const Route = createFileRoute("/(dashboard)/meetings/")({
   }),
 });
 
-const STATUSES = [
-  { value: "all", label: "All" },
+const STATUS_OPTIONS = [
+  { value: "all", label: "All Statuses" },
   { value: "completed", label: "Completed" },
   { value: "processing", label: "Processing" },
   { value: "pending", label: "Pending" },
@@ -50,13 +49,13 @@ const STATUSES = [
 
 function MeetingsPage() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState(["all"]);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data, isLoading } = useQuery(
     client.meeting.list.queryOptions({
       input: {
         search: search || undefined,
-        status: statusFilter[0] === "all" ? undefined : statusFilter[0],
+        status: statusFilter === "all" ? undefined : statusFilter,
         limit: 50,
         offset: 0,
       },
@@ -66,18 +65,31 @@ function MeetingsPage() {
   const meetings = data?.items ?? [];
   const total = data?.total ?? 0;
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-semibold text-2xl tracking-tight">Meetings</h1>
           <p className="text-muted-foreground text-sm">
             {total} meeting{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button nativeButton={false} render={<Link to="/meetings/new" />}>
+        <Button
+          className="shrink-0"
+          nativeButton={false}
+          render={<Link to="/meetings/new" />}
+        >
           <PlusIcon data-icon="inline-start" />
-          New Meeting
+          <span className="hidden sm:inline">New Meeting</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
 
@@ -92,37 +104,38 @@ function MeetingsPage() {
             value={search}
           />
         </InputGroup>
-        <ToggleGroup
+        <Select
+          onValueChange={(v) => setStatusFilter(v ?? "all")}
           value={statusFilter}
-          onValueChange={(val) => {
-            if (val.length > 0) setStatusFilter(val.slice(-1));
-          }}
-          variant="outline"
-          size="sm"
         >
-          {STATUSES.map((s) => (
-            <ToggleGroupItem key={s.value} value={s.value}>
-              {s.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="All Statuses">
+              {STATUS_OPTIONS.find((s) => s.value === statusFilter)?.label}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spinner className="size-6" />
-        </div>
-      ) : meetings.length === 0 ? (
+      <UsageBanner />
+
+      {meetings.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>No meetings found</EmptyTitle>
             <EmptyDescription>
-              {search || statusFilter[0] !== "all"
+              {search || statusFilter !== "all"
                 ? "Try adjusting your search or filters."
                 : "Upload a recording or paste a transcript to get started."}
             </EmptyDescription>
           </EmptyHeader>
-          {!search && statusFilter[0] === "all" && (
+          {!search && statusFilter === "all" && (
             <Button
               nativeButton={false}
               render={<Link to="/meetings/new" />}
@@ -135,77 +148,64 @@ function MeetingsPage() {
           )}
         </Empty>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Participants</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {meetings.map((m) => (
-              <TableRow
-                key={m.id}
-                className="cursor-pointer"
-                onClick={() =>
-                  document
-                    .querySelector<HTMLAnchorElement>(`[data-meeting-link="${m.id}"]`)
-                    ?.click()
-                }
-              >
-                <TableCell>
-                  {m.sourceType === "video" ? (
-                    <FileVideoIcon className="size-5 text-muted-foreground" />
-                  ) : m.sourceType === "audio" ? (
-                    <FileAudioIcon className="size-5 text-muted-foreground" />
-                  ) : (
-                    <FileTextIcon className="size-5 text-muted-foreground" />
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">
-                  <Link
-                    data-meeting-link={m.id}
-                    className="hover:underline"
-                    params={{ meetingId: m.id }}
-                    to="/meetings/$meetingId"
-                  >
-                    {m.title}
-                  </Link>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
+        <div className="flex flex-col gap-3">
+          {meetings.map((m) => (
+            <Link
+              className="flex items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50"
+              key={m.id}
+              params={{ meetingId: m.id }}
+              to="/meetings/$meetingId"
+            >
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                {m.sourceType === "video" ? (
+                  <FileVideoIcon className="size-4 text-muted-foreground" />
+                ) : m.sourceType === "audio" ? (
+                  <FileAudioIcon className="size-4 text-muted-foreground" />
+                ) : (
+                  <FileTextIcon className="size-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-sm">{m.title}</p>
+                <p className="text-muted-foreground text-xs">
                   {new Date(m.meetingDate).toLocaleDateString(undefined, {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {m.participantsText || "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      m.status === "completed"
-                        ? "secondary"
-                        : m.status === "failed"
-                          ? "destructive"
-                          : m.status === "processing"
-                            ? "default"
-                            : "outline"
-                    }
-                  >
-                    {m.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  {m.participantsText && ` · ${m.participantsText}`}
+                </p>
+              </div>
+              <MeetingStatusBadge status={m.status} />
+            </Link>
+          ))}
+        </div>
       )}
     </div>
+  );
+}
+
+function MeetingStatusBadge({ status }: { status: string }) {
+  if (status === "processing" || status === "pending") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
+        {status}
+      </span>
+    );
+  }
+
+  return (
+    <Badge
+      variant={
+        status === "completed"
+          ? "secondary"
+          : status === "failed"
+            ? "destructive"
+            : "outline"
+      }
+    >
+      {status}
+    </Badge>
   );
 }

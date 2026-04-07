@@ -13,7 +13,9 @@ export function safeParseJSON<T>(raw: string, label: string): T | null {
   try {
     return JSON.parse(cleaned) as T;
   } catch {
-    console.warn(`[parse:${label}] Failed to parse JSON. Raw (first 300 chars): ${raw.slice(0, 300)}`);
+    console.warn(
+      `[parse:${label}] Failed to parse JSON. Raw (first 300 chars): ${raw.slice(0, 300)}`,
+    );
     return null;
   }
 }
@@ -29,12 +31,14 @@ export function parseActionItems(raw: string): ActionItem[] {
     const obj = item as Record<string, unknown>;
     return {
       title: String(obj.title ?? obj.task ?? "Untitled action item"),
-      ownerName: obj.ownerName != null || obj.owner != null
-        ? String(obj.ownerName ?? obj.owner)
-        : undefined,
-      dueDate: obj.dueDate != null || obj.due_date != null
-        ? String(obj.dueDate ?? obj.due_date)
-        : undefined,
+      ownerName:
+        obj.ownerName != null || obj.owner != null
+          ? String(obj.ownerName ?? obj.owner)
+          : undefined,
+      dueDate:
+        obj.dueDate != null || obj.due_date != null
+          ? String(obj.dueDate ?? obj.due_date)
+          : undefined,
     };
   });
 }
@@ -58,7 +62,9 @@ export function parseExtractionResult(raw: string): {
     blockers: String(parsed.blockers ?? ""),
     followups: String(parsed.followups ?? parsed.follow_ups ?? ""),
     actionItems: Array.isArray(parsed.actionItems ?? parsed.action_items)
-      ? parseActionItems(JSON.stringify(parsed.actionItems ?? parsed.action_items))
+      ? parseActionItems(
+          JSON.stringify(parsed.actionItems ?? parsed.action_items),
+        )
       : [],
   };
 }

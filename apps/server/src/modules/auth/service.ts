@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { auth } from "@repo/server/lib/auth";
-import { mailer } from "@repo/server/lib/mailer";
+import { emailService } from "@repo/server/lib/mailer";
 import type { AuthModel } from "@repo/server/modules/auth/model";
 import { UserService } from "@repo/server/modules/user/service";
 import type { EmailOTPOptions, MagicLinkOptions } from "better-auth/plugins";
@@ -63,11 +63,8 @@ export abstract class AuthService {
   }
 
   static async sendVerificationOTP({ email, otp }: SendVerificationOTP[0]) {
-    await mailer.sendMail({
-      from: 'verify',
-      subject: "Sign in to your account",
-      email,
-      html: otp,
-    });
+    console.log(`[auth] Verification code requested for email=${email}`);
+    await emailService.sendVerificationCode(email, otp);
+    console.log(`[auth] Verification code sent for email=${email}`);
   }
 }

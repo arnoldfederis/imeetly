@@ -9,7 +9,9 @@ export function createGroqTranscription(
   return {
     name: "groq",
     async transcribe(fileBytes, fileName, mimeType) {
-      const file = new File([new Uint8Array(fileBytes)], fileName, { type: mimeType });
+      const file = new File([new Uint8Array(fileBytes)], fileName, {
+        type: mimeType,
+      });
       const result = await client.audio.transcriptions.create({
         model: "whisper-large-v3-turbo",
         file,

@@ -38,9 +38,7 @@ export type PlanSlug = z.infer<typeof planSlugSchema>;
 /**
  * Resolves a Polar product ID to an internal plan name.
  */
-export function productIdToPlan(
-  productId: string,
-): "free" | "pro" | "team" {
+export function productIdToPlan(productId: string): "free" | "pro" | "team" {
   for (const product of Object.values(POLAR_PRODUCTS)) {
     if (product.productId === productId) return product.plan;
   }

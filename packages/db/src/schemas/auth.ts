@@ -32,7 +32,7 @@ export const users = schema.table(
     username: text("username").unique(),
     displayUsername: text("display_username"),
   },
-  (table) => [index("users_email_idx").on(table.email)]
+  (table) => [index("users_email_idx").on(table.email)],
 );
 
 export const sessions = schema.table(
@@ -59,7 +59,7 @@ export const sessions = schema.table(
   (table) => [
     index("sessions_user_id_idx").on(table.userId),
     index("sessions_token_idx").on(table.token),
-  ]
+  ],
 );
 
 export const accounts = schema.table(
@@ -85,7 +85,7 @@ export const accounts = schema.table(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("accounts_user_id_idx").on(table.userId)]
+  (table) => [index("accounts_user_id_idx").on(table.userId)],
 );
 
 export const verifications = schema.table(
@@ -103,7 +103,7 @@ export const verifications = schema.table(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("verifications_identifier_idx").on(table.identifier)]
+  (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
 
 export const organizations = schema.table(
@@ -116,7 +116,7 @@ export const organizations = schema.table(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
     metadata: text("metadata"),
   },
-  (table) => [index("organizations_slug_idx").on(table.slug)]
+  (table) => [index("organizations_slug_idx").on(table.slug)],
 );
 
 export const teams = schema.table(
@@ -135,7 +135,7 @@ export const teams = schema.table(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("teams_organization_id_idx").on(table.organizationId)]
+  (table) => [index("teams_organization_id_idx").on(table.organizationId)],
 );
 
 export const teamMembers = schema.table(
@@ -153,7 +153,7 @@ export const teamMembers = schema.table(
   (table) => [
     index("team_members_team_id_idx").on(table.teamId),
     index("team_members_user_id_idx").on(table.userId),
-  ]
+  ],
 );
 
 export const members = schema.table(
@@ -172,7 +172,7 @@ export const members = schema.table(
   (table) => [
     index("members_user_id_idx").on(table.userId),
     index("members_organization_id_idx").on(table.organizationId),
-  ]
+  ],
 );
 
 export const invitations = schema.table(
@@ -196,7 +196,7 @@ export const invitations = schema.table(
   (table) => [
     index("invitations_email_idx").on(table.email),
     index("invitations_organization_id_idx").on(table.organizationId),
-  ]
+  ],
 );
 
 export const passkeys = schema.table(
@@ -219,7 +219,7 @@ export const passkeys = schema.table(
   (table) => [
     index("passkeys_credential_id_idx").on(table.credentialID),
     index("passkeys_user_id_idx").on(table.userId),
-  ]
+  ],
 );
 
 export const authSchema = {

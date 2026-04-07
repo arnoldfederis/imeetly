@@ -1,4 +1,5 @@
 import { BrainCircuitIcon, ClipboardListIcon, UploadIcon } from "lucide-react";
+import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 
 const steps = [
   {
@@ -28,34 +29,35 @@ export function HowItWorksSection() {
   return (
     <section className="border-y bg-muted/30 py-20" id="how-it-works">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto mb-14 max-w-2xl text-center">
+        <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
             Three steps to clarity
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             No setup, no integrations, no training. Just upload and go.
           </p>
-        </div>
+        </FadeIn>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <Stagger className="grid gap-8 md:grid-cols-3" staggerDelay={0.15}>
           {steps.map((s) => (
-            <div
-              className="relative rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5"
-              key={s.step}
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                  <s.icon className="size-5 text-primary" />
+            <StaggerItem key={s.step}>
+              <div className="relative rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+                    <s.icon className="size-5 text-primary" />
+                  </div>
+                  <span className="font-bold text-primary text-sm">
+                    {s.step}
+                  </span>
                 </div>
-                <span className="font-bold text-primary text-sm">{s.step}</span>
+                <h3 className="mb-2 font-semibold text-lg">{s.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {s.description}
+                </p>
               </div>
-              <h3 className="mb-2 font-semibold text-lg">{s.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {s.description}
-              </p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

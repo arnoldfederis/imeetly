@@ -47,8 +47,19 @@ function buildProvider(
 
 // --- Auto strategy ---
 // Development: skip Anthropic unless explicitly forced
-const AUTO_DEV: ExtractionProvider[] = ["groq-chunked", "openai", "groq", "mock"];
-const AUTO_PROD: ExtractionProvider[] = ["groq-chunked", "anthropic", "openai", "groq", "mock"];
+const AUTO_DEV: ExtractionProvider[] = [
+  "groq-chunked",
+  "openai",
+  "groq",
+  "mock",
+];
+const AUTO_PROD: ExtractionProvider[] = [
+  "groq-chunked",
+  "anthropic",
+  "openai",
+  "groq",
+  "mock",
+];
 
 function resolveChain(): ExtractionProvider[] {
   const isDev = env.APP_ENV === "development";

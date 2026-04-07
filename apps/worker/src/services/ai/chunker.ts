@@ -12,10 +12,7 @@ function estimateTokens(text: string): number {
  * Split transcript into chunks of roughly `maxTokens` each.
  * Splits on sentence boundaries to avoid cutting mid-thought.
  */
-export function chunkTranscript(
-  transcript: string,
-  maxTokens = 1500,
-): Chunk[] {
+export function chunkTranscript(transcript: string, maxTokens = 1500): Chunk[] {
   const sentences = transcript.match(/[^.!?]*[.!?]+[\s]*/g) ?? [transcript];
 
   const chunks: Chunk[] = [];

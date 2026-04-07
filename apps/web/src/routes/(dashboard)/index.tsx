@@ -1,19 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  CalendarIcon,
+  BrainCircuitIcon,
   CircleDotIcon,
+  ClipboardListIcon,
   ClockIcon,
   CreditCardIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
-  ListChecksIcon,
   PlusIcon,
+  SparklesIcon,
   TrendingUpIcon,
+  UploadIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
+import { UsageBanner } from "@/components/billing/usage-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +32,11 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
@@ -69,46 +77,53 @@ function DashboardPage() {
   const recent = data?.recent ?? [];
   const isFree = (planData?.plan ?? "free") === "free";
 
+  // Show onboarding welcome when user has never created a meeting
+  const isNewUser =
+    (stats?.meetingsThisMonth ?? 0) === 0 &&
+    (stats?.completedMeetings ?? 0) === 0 &&
+    recent.length === 0;
+
+  if (isNewUser) {
+    return <WelcomeView />;
+  }
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-semibold text-2xl tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Your meeting notes overview
           </p>
         </div>
-        <Button nativeButton={false} render={<Link to="/meetings/new" />}>
+        <Button
+          className="shrink-0"
+          nativeButton={false}
+          render={<Link to="/meetings/new" />}
+        >
           <PlusIcon data-icon="inline-start" />
-          New Meeting
+          <span className="hidden sm:inline">New Meeting</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatsCard
-          icon={<CalendarIcon />}
           title="Meetings This Month"
           value={stats?.meetingsThisMonth ?? 0}
         />
+        <StatsCard title="Processing Now" value={stats?.processingNow ?? 0} />
         <StatsCard
-          icon={<Spinner />}
-          title="Processing Now"
-          value={stats?.processingNow ?? 0}
-        />
-        <StatsCard
-          icon={<CircleDotIcon />}
           title="Open Action Items"
           value={stats?.openActionItems ?? 0}
         />
-        <StatsCard
-          icon={<ListChecksIcon />}
-          title="Completed"
-          value={stats?.meetingsThisMonth ?? 0}
-        />
+        <StatsCard title="Completed" value={stats?.completedMeetings ?? 0} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <UsageBanner />
+
+      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Recent Meetings</CardTitle>
@@ -155,7 +170,7 @@ function DashboardPage() {
           </Card>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Open Action Items</CardTitle>
@@ -184,6 +199,17 @@ function DashboardPage() {
                       </div>
                     </div>
                   ))}
+                  <div className="pt-2">
+                    <Button
+                      className="w-full"
+                      nativeButton={false}
+                      render={<Link to="/action-items" />}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      View all action items
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -191,27 +217,32 @@ function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Plan & Usage</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Plan & Usage</CardTitle>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
+                  {planData?.plan ?? "free"}
+                </span>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Current Plan</span>
-                  <Badge variant="secondary">{planData?.plan ?? "free"}</Badge>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Meetings / mo</span>
-                  <span>
-                    {planData?.usage.meetingsThisMonth ??
-                      stats?.meetingsThisMonth ??
-                      0}{" "}
-                    /{" "}
-                    {planData?.limits.meetingsPerMonth === -1
-                      ? "∞"
-                      : (planData?.limits.meetingsPerMonth ?? 5)}
-                  </span>
-                </div>
+              <div className="flex flex-col gap-4">
+                <Progress
+                  value={Math.min(
+                    ((planData?.usage.meetingsThisMonth ?? 0) /
+                      (planData?.limits.meetingsPerMonth === -1
+                        ? 1
+                        : (planData?.limits.meetingsPerMonth ?? 5))) *
+                      100,
+                    100,
+                  )}
+                >
+                  <ProgressLabel>Meetings</ProgressLabel>
+                  <ProgressValue>
+                    {() =>
+                      `${planData?.usage.meetingsThisMonth ?? 0} / ${planData?.limits.meetingsPerMonth === -1 ? "∞" : (planData?.limits.meetingsPerMonth ?? 5)}`
+                    }
+                  </ProgressValue>
+                </Progress>
                 {planData?.usage.limitReached && (
                   <p className="font-medium text-destructive text-xs">
                     Monthly limit reached. Upgrade to continue.
@@ -226,19 +257,20 @@ function DashboardPage() {
                       remaining this month
                     </p>
                   )}
+                <Separator />
                 {isFree ? (
                   <Button
-                    className="mt-2 w-full"
+                    className="w-full"
                     onClick={() => setUpgradeOpen(true)}
                     size="sm"
                     variant="outline"
                   >
                     <TrendingUpIcon data-icon="inline-start" />
-                    Upgrade Plan
+                    Start Pro
                   </Button>
                 ) : (
                   <Button
-                    className="mt-2 w-full"
+                    className="w-full"
                     nativeButton={false}
                     render={<Link search={{}} to="/settings/billing" />}
                     size="sm"
@@ -254,29 +286,112 @@ function DashboardPage() {
         </div>
       </div>
 
-      <UpgradeDialog onOpenChange={setUpgradeOpen} open={upgradeOpen} />
+      <UpgradeDialog
+        onOpenChange={setUpgradeOpen}
+        open={upgradeOpen}
+        reason={planData?.usage.limitReached ? "limit-reached" : "default"}
+      />
     </div>
   );
 }
 
+// ── Onboarding Welcome View ──
+
+function WelcomeView() {
+  return (
+    <div className="flex flex-col items-center justify-center py-12">
+      <div className="mx-auto flex max-w-lg flex-col items-center text-center">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10">
+          <SparklesIcon className="size-8 text-primary" />
+        </div>
+
+        <h1 className="mt-6 font-bold text-3xl tracking-tight">
+          Turn your meetings into clear, actionable notes
+        </h1>
+        <p className="mt-3 text-lg text-muted-foreground">
+          Upload a recording or paste a transcript — imeetly will generate
+          summaries, decisions, blockers, and action items automatically.
+        </p>
+
+        <Button
+          className="mt-8"
+          nativeButton={false}
+          render={<Link to="/meetings/new" />}
+          size="lg"
+        >
+          <UploadIcon data-icon="inline-start" />
+          Upload your first meeting
+        </Button>
+
+        <p className="mt-3 text-muted-foreground text-xs">
+          5 meetings per month on the free plan. No credit card required.
+        </p>
+      </div>
+
+      <div className="mx-auto mt-16 grid w-full max-w-4xl gap-8 lg:grid-cols-3">
+        <StepCard
+          description="Drop in an audio file, video recording, or paste your transcript. We support all major formats."
+          icon={<UploadIcon className="size-5 text-primary" />}
+          step="01"
+          title="Upload recording or transcript"
+        />
+        <StepCard
+          description="Our AI analyzes the full conversation and extracts summaries, decisions, blockers, and action items."
+          icon={<BrainCircuitIcon className="size-5 text-primary" />}
+          step="02"
+          title="AI processes your meeting"
+        />
+        <StepCard
+          description="Get a clean summary with structured action items. Share with your team or export as needed."
+          icon={<ClipboardListIcon className="size-5 text-primary" />}
+          step="03"
+          title="Review and take action"
+        />
+      </div>
+    </div>
+  );
+}
+
+function StepCard({
+  step,
+  title,
+  description,
+  icon,
+}: {
+  step: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+          {icon}
+        </div>
+        <span className="font-bold text-primary text-sm">{step}</span>
+      </div>
+      <h3 className="mb-2 font-semibold text-lg">{title}</h3>
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+// ── Shared Components ──
+
 function StatsCard({
   title,
   value,
-  icon,
 }: {
   title: string;
   value: string | number;
-  icon: React.ReactNode;
 }) {
   return (
     <Card size="sm">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardDescription>{title}</CardDescription>
-          <span className="text-muted-foreground [&>svg:not([class*='size-'])]:size-4">
-            {icon}
-          </span>
-        </div>
+        <CardDescription>{title}</CardDescription>
         <CardTitle className="text-2xl">{value}</CardTitle>
       </CardHeader>
     </Card>
@@ -323,22 +438,20 @@ function MeetingRow({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-    }
-  > = {
-    draft: { label: "Draft", variant: "outline" },
-    pending: { label: "Pending", variant: "secondary" },
-    processing: { label: "Processing", variant: "default" },
-    completed: { label: "Completed", variant: "secondary" },
-    failed: { label: "Failed", variant: "destructive" },
-  };
-  const { label, variant } = cfg[status] ?? {
-    label: status,
-    variant: "outline" as const,
-  };
-  return <Badge variant={variant}>{label}</Badge>;
+  if (status === "processing" || status === "pending") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
+        {status}
+      </span>
+    );
+  }
+
+  const variant =
+    status === "completed"
+      ? "secondary"
+      : status === "failed"
+        ? "destructive"
+        : "outline";
+
+  return <Badge variant={variant}>{status}</Badge>;
 }

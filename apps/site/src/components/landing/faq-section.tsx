@@ -1,3 +1,4 @@
+import { FadeIn } from "@/components/common/motion";
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +21,7 @@ const faqs = [
   },
   {
     q: "What happens on the free plan?",
-    a: "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. You get 7 days of meeting history. Upgrade anytime for higher limits and extended history.",
+    a: "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. Your meeting history is always available. Upgrade anytime for higher limits.",
   },
   {
     q: "Can I edit the generated notes?",
@@ -36,25 +37,27 @@ export function FAQSection() {
   return (
     <section className="border-t py-20" id="faq">
       <div className="mx-auto max-w-3xl px-6">
-        <div className="mb-14 text-center">
+        <FadeIn className="mb-14 text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
             Frequently asked questions
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Everything you need to know about imeetly.
           </p>
-        </div>
+        </FadeIn>
 
-        <Accordion>
-          {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`}>
-              <AccordionTrigger>{faq.q}</AccordionTrigger>
-              <AccordionContent>
-                <p>{faq.a}</p>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <FadeIn delay={0.2}>
+          <Accordion collapsible type="single">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`}>
+                <AccordionTrigger>{faq.q}</AccordionTrigger>
+                <AccordionContent>
+                  <p>{faq.a}</p>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </FadeIn>
       </div>
     </section>
   );

@@ -10,9 +10,9 @@
 
 const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
-const DEFAULT_TITLE = "imeetly — AI Meeting Notes for Fast-Moving Teams";
+const DEFAULT_TITLE = "Your meetings, summarized in seconds — imeetly";
 const DEFAULT_DESCRIPTION =
-  "Upload meeting recordings or transcripts and instantly get AI-powered summaries, decisions, blockers, and action items. Start free.";
+  "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/icon-256.png`;
 
 interface SeoOptions {
@@ -88,7 +88,8 @@ export function organizationJsonLd() {
     name: SITE_NAME,
     url: SITE_URL,
     logo: `${SITE_URL}/icons/icon-256.png`,
-    description: DEFAULT_DESCRIPTION,
+    description:
+      "AI meeting notes for fast-moving teams. Upload recordings or transcripts and get summaries, decisions, and action items.",
     sameAs: [],
   };
 }
@@ -112,25 +113,30 @@ export function softwareAppJsonLd() {
       },
       {
         "@type": "Offer",
-        price: "19",
+        price: "12",
         priceCurrency: "USD",
-        name: "Pro",
+        name: "Pro (Monthly)",
         description: "50 meetings per month",
       },
       {
         "@type": "Offer",
-        price: "49",
+        price: "120",
         priceCurrency: "USD",
-        name: "Team",
-        description: "150 meetings per month",
+        name: "Pro (Yearly)",
+        description: "50 meetings per month — save $24/year",
+      },
+      {
+        "@type": "Offer",
+        price: "29",
+        priceCurrency: "USD",
+        name: "Team (Monthly)",
+        description: "150 meetings per month — coming soon",
       },
     ],
   };
 }
 
-export function faqJsonLd(
-  items: { question: string; answer: string }[],
-) {
+export function faqJsonLd(items: { question: string; answer: string }[]) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",

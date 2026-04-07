@@ -1,13 +1,14 @@
+import { FadeIn } from "@/components/common/motion";
 import { buttonVariants } from "@/components/ui/button";
 
-const APP_URL = "/login";
+const APP_URL = `${import.meta.env.VITE_APP_BASE_URL}/login`;
 
 export function CTASection() {
   return (
     <section className="border-t">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/[0.03] to-transparent" />
-        <div className="relative mx-auto max-w-3xl px-6 py-24 text-center">
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-primary/3 to-transparent" />
+        <FadeIn className="relative mx-auto max-w-3xl px-6 py-24 text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
             Ready to turn meetings into action?
           </h2>
@@ -17,19 +18,21 @@ export function CTASection() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={APP_URL}
               className={buttonVariants({ size: "lg" })}
+              href={APP_URL}
+              rel="noopener noreferrer"
+              target="_blank"
             >
               Start free
             </a>
             <a
-              href="#how-it-works"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
+              href="/#how-it-works"
             >
               See how it works
             </a>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );

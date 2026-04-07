@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/server";
 import { env } from "@repo/env";
 import { polarClient } from "@repo/server/lib/polar-client";
 import { base, privateProcedure } from "@repo/server/procedure";
@@ -17,11 +18,14 @@ export const billingController = base.router({
       await BillingService.resolveUserPlan(userId);
     const limits = getPlanLimits(plan);
 
-    const { count: meetingsThisMonth } =
-      await BillingService.getUserUsage(userId, "meetings_created", {
+    const { count: meetingsThisMonth } = await BillingService.getUserUsage(
+      userId,
+      "meetings_created",
+      {
         start: currentPeriodStart,
         end: currentPeriodEnd,
-      });
+      },
+    );
 
     const meetingsRemaining =
       limits.meetingsPerMonth === -1
@@ -80,6 +84,14 @@ export const billingController = base.router({
   createCheckout: privateProcedure
     .input(billingModel.createCheckoutRequest)
     .handler(async ({ input, context }) => {
+      // Team plan is not yet available for purchase
+      if (input.planSlug.startsWith("team-")) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "The Team plan is coming soon and not yet available.",
+          data: { code: "PLAN_NOT_AVAILABLE" },
+        });
+      }
+
       const product = POLAR_PRODUCTS[input.planSlug];
       const successUrl = `${env.APP_BASE_URL}/settings/billing?checkout=success`;
       const returnUrl = input.returnUrl

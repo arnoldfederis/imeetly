@@ -9,9 +9,6 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -41,6 +38,9 @@
       "cache": false
     },
     "db:migrate": {
+      "cache": false
+    },
+    "db:migrate-neon": {
       "cache": false
     },
     "expo:fix": {

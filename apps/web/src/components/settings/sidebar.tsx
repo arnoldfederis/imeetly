@@ -1,10 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  BellIcon,
   CreditCardIcon,
   LockIcon,
+  UserCircleIcon,
   UserRoundIcon,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -32,11 +33,34 @@ const settings = [
     url: "/settings/billing",
   },
   {
-    name: "Notifications",
-    icon: BellIcon,
-    url: "/settings/notifications",
+    name: "Account",
+    icon: UserCircleIcon,
+    url: "/settings/account",
   },
 ];
+
+export function SettingsMobileNav() {
+  const location = useLocation();
+  const { pathname } = location;
+
+  return (
+    <div className="flex gap-2 overflow-x-auto md:hidden">
+      {settings.map((setting) => (
+        <Button
+          className="shrink-0"
+          key={setting.name}
+          nativeButton={false}
+          render={<Link to={setting.url} />}
+          size="sm"
+          variant={pathname === setting.url ? "secondary" : "ghost"}
+        >
+          <setting.icon className="size-4" />
+          {setting.name}
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 export function SettingsSidebar() {
   const location = useLocation();

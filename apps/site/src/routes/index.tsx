@@ -36,7 +36,7 @@ const FAQ_ITEMS = [
   {
     question: "What happens on the free plan?",
     answer:
-      "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. You get 7 days of meeting history. Upgrade anytime for higher limits and extended history.",
+      "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. Your meeting history is always available. Upgrade anytime for higher limits.",
   },
   {
     question: "Can I edit the generated notes?",
@@ -54,8 +54,9 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     ...seo({
+      title: "Your meetings, summarized in seconds",
       description:
-        "Upload meeting recordings or transcripts and instantly get AI-powered summaries, decisions, blockers, and action items. Start free.",
+        "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.",
       path: "/",
     }),
     scripts: [

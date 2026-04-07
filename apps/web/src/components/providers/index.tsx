@@ -9,9 +9,7 @@ export function RootProvider(props: { children: React.ReactNode }) {
     <ThemeProvider>
       <QueryProvider>
         <JotaiProvider>
-          <TooltipProvider>
-            {props.children}
-          </TooltipProvider>
+          <TooltipProvider>{props.children}</TooltipProvider>
           <Toaster position="top-right" richColors />
         </JotaiProvider>
       </QueryProvider>

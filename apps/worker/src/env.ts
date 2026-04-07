@@ -11,14 +11,22 @@ export const env = createEnv({
 
     // S3 / Object Storage (Cloudflare R2)
     S3_ENDPOINT: string().check(minLength(1, "S3_ENDPOINT is required")),
-    S3_ACCESS_KEY_ID: string().check(minLength(1, "S3_ACCESS_KEY_ID is required")),
-    S3_SECRET_ACCESS_KEY: string().check(minLength(1, "S3_SECRET_ACCESS_KEY is required")),
+    S3_ACCESS_KEY_ID: string().check(
+      minLength(1, "S3_ACCESS_KEY_ID is required"),
+    ),
+    S3_SECRET_ACCESS_KEY: string().check(
+      minLength(1, "S3_SECRET_ACCESS_KEY is required"),
+    ),
     S3_BUCKET: string().check(minLength(1, "S3_BUCKET is required")),
     S3_REGION: string().check(minLength(1, "S3_REGION is required")),
 
     // Temporal
-    TEMPORAL_ADDRESS: string().check(minLength(1, "TEMPORAL_ADDRESS is required")),
-    TEMPORAL_NAMESPACE: string().check(minLength(1, "TEMPORAL_NAMESPACE is required")),
+    TEMPORAL_ADDRESS: string().check(
+      minLength(1, "TEMPORAL_ADDRESS is required"),
+    ),
+    TEMPORAL_NAMESPACE: string().check(
+      minLength(1, "TEMPORAL_NAMESPACE is required"),
+    ),
 
     // AI provider keys — all optional so missing keys don't crash startup
     OPENAI_API_KEY: optional(string()),

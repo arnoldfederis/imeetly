@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@repo/server/lib/auth-client";
 import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
-import { useNavigate } from "@tanstack/react-router";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderCircleIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
@@ -18,9 +18,18 @@ import {
 } from "@/components/ui/input-otp";
 
 export function OtpForm() {
-  const navigate = useNavigate();
   const { email, isVerifying } = useAtomValue(loginAtom);
   const setLoginAtom = useSetAtom(loginAtom);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = isVerifying
+      ? "Verifying... — imeetly"
+      : "Verify — imeetly";
+    return () => {
+      document.title = prev;
+    };
+  }, [isVerifying]);
 
   const form = useForm({
     defaultValues: {
@@ -52,7 +61,7 @@ export function OtpForm() {
       return;
     }
 
-    navigate({ to: "/" });
+    window.location.href = "/";
   }
 
   return (

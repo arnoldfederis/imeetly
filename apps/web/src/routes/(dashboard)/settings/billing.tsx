@@ -43,39 +43,56 @@ const PLANS = [
   {
     name: "Free",
     plan: "free",
+    monthlyPrice: "$0",
+    yearlyPrice: "$0",
     icon: <ZapIcon className="size-5" />,
     meetings: 5,
+    monthlySlug: undefined as undefined,
+    yearlySlug: undefined as undefined,
     features: [
       "5 meetings per month",
       "AI summaries & action items",
+      "Audio and video upload",
+      "Full meeting history",
       "100 MB max file size",
     ],
   },
   {
     name: "Pro",
     plan: "pro",
+    monthlyPrice: "$12",
+    yearlyPrice: "$120",
+    yearlySavings: "Save $24/year",
     icon: <CrownIcon className="size-5" />,
     meetings: 50,
     monthlySlug: "pro-monthly" as const,
+    yearlySlug: "pro-yearly" as const,
+    highlighted: true,
     features: [
       "50 meetings per month",
-      "500 MB max file size",
+      "Everything in Free",
       "Priority processing",
+      "Export to PDF & Markdown",
+      "500 MB max file size",
     ],
   },
   {
     name: "Team",
     plan: "team",
+    monthlyPrice: "$29",
+    yearlyPrice: "$288",
     icon: <UsersIcon className="size-5" />,
     meetings: 150,
     monthlySlug: "team-monthly" as const,
+    yearlySlug: "team-yearly" as const,
+    comingSoon: true,
     features: [
       "150 meetings per month",
+      "Everything in Pro",
       "1 GB max file size",
-      "Team collaboration",
     ],
   },
-] as const;
+];
 
 function BillingPage() {
   const { checkout } = Route.useSearch();
@@ -85,6 +102,7 @@ function BillingPage() {
     client.billing.getPlan.queryOptions(),
   );
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
+  const [yearly, setYearly] = useState(false);
   const syncedRef = useRef(false);
 
   useEffect(() => {
@@ -125,8 +143,29 @@ function BillingPage() {
       <UsageCard planData={planData} />
 
       <div>
-        <h2 className="mb-4 font-semibold text-lg">Plans</h2>
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="font-semibold text-lg">Plans</h2>
+          <div className="inline-flex items-center gap-1 rounded-full border bg-muted/50 p-1">
+            <button
+              className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setYearly(false)}
+              type="button"
+            >
+              Monthly
+            </button>
+            <button
+              className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setYearly(true)}
+              type="button"
+            >
+              Yearly
+              <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-primary text-xs">
+                -20%
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="grid gap-x-4 gap-y-8 lg:grid-cols-2 lg:gap-x-4 lg:gap-y-8 xl:grid-cols-3 xl:gap-4">
           {PLANS.map((plan) => (
             <PlanCard
               checkoutPlan={checkoutPlan}
@@ -134,6 +173,7 @@ function BillingPage() {
               key={plan.plan}
               onCheckoutChange={setCheckoutPlan}
               plan={plan}
+              yearly={yearly}
             />
           ))}
         </div>
@@ -183,11 +223,12 @@ function BillingPage() {
             <Separator />
             <div>
               <p className="font-medium text-foreground">
-                What if my meeting fails to process?
+                What's the difference between monthly and yearly?
               </p>
               <p>
-                Failed processing attempts are not counted towards your monthly
-                quota. You can safely retry without losing a meeting credit.
+                Yearly plans save you 20% compared to monthly. Usage limits
+                remain the same — they reset every month regardless of billing
+                cycle.
               </p>
             </div>
             <Separator />
@@ -275,24 +316,33 @@ function PlanCard({
   currentPlan,
   checkoutPlan,
   onCheckoutChange,
+  yearly,
 }: {
   plan: (typeof PLANS)[number];
   currentPlan: string;
   checkoutPlan: string | null;
   onCheckoutChange: (plan: string | null) => void;
+  yearly: boolean;
 }) {
   const isCurrent = plan.plan === currentPlan;
+  const isComingSoon = "comingSoon" in plan && plan.comingSoon;
+  const isHighlighted = "highlighted" in plan && plan.highlighted;
+  const slug = yearly ? plan.yearlySlug : plan.monthlySlug;
   const isCheckingOut = checkoutPlan === plan.plan;
   const isOtherCheckingOut =
     checkoutPlan !== null && checkoutPlan !== plan.plan;
 
+  const price = yearly ? plan.yearlyPrice : plan.monthlyPrice;
+  const periodLabel =
+    plan.plan === "free" ? "" : yearly ? " / year" : " / month";
+
   async function handleUpgrade() {
-    if (!("monthlySlug" in plan) || !plan.monthlySlug) return;
+    if (!slug) return;
 
     onCheckoutChange(plan.plan);
     try {
       const { url } = await server.billing.createCheckout({
-        planSlug: plan.monthlySlug,
+        planSlug: slug,
       });
       window.location.href = url;
     } catch (err) {
@@ -304,7 +354,19 @@ function PlanCard({
   }
 
   return (
-    <Card className={isCurrent ? "border-primary" : undefined}>
+    <Card
+      className={`relative flex flex-col ${isCurrent ? "border-primary" : isHighlighted ? "border-primary shadow-lg shadow-primary/10" : ""}`}
+    >
+      {isHighlighted && !isCurrent && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 font-medium text-primary-foreground text-xs">
+          Most popular
+        </div>
+      )}
+      {isComingSoon && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-muted-foreground px-3 py-0.5 font-medium text-background text-xs">
+          Coming soon
+        </div>
+      )}
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -313,12 +375,21 @@ function PlanCard({
           </div>
           {isCurrent && <Badge>Current</Badge>}
         </div>
-        <CardDescription>
-          {`${plan.meetings} meetings`} / month
-        </CardDescription>
+        <div className="mt-1">
+          <span className="font-bold text-2xl">{price}</span>
+          <span className="text-muted-foreground text-sm">{periodLabel}</span>
+        </div>
+        {yearly &&
+          "yearlySavings" in plan &&
+          (plan as { yearlySavings?: string }).yearlySavings && (
+            <p className="font-medium text-primary text-xs">
+              {(plan as { yearlySavings: string }).yearlySavings}
+            </p>
+          )}
+        <CardDescription>{`${plan.meetings} meetings`} / month</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <ul className="flex flex-col gap-2 text-sm">
+      <CardContent className="flex flex-1 flex-col gap-4">
+        <ul className="flex flex-1 flex-col gap-2 text-sm">
           {plan.features.map((f) => (
             <li className="flex items-center gap-2" key={f}>
               <CheckIcon className="size-4 text-green-500" />
@@ -330,6 +401,10 @@ function PlanCard({
         {isCurrent ? (
           <Button disabled size="sm" variant="outline">
             Current Plan
+          </Button>
+        ) : isComingSoon ? (
+          <Button disabled size="sm" variant="outline">
+            Coming Soon
           </Button>
         ) : plan.plan === "free" ? (
           <Button disabled size="sm" variant="outline">

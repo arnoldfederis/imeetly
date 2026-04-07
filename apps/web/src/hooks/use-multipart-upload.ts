@@ -94,7 +94,7 @@ export function useMultipartUpload() {
           await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
         }
       }
-      throw lastError!;
+      throw lastError ?? new Error("Upload failed after retries");
     },
     [uploadPart],
   );
@@ -163,14 +163,13 @@ export function useMultipartUpload() {
 
       const totalParts = Math.ceil(file.size / CHUNK_SIZE);
 
-      const { fileId } =
-        await server.meeting.initiateMultipartUpload({
-          meetingId,
-          fileName: file.name,
-          mimeType: file.type,
-          fileSize: file.size,
-          totalParts,
-        });
+      const { fileId } = await server.meeting.initiateMultipartUpload({
+        meetingId,
+        fileName: file.name,
+        mimeType: file.type,
+        fileSize: file.size,
+        totalParts,
+      });
 
       setState("uploading");
 
@@ -200,7 +199,10 @@ export function useMultipartUpload() {
 
           // Grab next batch of part numbers for URL signing
           const batchStart = queueIdx;
-          const batchEnd = Math.min(queueIdx + PART_URL_BATCH_SIZE, queue.length);
+          const batchEnd = Math.min(
+            queueIdx + PART_URL_BATCH_SIZE,
+            queue.length,
+          );
           const batchPartNumbers = queue.slice(batchStart, batchEnd);
           queueIdx = batchEnd;
 
@@ -235,9 +237,7 @@ export function useMultipartUpload() {
       try {
         // Launch concurrent workers
         const concurrency = Math.min(MAX_CONCURRENCY, totalParts);
-        await Promise.all(
-          Array.from({ length: concurrency }, () => worker()),
-        );
+        await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
         if (abortedRef.current) {
           await server.meeting.abortMultipartUpload({ meetingId, fileId });

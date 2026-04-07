@@ -6,6 +6,7 @@ import {
   UploadCloudIcon,
   UsersIcon,
 } from "lucide-react";
+import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 
 const features = [
   {
@@ -50,7 +51,7 @@ export function FeaturesSection() {
   return (
     <section className="py-20" id="features">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto mb-14 max-w-2xl text-center">
+        <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
             Everything you need after every meeting
           </h2>
@@ -58,24 +59,26 @@ export function FeaturesSection() {
             imeetly extracts the signal from every conversation so your team can
             focus on doing, not documenting.
           </p>
-        </div>
+        </FadeIn>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Stagger
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          staggerDelay={0.1}
+        >
           {features.map((f) => (
-            <div
-              className="group rounded-2xl border bg-card p-6 transition-shadow hover:shadow-lg hover:shadow-primary/5"
-              key={f.title}
-            >
-              <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
-                <f.icon className="size-5 text-primary" />
+            <StaggerItem key={f.title}>
+              <div className="group rounded-2xl border bg-card p-6 transition-shadow hover:shadow-lg hover:shadow-primary/5">
+                <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+                  <f.icon className="size-5 text-primary" />
+                </div>
+                <h3 className="mb-2 font-semibold">{f.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {f.description}
+                </p>
               </div>
-              <h3 className="mb-2 font-semibold">{f.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {f.description}
-              </p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );
