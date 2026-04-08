@@ -89,6 +89,8 @@ jobs:
           tags: |
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:latest
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:${{ github.sha }}
+          build-args: |
+            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
 
       - name: Build and push web
         uses: docker/build-push-action@v6
@@ -130,6 +132,14 @@ jobs:
     environment: production
 
     steps:
+      - name: Stop compose
+        run: |
+          curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.stop" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}'
+        continue-on-error: true
+
       - name: Redeploy compose
         run: |
           curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.redeploy" \
