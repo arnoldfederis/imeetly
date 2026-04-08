@@ -35,5 +35,5 @@ RUN mkdir -p node_modules/@tanstack/react-start && \
     echo 'export function setCookie() {}' > node_modules/@tanstack/react-start/server.js
 
 ENV NODE_ENV=production
-EXPOSE 4000
+EXPOSE 3000
 CMD ["./server"]

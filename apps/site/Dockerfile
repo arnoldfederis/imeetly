@@ -25,7 +25,7 @@ WORKDIR /app
 COPY --from=build /app/apps/site/.output /app/.output
 
 ENV NODE_ENV=production
-ENV PORT=4002
+ENV PORT=3000
 
-EXPOSE 4002
+EXPOSE 3000
 CMD ["bun", ".output/server/index.mjs"]
