@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BrainCircuitIcon,
-  Clock3Icon,
   CircleDotIcon,
   ClipboardListIcon,
+  Clock3Icon,
   ClockIcon,
   CreditCardIcon,
   FileAudioIcon,
@@ -381,7 +381,7 @@ function StepCard({
         </div>
         <span className="font-bold text-primary text-sm">{step}</span>
         {badge ? (
-          <span className="rounded-full border border-dashed border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700">
+          <span className="rounded-full border border-amber-500/40 border-dashed bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700">
             {badge}
           </span>
         ) : null}

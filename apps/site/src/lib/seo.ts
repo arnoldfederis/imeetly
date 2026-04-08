@@ -10,7 +10,8 @@
 
 const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
-const DEFAULT_TITLE = "Your meetings, summarized in seconds. Start free — imeetly";
+const DEFAULT_TITLE =
+  "Your meetings, summarized in seconds. Start free — imeetly";
 const DEFAULT_DESCRIPTION =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;

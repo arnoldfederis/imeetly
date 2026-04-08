@@ -128,7 +128,6 @@ function MeetingsPage() {
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
-            ref={searchInputRef}
             onChange={(e) => {
               const nextValue = e.target.value;
               setSearch(nextValue);
@@ -137,6 +136,7 @@ function MeetingsPage() {
               }
             }}
             placeholder="Search meetings..."
+            ref={searchInputRef}
             value={search}
           />
         </InputGroup>
