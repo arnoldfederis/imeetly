@@ -13,7 +13,7 @@ const SITE_URL = "https://imeetly.app";
 const DEFAULT_TITLE = "Your meetings, summarized in seconds — imeetly";
 const DEFAULT_DESCRIPTION =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/icons/icon-256.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SeoOptions {
   /** Page title. Appended with " — imeetly" unless it already contains it. */
@@ -130,6 +130,13 @@ export function softwareAppJsonLd() {
         price: "29",
         priceCurrency: "USD",
         name: "Team (Monthly)",
+        description: "150 meetings per month — coming soon",
+      },
+      {
+        "@type": "Offer",
+        price: "288",
+        priceCurrency: "USD",
+        name: "Team (Yearly)",
         description: "150 meetings per month — coming soon",
       },
     ],
