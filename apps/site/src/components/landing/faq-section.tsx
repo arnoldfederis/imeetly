@@ -6,18 +6,26 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const faqs = [
+export const faqs = [
+  {
+    q: "What is imeetly?",
+    a: "imeetly is an AI meeting summarizer that turns recordings and transcripts into clear, structured notes. Upload audio, video, or text and get summaries, action items, decisions, and blockers in seconds.",
+  },
+  {
+    q: "How does AI meeting summarization work?",
+    a: "Upload a recording or paste a transcript. Our AI analyzes the full conversation using meeting transcription AI to extract key points, decisions, and action items — then delivers structured meeting notes you can share with your team.",
+  },
   {
     q: "What file types can I upload?",
     a: "imeetly supports all major audio formats (MP3, WAV, M4A, OGG, FLAC) and video formats (MP4, MOV, WebM). You can also paste raw text transcripts directly.",
   },
   {
-    q: "Do you store my files permanently?",
-    a: "Uploaded files are processed and then deleted from our servers. We only store the generated notes and transcripts — never the original recordings. You can delete your data at any time from your settings.",
+    q: "Can I use imeetly for team meetings?",
+    a: "Yes. imeetly is built for meeting notes for teams. The Team plan gives you shared meeting libraries, visibility into action items across the team, and collaborative workflows so everyone stays aligned.",
   },
   {
-    q: "Can I upload video and audio?",
-    a: "Yes. You can upload both video and audio recordings. For video files, we extract and process the audio track automatically — no extra steps needed.",
+    q: "Does imeetly save meeting notes automatically?",
+    a: "Yes. Once your meeting is processed, the AI meeting notes are saved to your account automatically. Your full meeting history is searchable and always available.",
   },
   {
     q: "What happens on the free plan?",
@@ -25,11 +33,15 @@ const faqs = [
   },
   {
     q: "Can I edit the generated notes?",
-    a: "Yes. All generated summaries, action items, and decisions are fully editable. You can refine, add context, or remove anything before sharing with your team.",
+    a: "Yes. All generated AI meeting summaries, action items, and decisions are fully editable. You can refine, add context, or remove anything before sharing with your team.",
   },
   {
-    q: "Is this for teams or solo users?",
-    a: "Both. Individual users love imeetly for personal meeting notes and tracking. Teams use the Team plan for shared meeting libraries, visibility into action items, and collaborative workflows.",
+    q: "Do you store my recordings?",
+    a: "No. Uploaded files are processed and then deleted from our servers. We only store the generated notes and transcripts — never the original recordings. You can delete your data at any time.",
+  },
+  {
+    q: "Who is imeetly for?",
+    a: "imeetly is for anyone who runs meetings — product teams, startups, agencies, founders, and recruiters. If you spend time in meetings and need clear notes without the busywork, imeetly is for you.",
   },
 ];
 
