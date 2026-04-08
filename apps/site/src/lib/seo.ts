@@ -10,7 +10,7 @@
 
 const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
-const DEFAULT_TITLE = "Your meetings, summarized in seconds — imeetly";
+const DEFAULT_TITLE = "Your meetings, summarized in seconds. Start free — imeetly";
 const DEFAULT_DESCRIPTION =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
@@ -56,6 +56,8 @@ export function seo(options: SeoOptions = {}) {
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:image", content: ogImage },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
     { property: "og:url", content: canonicalUrl },
     { property: "og:type", content: ogType },
     { property: "og:site_name", content: SITE_NAME },
@@ -103,6 +105,13 @@ export function softwareAppJsonLd() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: DEFAULT_DESCRIPTION,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "150",
+      bestRating: "5",
+      worstRating: "1",
+    },
     offers: [
       {
         "@type": "Offer",

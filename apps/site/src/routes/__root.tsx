@@ -1,7 +1,6 @@
 import {
   createRootRoute,
   HeadContent,
-  Outlet,
   Scripts,
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/providers/theme";
@@ -9,7 +8,6 @@ import { ThemeProvider } from "@/components/providers/theme";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
-  component: RootComponent,
   head: () => ({
     links: [
       {
@@ -59,14 +57,6 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
-function RootComponent() {
-  return (
-    <ThemeProvider>
-      <Outlet />
-    </ThemeProvider>
-  );
-}
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -74,7 +64,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <Scripts />
       </body>
     </html>

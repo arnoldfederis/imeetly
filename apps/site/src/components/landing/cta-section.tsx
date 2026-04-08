@@ -10,7 +10,7 @@ export function CTASection() {
         <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-primary/3 to-transparent" />
         <FadeIn className="relative mx-auto max-w-3xl px-6 py-24 text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-            Ready to turn meetings into action?
+            Your AI meeting summarizer is ready
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground">
             Join teams that spend less time on notes and more time on what
