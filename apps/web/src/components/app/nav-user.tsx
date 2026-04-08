@@ -87,6 +87,7 @@ export function NavUser({ user }: Props) {
         <DropdownMenuItem
           className="hover:rounded-md hover:bg-secondary"
           onClick={handleLogout}
+          onSelect={(e) => e.preventDefault()}
         >
           {isPending ? (
             <LoaderCircleIcon className="animate-spin" />

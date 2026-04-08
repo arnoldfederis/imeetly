@@ -8,7 +8,6 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { UsageBanner } from "@/components/billing/usage-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -163,8 +162,6 @@ function MeetingsPage() {
         Search across meeting titles, participants, transcripts, summaries,
         decisions, blockers, and action items.
       </p>
-
-      <UsageBanner />
 
       {meetings.length === 0 ? (
         <Empty>

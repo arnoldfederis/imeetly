@@ -24,9 +24,9 @@ const UPGRADE_PLANS = [
   {
     name: "Pro",
     plan: "pro",
-    monthlyPrice: "$12/mo",
-    yearlyPrice: "$120/yr",
-    yearlySavings: "Save $24",
+    monthlyPrice: "$15/mo",
+    yearlyPrice: "$150/yr",
+    yearlySavings: "Save $30",
     monthlySlug: "pro-monthly" as const,
     yearlySlug: "pro-yearly" as const,
     icon: <CrownIcon className="size-5" />,
@@ -34,19 +34,19 @@ const UPGRADE_PLANS = [
     highlights: [
       "Priority processing",
       "Export to PDF & Markdown",
-      "500 MB max file",
+      "500 MB max file size",
     ],
   },
   {
     name: "Team",
     plan: "team",
-    monthlyPrice: "$29/mo",
-    yearlyPrice: "$288/yr",
+    monthlyPrice: "$39/mo",
+    yearlyPrice: "$390/yr",
     monthlySlug: "team-monthly" as const,
     yearlySlug: "team-yearly" as const,
     icon: <UsersIcon className="size-5" />,
     meetings: "150 meetings / month",
-    highlights: ["Everything in Pro", "1 GB max file"],
+    highlights: ["Everything in Pro", "1 GB max file size"],
     comingSoon: true,
   },
 ] as const;
@@ -122,14 +122,14 @@ export function UpgradeDialog({
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-1 rounded-full border bg-muted/50 p-1">
               <button
-                className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                className={`cursor-pointer rounded-full px-3 py-1 font-medium text-xs transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 onClick={() => setYearly(false)}
                 type="button"
               >
                 Monthly
               </button>
               <button
-                className={`rounded-full px-3 py-1 font-medium text-xs transition-colors ${yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                className={`cursor-pointer rounded-full px-3 py-1 font-medium text-xs transition-colors ${yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 onClick={() => setYearly(true)}
                 type="button"
               >
@@ -186,16 +186,14 @@ export function UpgradeDialog({
                         className="flex items-center gap-1.5 text-muted-foreground text-xs"
                         key={h}
                       >
-                        <CheckIcon className="size-3.5 shrink-0 text-green-500" />
+                        <CheckIcon className="size-3.5 shrink-0 text-primary" />
                         {h}
                       </li>
                     ))}
                   </ul>
                 </div>
                 {isComingSoon ? (
-                  <Button disabled size="sm" variant="outline">
-                    Coming Soon
-                  </Button>
+                  <></>
                 ) : (
                   <Button
                     disabled={isCurrent || loading !== null}

@@ -12,7 +12,8 @@ const mailerClient = nodemailer.createTransport({
       ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
       : undefined,
   tls: {
-    rejectUnauthorized: false,
+    // Only skip cert validation for local dev SMTP (e.g. mailpit); always validate in production
+    rejectUnauthorized: env.APP_ENV !== "development",
   },
 });
 

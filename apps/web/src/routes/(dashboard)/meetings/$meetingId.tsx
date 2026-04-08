@@ -521,7 +521,7 @@ function MeetingDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="max-h-64 overflow-y-auto rounded-md">
-              <div className="whitespace-pre-wrap rounded-md bg-muted/50 p-4 font-mono text-sm">
+              <div className="overflow-y-auto whitespace-pre-wrap rounded-md bg-muted/50 p-4 font-mono text-sm">
                 {meeting.transcriptText}
               </div>
             </div>

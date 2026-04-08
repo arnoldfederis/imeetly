@@ -64,19 +64,29 @@ const AUTO_PROD: TranscriptionProvider[] = [
 ];
 
 function resolveChain(): TranscriptionProvider[] {
+  const isProd = env.APP_ENV === "production";
   const isDev = env.APP_ENV === "development";
   const configured = (env.AI_TRANSCRIPTION_PROVIDER ?? "auto") as string;
   const fallback = env.AI_TRANSCRIPTION_FALLBACK as
     | TranscriptionProvider
     | undefined;
 
+  // In production, mock fallback is always disabled
+  if (isProd && fallback === "mock") {
+    console.warn("[transcribe] Mock fallback disabled in production");
+  }
+  const effectiveFallback =
+    isProd && fallback === "mock" ? undefined : fallback;
+
   if (configured === "auto") {
-    return isDev ? AUTO_DEV : AUTO_PROD;
+    const chain = isDev ? AUTO_DEV : AUTO_PROD;
+    // Strip mock from production auto chains
+    return isProd ? chain.filter((p) => p !== "mock") : chain;
   }
 
   const chain: TranscriptionProvider[] = [configured as TranscriptionProvider];
-  if (fallback && fallback !== configured) {
-    chain.push(fallback);
+  if (effectiveFallback && effectiveFallback !== configured) {
+    chain.push(effectiveFallback);
   }
   return chain;
 }

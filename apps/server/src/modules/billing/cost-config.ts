@@ -16,8 +16,8 @@ export const costConfig = {
  * Used for profit calculation. Keep in sync with Polar.
  */
 export const planPricing = {
-  monthly: { free: 0, pro: 12, team: 29 } as Record<string, number>,
-  yearly: { free: 0, pro: 120, team: 288 } as Record<string, number>,
+  monthly: { free: 0, pro: 15, team: 39 } as Record<string, number>,
+  yearly: { free: 0, pro: 150, team: 390 } as Record<string, number>,
 };
 
 /** Helper to get the monthly-equivalent price for profit calculations. */

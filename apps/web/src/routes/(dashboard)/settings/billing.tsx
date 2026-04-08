@@ -60,9 +60,9 @@ const PLANS = [
   {
     name: "Pro",
     plan: "pro",
-    monthlyPrice: "$12",
-    yearlyPrice: "$120",
-    yearlySavings: "Save $24/year",
+    monthlyPrice: "$15",
+    yearlyPrice: "$150",
+    yearlySavings: "Save $30/year",
     icon: <CrownIcon className="size-5" />,
     meetings: 50,
     monthlySlug: "pro-monthly" as const,
@@ -79,8 +79,8 @@ const PLANS = [
   {
     name: "Team",
     plan: "team",
-    monthlyPrice: "$29",
-    yearlyPrice: "$288",
+    monthlyPrice: "$39",
+    yearlyPrice: "$390",
     icon: <UsersIcon className="size-5" />,
     meetings: 150,
     monthlySlug: "team-monthly" as const,
@@ -392,7 +392,7 @@ function PlanCard({
         <ul className="flex flex-1 flex-col gap-2 text-sm">
           {plan.features.map((f) => (
             <li className="flex items-center gap-2" key={f}>
-              <CheckIcon className="size-4 text-green-500" />
+              <CheckIcon className="size-4 text-primary" />
               {f}
             </li>
           ))}

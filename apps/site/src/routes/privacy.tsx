@@ -23,242 +23,323 @@ function PrivacyPage() {
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 7, 2026
+            Last updated: April 9, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
             <section>
               <h2>1. Introduction</h2>
               <p className="mt-3">
-                imeetly (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
-                provides an AI-powered meeting notes service that helps you turn
-                meeting recordings and transcripts into structured summaries,
-                decisions, blockers, and action items. This Privacy Policy
-                explains how we collect, use, and protect your information when
-                you use our website and service.
+                imeetly, operated by Arnolfo Laureta Federis (&quot;we,&quot;
+                &quot;us,&quot; or &quot;our&quot;), provides an AI-powered
+                meeting notes service that turns meeting recordings and
+                transcripts into structured summaries, decisions, blockers, and
+                action items. This Privacy Policy explains what information we
+                collect, how we use it, and the choices you have.
               </p>
               <p className="mt-3">
                 By using imeetly, you agree to the practices described in this
-                policy.
+                policy. If you do not agree, please do not use the service.
               </p>
             </section>
 
             <section>
               <h2>2. Information We Collect</h2>
               <p className="mt-3">
-                We collect the following types of information:
+                We collect the following categories of information:
               </p>
               <ul className="mt-3">
                 <li>
                   <strong>Account information:</strong> your name, email
-                  address, and authentication credentials when you create an
-                  account.
+                  address, and authentication credentials when you sign up. If
+                  you authenticate via Google OAuth, we receive your name, email
+                  address, and profile picture from Google.
                 </li>
                 <li>
                   <strong>Uploaded content:</strong> audio, video, or text files
-                  you upload for processing.
+                  you submit for processing.
                 </li>
                 <li>
-                  <strong>Generated outputs:</strong> summaries, decisions,
-                  blockers, action items, and transcripts produced by our AI
-                  processing.
+                  <strong>Generated outputs:</strong> transcripts, summaries,
+                  decisions, blockers, and action items produced by our AI
+                  pipeline.
                 </li>
                 <li>
-                  <strong>Usage data:</strong> information about how you
-                  interact with the service, including features used and meeting
-                  counts.
+                  <strong>Meeting metadata:</strong> meeting titles, dates,
+                  participant names, and processing status.
                 </li>
                 <li>
-                  <strong>Billing information:</strong> payment details
-                  processed through our payment provider. We do not store full
-                  payment card details on our servers.
+                  <strong>Usage data:</strong> which features you use, how many
+                  meetings you have processed, and similar activity information.
                 </li>
                 <li>
-                  <strong>Device and log data:</strong> IP address, browser
-                  type, and basic access logs collected automatically.
+                  <strong>Billing information:</strong> subscription status and
+                  plan tier. Payment card details are handled directly by our
+                  payment provider (Polar) and are never stored on our servers.
+                </li>
+                <li>
+                  <strong>Session and authentication data:</strong> session
+                  tokens, device identifiers, and passkey credentials used to
+                  keep you securely signed in.
+                </li>
+                <li>
+                  <strong>Technical and log data:</strong> IP address, browser
+                  type, and basic access logs collected automatically when you
+                  interact with the service.
                 </li>
               </ul>
             </section>
 
             <section>
-              <h2>3. How We Use Information</h2>
+              <h2>3. How We Use Your Information</h2>
               <p className="mt-3">We use the information we collect to:</p>
               <ul className="mt-3">
-                <li>Provide, maintain, and improve the imeetly service.</li>
+                <li>Provide, operate, and maintain the imeetly service.</li>
                 <li>
-                  Process your uploaded content and generate meeting notes,
-                  summaries, and action items.
-                </li>
-                <li>Manage your account and billing.</li>
-                <li>
-                  Communicate with you about your account, service updates, or
-                  support requests.
+                  Authenticate your identity and keep your account secure.
                 </li>
                 <li>
-                  Monitor usage for security, abuse prevention, and service
+                  Process uploaded content and generate meeting notes,
+                  summaries, and action items using AI.
+                </li>
+                <li>Manage your subscription and process billing.</li>
+                <li>
+                  Send transactional emails such as verification codes and
+                  account notices. We do not send marketing emails without your
+                  consent.
+                </li>
+                <li>
+                  Monitor service performance, investigate errors, and improve
                   reliability.
                 </li>
+                <li>
+                  Detect and prevent abuse, fraud, or unauthorized access.
+                </li>
               </ul>
             </section>
 
             <section>
-              <h2>4. Uploaded Content and Processing</h2>
+              <h2>4. AI Processing and Uploaded Content</h2>
               <p className="mt-3">
-                When you upload audio, video, or text files, our service
-                processes them using AI to extract structured meeting notes. It
-                is important to understand the distinction between your uploaded
-                source files and the outputs we generate:
+                When you upload a meeting recording or paste a transcript, our
+                service sends that content to AI processing pipelines to produce
+                transcripts, summaries, and action items. There are a few
+                important things to understand about this:
               </p>
               <ul className="mt-3">
                 <li>
-                  <strong>Uploaded source files</strong> (audio, video, or raw
-                  text) are used solely for processing and are not retained
-                  permanently.
+                  <strong>
+                    We do not use your content to train AI models.
+                  </strong>{" "}
+                  Your meeting data is processed solely to deliver the service
+                  to you.
                 </li>
                 <li>
-                  <strong>Generated outputs</strong> (summaries, transcripts,
-                  decisions, blockers, and action items) are stored in your
-                  account so you can access and manage them.
+                  <strong>AI outputs may not be accurate.</strong> Transcripts
+                  and summaries are generated automatically and may contain
+                  errors, omissions, or misattributions. You should review all
+                  outputs before relying on them or sharing them.
+                </li>
+                <li>
+                  <strong>
+                    Third-party AI providers process your content.
+                  </strong>{" "}
+                  To deliver the service, your audio, video, or transcript
+                  content is sent to one or more of the AI providers listed in
+                  Section 6. These providers process content on our behalf under
+                  their own data processing terms.
+                </li>
+                <li>
+                  <strong>Uploaded source files are temporary.</strong> After
+                  processing, the original uploaded file is deleted from our
+                  storage. Only the structured outputs (summaries, transcripts,
+                  action items) and associated metadata are retained in your
+                  account.
                 </li>
               </ul>
               <p className="mt-3">
-                We do not use your uploaded content or generated outputs to
-                train AI models. Your meeting data is processed to provide the
-                service to you and is not shared with other users.
+                If processing fails, the temporary file may be retained briefly
+                for retry before being deleted.
               </p>
             </section>
 
             <section>
-              <h2>5. Temporary File Handling and Retention</h2>
+              <h2>5. Third-Party Service Providers</h2>
               <p className="mt-3">
-                Uploaded source files are temporary. After your file has been
-                successfully processed, the original uploaded file is deleted
-                from our systems. We retain only the structured outputs
-                (summaries, transcripts, action items, etc.) and associated
-                metadata in your account.
-              </p>
-              <p className="mt-3">
-                If processing fails, temporary files may be retained briefly for
-                retry purposes before being deleted.
-              </p>
-            </section>
-
-            <section>
-              <h2>6. Third-Party Services</h2>
-              <p className="mt-3">
-                We use third-party service providers to help operate and deliver
-                our service. These may include:
+                We work with the following third-party providers to operate the
+                service. Each receives only the data necessary to perform their
+                function:
               </p>
               <ul className="mt-3">
                 <li>
-                  <strong>Cloud infrastructure providers</strong> for hosting,
-                  storage, and content delivery.
+                  <strong>Polar</strong> — payment processing and subscription
+                  management. Polar handles billing and stores payment card
+                  details.
                 </li>
                 <li>
-                  <strong>AI processing providers</strong> for transcription and
-                  natural language processing.
+                  <strong>Resend</strong> — transactional email delivery
+                  (verification codes, account notices).
                 </li>
                 <li>
-                  <strong>Payment processors</strong> for handling billing and
-                  subscriptions.
+                  <strong>Cloudflare R2</strong> — object storage for
+                  temporarily holding uploaded files during processing.
                 </li>
                 <li>
-                  <strong>Email service providers</strong> for transactional
-                  communications.
+                  <strong>Deepgram</strong> — speech-to-text transcription of
+                  audio and video files.
+                </li>
+                <li>
+                  <strong>Groq</strong> — AI language model used for meeting
+                  summary and action item extraction.
+                </li>
+                <li>
+                  <strong>OpenAI</strong> — AI language model used as a fallback
+                  for extraction when the primary provider is unavailable.
+                </li>
+                <li>
+                  <strong>Google</strong> — OAuth 2.0 sign-in. If you use
+                  &quot;Sign in with Google,&quot; Google shares basic profile
+                  information with us.
                 </li>
               </ul>
               <p className="mt-3">
-                These providers have access to information only as necessary to
-                perform their functions and are obligated to handle it in
-                accordance with their own privacy and security practices.
+                These providers may change over time. We will update this
+                section when we add or remove providers that handle personal
+                data or uploaded content.
               </p>
             </section>
 
             <section>
-              <h2>7. Cookies and Analytics</h2>
+              <h2>6. Cookies and Session Tokens</h2>
               <p className="mt-3">
-                We may use cookies and similar technologies to maintain your
-                session, remember your preferences, and understand how you use
-                the service. We do not use third-party advertising trackers.
+                We use session cookies and authentication tokens to keep you
+                signed in. These are essential for the service to function and
+                cannot be disabled without logging out.
               </p>
               <p className="mt-3">
-                You can control cookie preferences through your browser
-                settings. Disabling cookies may affect certain functionality.
-              </p>
-            </section>
-
-            <section>
-              <h2>8. Data Security</h2>
-              <p className="mt-3">
-                We implement reasonable technical and organizational measures to
-                protect your information against unauthorized access, loss, or
-                misuse. These include encryption in transit, access controls,
-                and secure infrastructure practices.
+                Specifically, we set an HTTP-only, secure session cookie when
+                you authenticate. This cookie does not contain personal data
+                beyond an opaque session identifier. We do not use third-party
+                advertising cookies or tracking pixels.
               </p>
               <p className="mt-3">
-                However, no method of transmission or storage is completely
-                secure. We cannot guarantee absolute security of your data.
+                You can clear cookies via your browser settings. Doing so will
+                sign you out of the service.
               </p>
             </section>
 
             <section>
-              <h2>9. Data Retention</h2>
+              <h2>7. Data Security</h2>
               <p className="mt-3">
-                We retain your account information and generated meeting outputs
-                for as long as your account is active. Uploaded source files are
-                deleted after processing as described in Section 5.
+                We apply reasonable technical and organizational safeguards to
+                protect your information, including encryption in transit
+                (HTTPS/TLS), HTTP-only session cookies, access controls, and
+                secure infrastructure practices.
+              </p>
+              <p className="mt-3">
+                No method of transmission or storage is completely secure. While
+                we work to protect your data, we cannot guarantee absolute
+                security and encourage you to use a strong, unique password and
+                to notify us immediately if you suspect unauthorized activity on
+                your account.
+              </p>
+            </section>
+
+            <section>
+              <h2>8. Data Retention</h2>
+              <p className="mt-3">
+                We retain your account data and generated meeting outputs for as
+                long as your account is active. Uploaded source files are
+                deleted after successful processing as described in Section 4.
               </p>
               <p className="mt-3">
                 If you delete your account, we will remove your personal data
-                and meeting outputs from our active systems. Some data may be
-                retained in backups for a limited period before being fully
-                purged.
+                and meeting content from our active systems. We do not currently
+                maintain long-term database backups, so deletion from active
+                systems is effectively permanent.
+              </p>
+              <p className="mt-3">
+                We may retain certain minimal records where required by law or
+                legitimate business interest (for example, billing records or
+                security logs).
               </p>
             </section>
 
             <section>
-              <h2>10. Your Rights</h2>
+              <h2>9. International Data Transfers</h2>
               <p className="mt-3">
-                Depending on your location, you may have certain rights
-                regarding your personal data, including the right to:
+                imeetly is operated from the Philippines, and our infrastructure
+                and third-party providers are primarily based in the United
+                States. If you access the service from outside the United
+                States, your information — including uploaded meeting content —
+                will be transferred to and processed in the United States and
+                potentially other countries where our providers operate.
+              </p>
+              <p className="mt-3">
+                By using the service, you acknowledge that your data may be
+                processed in countries with different data protection laws than
+                your own.
+              </p>
+            </section>
+
+            <section>
+              <h2>10. Your Rights and Choices</h2>
+              <p className="mt-3">
+                You have the following rights regarding your personal data:
               </p>
               <ul className="mt-3">
-                <li>Access the personal data we hold about you.</li>
-                <li>Request correction of inaccurate data.</li>
-                <li>Request deletion of your data.</li>
-                <li>Export your data in a portable format.</li>
+                <li>
+                  <strong>Access:</strong> You can view the account information
+                  and meeting data stored in your account at any time.
+                </li>
+                <li>
+                  <strong>Correction:</strong> You can update your name and
+                  profile information through account settings.
+                </li>
+                <li>
+                  <strong>Deletion:</strong> You can delete individual meetings
+                  from your account, or delete your entire account through
+                  account settings. Account deletion removes your personal data
+                  and all meeting content from our active systems.
+                </li>
+                <li>
+                  <strong>Other requests:</strong> For requests about accessing
+                  a copy of your data or other privacy matters, contact us at{" "}
+                  <a
+                    className="text-primary underline underline-offset-4 hover:text-primary/80"
+                    href="mailto:privacy@imeetly.app"
+                  >
+                    privacy@imeetly.app
+                  </a>
+                  .
+                </li>
               </ul>
-              <p className="mt-3">
-                You can manage and delete your meeting data directly from your
-                account settings. For other requests, contact us using the
-                information below.
-              </p>
             </section>
 
             <section>
               <h2>11. Children&apos;s Privacy</h2>
               <p className="mt-3">
-                imeetly is not intended for use by individuals under the age of
-                16. We do not knowingly collect personal information from
-                children. If you believe a child has provided us with personal
-                information, please contact us and we will take steps to remove
-                it.
+                imeetly is not intended for use by anyone under the age of 16.
+                We do not knowingly collect personal information from children.
+                If you believe a child has provided us with personal
+                information, please contact us and we will promptly remove it.
               </p>
             </section>
 
             <section>
               <h2>12. Changes to This Policy</h2>
               <p className="mt-3">
-                We may update this Privacy Policy from time to time. When we
-                make changes, we will update the &quot;Last updated&quot; date
-                at the top of this page. We encourage you to review this policy
-                periodically. Continued use of the service after changes
+                We may update this Privacy Policy from time to time. When we do,
+                we will update the &quot;Last updated&quot; date at the top of
+                this page. For material changes, we will make reasonable efforts
+                to notify you via email or through the service before the
+                changes take effect. Continued use of the service after a change
                 constitutes acceptance of the updated policy.
               </p>
             </section>
 
             <section>
-              <h2>13. Contact Information</h2>
+              <h2>13. Contact</h2>
               <p className="mt-3">
                 If you have questions or concerns about this Privacy Policy or
                 our data practices, please contact us at:

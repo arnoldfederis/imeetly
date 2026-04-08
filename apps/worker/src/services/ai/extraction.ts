@@ -62,12 +62,22 @@ const AUTO_PROD: ExtractionProvider[] = [
 ];
 
 function resolveChain(): ExtractionProvider[] {
+  const isProd = env.APP_ENV === "production";
   const isDev = env.APP_ENV === "development";
   const configured = (env.AI_EXTRACTION_PROVIDER ?? "auto") as string;
   const fallback = env.AI_EXTRACTION_FALLBACK as ExtractionProvider | undefined;
 
+  // In production, mock fallback is always disabled
+  if (isProd && fallback === "mock") {
+    console.warn("[extraction] Mock fallback disabled in production");
+  }
+  const effectiveFallback =
+    isProd && fallback === "mock" ? undefined : fallback;
+
   if (configured === "auto") {
-    return isDev ? AUTO_DEV : AUTO_PROD;
+    const chain = isDev ? AUTO_DEV : AUTO_PROD;
+    // Strip mock from production auto chains
+    return isProd ? chain.filter((p) => p !== "mock") : chain;
   }
 
   // In development, skip Anthropic unless explicitly set as the provider
@@ -78,8 +88,8 @@ function resolveChain(): ExtractionProvider[] {
   }
 
   const chain: ExtractionProvider[] = [configured as ExtractionProvider];
-  if (fallback && fallback !== configured) {
-    chain.push(fallback);
+  if (effectiveFallback && effectiveFallback !== configured) {
+    chain.push(effectiveFallback);
   }
   return chain;
 }

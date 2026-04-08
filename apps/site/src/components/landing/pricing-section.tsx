@@ -37,9 +37,9 @@ const plans: Plan[] = [
   {
     name: "Pro",
     description: "For individuals who want faster, smarter meeting summaries",
-    monthlyPrice: "$12",
-    yearlyPrice: "$120",
-    yearlySavings: "Save $24/year",
+    monthlyPrice: "$15",
+    yearlyPrice: "$150",
+    yearlySavings: "Save $30/year",
     period: { monthly: "per month", yearly: "per year" },
     features: [
       "50 meetings per month",
@@ -54,15 +54,14 @@ const plans: Plan[] = [
   {
     name: "Team",
     description: "For teams that run on meetings and need higher limits",
-    monthlyPrice: "$29",
-    yearlyPrice: "$288",
-    yearlySavings: "Save $60/year",
+    monthlyPrice: "$39",
+    yearlyPrice: "$390",
+    yearlySavings: "Save $78/year",
     period: { monthly: "per month", yearly: "per year" },
     features: [
       "150 meetings per month",
       "Everything in Pro",
       "1 GB max file size",
-      "Priority support",
     ],
     cta: "Coming Soon",
     comingSoon: true,
@@ -112,10 +111,10 @@ export function PricingSection() {
             return (
               <StaggerItem key={plan.name}>
                 <div
-                  className={`relative flex flex-col rounded-2xl border p-8 transition-shadow ${
+                  className={`relative flex h-full flex-col rounded-2xl border transition-shadow ${
                     plan.highlighted
-                      ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/10"
-                      : "bg-card hover:shadow-lg hover:shadow-primary/5"
+                      ? "border-primary bg-primary/[0.02] p-8 shadow-lg shadow-primary/10 md:-my-4 md:py-12"
+                      : "bg-card p-8 hover:shadow-lg hover:shadow-primary/5"
                   }`}
                   key={plan.name}
                 >
