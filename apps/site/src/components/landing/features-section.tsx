@@ -11,7 +11,7 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 const features = [
   {
     icon: BrainCircuitIcon,
-    title: "AI summaries",
+    title: "AI meeting summaries",
     description:
       "Get a concise, accurate summary of every meeting. No fluff — just the key points your team needs.",
   },
@@ -35,9 +35,9 @@ const features = [
   },
   {
     icon: UploadCloudIcon,
-    title: "Fast upload flow",
+    title: "Meeting transcription AI",
     description:
-      "Drag and drop audio, video, or paste text. Processing starts immediately with real-time status.",
+      "Drag and drop audio, video, or paste text. Our AI transcribes and processes your meeting immediately.",
   },
   {
     icon: UsersIcon,
@@ -53,7 +53,7 @@ export function FeaturesSection() {
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-            Everything you need after every meeting
+            AI meeting notes for fast-moving teams
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             imeetly extracts the signal from every conversation so your team can

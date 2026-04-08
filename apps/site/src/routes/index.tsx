@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CTASection } from "@/components/landing/cta-section";
-import { FAQSection } from "@/components/landing/faq-section";
+import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
@@ -17,44 +17,13 @@ import {
   softwareAppJsonLd,
 } from "@/lib/seo";
 
-const FAQ_ITEMS = [
-  {
-    question: "What file types can I upload?",
-    answer:
-      "imeetly supports all major audio formats (MP3, WAV, M4A, OGG, FLAC) and video formats (MP4, MOV, WebM). You can also paste raw text transcripts directly.",
-  },
-  {
-    question: "Do you store my files permanently?",
-    answer:
-      "Uploaded files are processed and then deleted from our servers. We only store the generated notes and transcripts — never the original recordings. You can delete your data at any time from your settings.",
-  },
-  {
-    question: "Can I upload video and audio?",
-    answer:
-      "Yes. You can upload both video and audio recordings. For video files, we extract and process the audio track automatically — no extra steps needed.",
-  },
-  {
-    question: "What happens on the free plan?",
-    answer:
-      "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. Your meeting history is always available. Upgrade anytime for higher limits.",
-  },
-  {
-    question: "Can I edit the generated notes?",
-    answer:
-      "Yes. All generated summaries, action items, and decisions are fully editable. You can refine, add context, or remove anything before sharing with your team.",
-  },
-  {
-    question: "Is this for teams or solo users?",
-    answer:
-      "Both. Individual users love imeetly for personal meeting notes and tracking. Teams use the Team plan for shared meeting libraries, visibility into action items, and collaborative workflows.",
-  },
-];
+const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     ...seo({
-      title: "Your meetings, summarized in seconds",
+      title: "Your meetings, summarized in seconds. Start free",
       description:
         "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.",
       path: "/",
