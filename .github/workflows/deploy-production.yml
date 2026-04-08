@@ -132,14 +132,6 @@ jobs:
     environment: production
 
     steps:
-      - name: Stop compose
-        run: |
-          curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.stop" \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}'
-        continue-on-error: true
-
       - name: Redeploy compose
         run: |
           curl -f -X POST "${{ secrets.DOKPLOY_URL }}/api/compose.redeploy" \
