@@ -1,19 +1,17 @@
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
-import { neon } from '@neondatabase/serverless';
-import { migrate } from 'drizzle-orm/neon-http/migrator';
-import { env } from './env'
-import { drizzle as drizzleBun } from "drizzle-orm/bun-sql";
+import { neon } from "@neondatabase/serverless";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { migrate } from "drizzle-orm/neon-http/migrator";
+import { env } from "./env";
 
 const sql = neon(env.DATABASE_URL);
-const client = new SQL(env.DATABASE_URL);
-const db = env.APP_ENV === "production" ? drizzleNeon(sql) : drizzleBun({client});
+const db = drizzleNeon(sql);
 
 const main = async () => {
   try {
-    await migrate(db, { migrationsFolder: './src/generated' });
-    console.log('Migration completed');
+    await migrate(db, { migrationsFolder: "./src/generated" });
+    console.log("Migration completed");
   } catch (error) {
-    console.error('Error during migration:', error);
+    console.error("Error during migration:", error);
     process.exit(1);
   }
 };

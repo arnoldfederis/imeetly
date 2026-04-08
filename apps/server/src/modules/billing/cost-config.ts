@@ -12,14 +12,21 @@ export const costConfig = {
 } as const;
 
 /**
- * Monthly subscription prices (what the user pays).
+ * Subscription prices (what the user pays).
  * Used for profit calculation. Keep in sync with Polar.
  */
-export const planPricing: Record<string, number> = {
-  free: 0,
-  pro: 19,
-  team: 49,
+export const planPricing = {
+  monthly: { free: 0, pro: 12, team: 29 } as Record<string, number>,
+  yearly: { free: 0, pro: 120, team: 288 } as Record<string, number>,
 };
+
+/** Helper to get the monthly-equivalent price for profit calculations. */
+export function getMonthlyPrice(plan: string, cycle: string = "monthly") {
+  if (cycle === "yearly") {
+    return (planPricing.yearly[plan] ?? 0) / 12;
+  }
+  return planPricing.monthly[plan] ?? 0;
+}
 
 /**
  * Payment processor fee formula.

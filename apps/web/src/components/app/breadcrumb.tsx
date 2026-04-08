@@ -2,7 +2,6 @@ import { useLocation } from "@tanstack/react-router";
 import { Fragment } from "react";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -11,7 +10,15 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUUID(segment: string) {
+  return UUID_RE.test(segment);
+}
+
 function formatSegment(segment: string) {
+  if (isUUID(segment)) return segment;
   return segment.replace(/-/g, " ");
 }
 
@@ -60,32 +67,29 @@ export function AppBreadcrumb() {
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {isMobile && middle.length > 0 ? (
-          <>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbEllipsis />
-            </BreadcrumbItem>
-          </>
-        ) : (
-          middle.map((segment, i) => {
-            const href = `/${segments.slice(0, i + 2).join("/")}`;
-            return (
-              <Fragment key={segment}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink className="capitalize" href={href}>
-                    {formatSegment(segment)}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </Fragment>
-            );
-          })
-        )}
+        {middle.map((segment, i) => {
+          const href = `/${segments.slice(0, i + 2).join("/")}`;
+          return (
+            <Fragment key={segment}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink className="capitalize" href={href}>
+                  {formatSegment(segment)}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </Fragment>
+          );
+        })}
 
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage className="capitalize">
+          <BreadcrumbPage
+            className={
+              isUUID(last)
+                ? `font-mono text-xs ${isMobile ? "max-w-[120px] truncate" : ""}`
+                : "capitalize"
+            }
+          >
             {formatSegment(last)}
           </BreadcrumbPage>
         </BreadcrumbItem>

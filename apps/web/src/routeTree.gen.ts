@@ -23,8 +23,8 @@ import { Route as dashboardMeetingsIndexRouteImport } from './routes/(dashboard)
 import { Route as dashboardSettingsSecurityRouteImport } from './routes/(dashboard)/settings/security'
 import { Route as dashboardSettingsProfileRouteImport } from './routes/(dashboard)/settings/profile'
 import { Route as dashboardSettingsPortalReturnRouteImport } from './routes/(dashboard)/settings/portal-return'
-import { Route as dashboardSettingsNotificationsRouteImport } from './routes/(dashboard)/settings/notifications'
 import { Route as dashboardSettingsBillingRouteImport } from './routes/(dashboard)/settings/billing'
+import { Route as dashboardSettingsAccountRouteImport } from './routes/(dashboard)/settings/account'
 import { Route as dashboardMeetingsNewRouteImport } from './routes/(dashboard)/meetings/new'
 import { Route as dashboardMeetingsMeetingIdRouteImport } from './routes/(dashboard)/meetings/$meetingId'
 import { Route as dashboardAdminMetricsRouteImport } from './routes/(dashboard)/admin/metrics'
@@ -100,16 +100,16 @@ const dashboardSettingsPortalReturnRoute =
     path: '/portal-return',
     getParentRoute: () => dashboardSettingsRouteRoute,
   } as any)
-const dashboardSettingsNotificationsRoute =
-  dashboardSettingsNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => dashboardSettingsRouteRoute,
-  } as any)
 const dashboardSettingsBillingRoute =
   dashboardSettingsBillingRouteImport.update({
     id: '/billing',
     path: '/billing',
+    getParentRoute: () => dashboardSettingsRouteRoute,
+  } as any)
+const dashboardSettingsAccountRoute =
+  dashboardSettingsAccountRouteImport.update({
+    id: '/account',
+    path: '/account',
     getParentRoute: () => dashboardSettingsRouteRoute,
   } as any)
 const dashboardMeetingsNewRoute = dashboardMeetingsNewRouteImport.update({
@@ -140,8 +140,8 @@ export interface FileRoutesByFullPath {
   '/admin/metrics': typeof dashboardAdminMetricsRoute
   '/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
   '/meetings/new': typeof dashboardMeetingsNewRoute
+  '/settings/account': typeof dashboardSettingsAccountRoute
   '/settings/billing': typeof dashboardSettingsBillingRoute
-  '/settings/notifications': typeof dashboardSettingsNotificationsRoute
   '/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/settings/profile': typeof dashboardSettingsProfileRoute
   '/settings/security': typeof dashboardSettingsSecurityRoute
@@ -158,8 +158,8 @@ export interface FileRoutesByTo {
   '/admin/metrics': typeof dashboardAdminMetricsRoute
   '/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
   '/meetings/new': typeof dashboardMeetingsNewRoute
+  '/settings/account': typeof dashboardSettingsAccountRoute
   '/settings/billing': typeof dashboardSettingsBillingRoute
-  '/settings/notifications': typeof dashboardSettingsNotificationsRoute
   '/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/settings/profile': typeof dashboardSettingsProfileRoute
   '/settings/security': typeof dashboardSettingsSecurityRoute
@@ -180,8 +180,8 @@ export interface FileRoutesById {
   '/(dashboard)/admin/metrics': typeof dashboardAdminMetricsRoute
   '/(dashboard)/meetings/$meetingId': typeof dashboardMeetingsMeetingIdRoute
   '/(dashboard)/meetings/new': typeof dashboardMeetingsNewRoute
+  '/(dashboard)/settings/account': typeof dashboardSettingsAccountRoute
   '/(dashboard)/settings/billing': typeof dashboardSettingsBillingRoute
-  '/(dashboard)/settings/notifications': typeof dashboardSettingsNotificationsRoute
   '/(dashboard)/settings/portal-return': typeof dashboardSettingsPortalReturnRoute
   '/(dashboard)/settings/profile': typeof dashboardSettingsProfileRoute
   '/(dashboard)/settings/security': typeof dashboardSettingsSecurityRoute
@@ -201,8 +201,8 @@ export interface FileRouteTypes {
     | '/admin/metrics'
     | '/meetings/$meetingId'
     | '/meetings/new'
+    | '/settings/account'
     | '/settings/billing'
-    | '/settings/notifications'
     | '/settings/portal-return'
     | '/settings/profile'
     | '/settings/security'
@@ -219,8 +219,8 @@ export interface FileRouteTypes {
     | '/admin/metrics'
     | '/meetings/$meetingId'
     | '/meetings/new'
+    | '/settings/account'
     | '/settings/billing'
-    | '/settings/notifications'
     | '/settings/portal-return'
     | '/settings/profile'
     | '/settings/security'
@@ -240,8 +240,8 @@ export interface FileRouteTypes {
     | '/(dashboard)/admin/metrics'
     | '/(dashboard)/meetings/$meetingId'
     | '/(dashboard)/meetings/new'
+    | '/(dashboard)/settings/account'
     | '/(dashboard)/settings/billing'
-    | '/(dashboard)/settings/notifications'
     | '/(dashboard)/settings/portal-return'
     | '/(dashboard)/settings/profile'
     | '/(dashboard)/settings/security'
@@ -356,18 +356,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardSettingsPortalReturnRouteImport
       parentRoute: typeof dashboardSettingsRouteRoute
     }
-    '/(dashboard)/settings/notifications': {
-      id: '/(dashboard)/settings/notifications'
-      path: '/notifications'
-      fullPath: '/settings/notifications'
-      preLoaderRoute: typeof dashboardSettingsNotificationsRouteImport
-      parentRoute: typeof dashboardSettingsRouteRoute
-    }
     '/(dashboard)/settings/billing': {
       id: '/(dashboard)/settings/billing'
       path: '/billing'
       fullPath: '/settings/billing'
       preLoaderRoute: typeof dashboardSettingsBillingRouteImport
+      parentRoute: typeof dashboardSettingsRouteRoute
+    }
+    '/(dashboard)/settings/account': {
+      id: '/(dashboard)/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof dashboardSettingsAccountRouteImport
       parentRoute: typeof dashboardSettingsRouteRoute
     }
     '/(dashboard)/meetings/new': {
@@ -418,8 +418,8 @@ const dashboardAdminRouteRouteWithChildren =
   dashboardAdminRouteRoute._addFileChildren(dashboardAdminRouteRouteChildren)
 
 interface dashboardSettingsRouteRouteChildren {
+  dashboardSettingsAccountRoute: typeof dashboardSettingsAccountRoute
   dashboardSettingsBillingRoute: typeof dashboardSettingsBillingRoute
-  dashboardSettingsNotificationsRoute: typeof dashboardSettingsNotificationsRoute
   dashboardSettingsPortalReturnRoute: typeof dashboardSettingsPortalReturnRoute
   dashboardSettingsProfileRoute: typeof dashboardSettingsProfileRoute
   dashboardSettingsSecurityRoute: typeof dashboardSettingsSecurityRoute
@@ -428,8 +428,8 @@ interface dashboardSettingsRouteRouteChildren {
 
 const dashboardSettingsRouteRouteChildren: dashboardSettingsRouteRouteChildren =
   {
+    dashboardSettingsAccountRoute: dashboardSettingsAccountRoute,
     dashboardSettingsBillingRoute: dashboardSettingsBillingRoute,
-    dashboardSettingsNotificationsRoute: dashboardSettingsNotificationsRoute,
     dashboardSettingsPortalReturnRoute: dashboardSettingsPortalReturnRoute,
     dashboardSettingsProfileRoute: dashboardSettingsProfileRoute,
     dashboardSettingsSecurityRoute: dashboardSettingsSecurityRoute,

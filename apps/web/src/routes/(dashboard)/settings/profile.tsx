@@ -1,5 +1,9 @@
 import { authClient } from "@repo/server/lib/auth-client";
-import { createFileRoute, getRouteApi, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  getRouteApi,
+  useRouter,
+} from "@tanstack/react-router";
 import { Image } from "@unpic/react";
 import { CameraIcon, LoaderCircleIcon } from "lucide-react";
 import { useRef, useState } from "react";
@@ -18,6 +22,9 @@ import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/(dashboard)/settings/profile")({
   component: ProfilePage,
+  head: () => ({
+    meta: [{ title: "Profile — imeetly" }],
+  }),
 });
 
 const dashboardRoute = getRouteApi("/(dashboard)");

@@ -8,7 +8,7 @@ import {
   UploadIcon,
   XIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { type DragEvent, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Button } from "@/components/ui/button";
@@ -40,10 +40,13 @@ import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/new")({
   component: NewMeetingPage,
+  head: () => ({
+    meta: [{ title: "New Meeting — imeetly" }],
+  }),
 });
 
 const ACCEPTED_TYPES =
-  "video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/x-m4a,audio/mp4";
+  "video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/x-m4a,audio/mp4,audio/ogg,audio/flac";
 
 function NewMeetingPage() {
   const navigate = useNavigate();
@@ -54,14 +57,29 @@ function NewMeetingPage() {
   const limitReached = planData?.usage.limitReached ?? false;
 
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<
+    "default" | "limit-reached"
+  >("default");
   const [title, setTitle] = useState("");
   const [meetingDate, setMeetingDate] = useState<Date>(new Date());
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [participants, setParticipants] = useState("");
   const [transcriptText, setTranscriptText] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
   const multipartUpload = useMultipartUpload();
   const { state: uploadState, progress: uploadProgress } = multipartUpload;
+
+  const handleDrop = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped && ACCEPTED_TYPES.split(",").includes(dropped.type)) {
+      setFile(dropped);
+    } else if (dropped) {
+      toast.error("Unsupported file type. Please upload audio or video.");
+    }
+  }, []);
 
   const sourceType = file
     ? file.type.startsWith("video/")
@@ -113,9 +131,14 @@ function NewMeetingPage() {
         multipartUpload.reset();
         const isPlanLimit = err.message?.includes("limit reached");
         if (isPlanLimit) {
-          toast.error("You've reached your plan limit. Upgrade to create more meetings.");
-          queryClient.invalidateQueries({ queryKey: client.billing.getPlan.key() });
+          toast.error(
+            "You've reached your plan limit. Upgrade to create more meetings.",
+          );
+          queryClient.invalidateQueries({
+            queryKey: client.billing.getPlan.key(),
+          });
           setUpgradeOpen(true);
+          setUpgradeReason("limit-reached");
         } else {
           toast.error(err.message);
         }
@@ -142,7 +165,7 @@ function NewMeetingPage() {
             : null;
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-semibold text-2xl tracking-tight">New Meeting</h1>
         <p className="text-muted-foreground text-sm">
@@ -152,7 +175,7 @@ function NewMeetingPage() {
 
       {limitReached && (
         <Card className="border-destructive bg-destructive/5">
-          <CardContent className="flex items-center justify-between py-4">
+          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-sm">
                 You've reached your free plan limit
@@ -164,11 +187,15 @@ function NewMeetingPage() {
               </p>
             </div>
             <Button
-              onClick={() => setUpgradeOpen(true)}
+              className="shrink-0 self-start"
+              onClick={() => {
+                setUpgradeReason("limit-reached");
+                setUpgradeOpen(true);
+              }}
               size="sm"
             >
               <TrendingUpIcon data-icon="inline-start" />
-              Upgrade
+              Start Pro
             </Button>
           </CardContent>
         </Card>
@@ -195,21 +222,23 @@ function NewMeetingPage() {
                 <Popover onOpenChange={setDatePickerOpen} open={datePickerOpen}>
                   <PopoverTrigger
                     render={
-                      <Button
-                        className="w-full justify-start text-left font-normal"
-                        variant="outline"
+                      <button
+                        className="flex h-9 w-full items-center justify-between rounded-3xl border border-transparent bg-input/50 px-3 text-left text-sm outline-none transition-[color,box-shadow,background-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                        type="button"
                       >
-                        <CalendarIcon data-icon="inline-start" />
-                        {meetingDate.toLocaleDateString(undefined, {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </Button>
+                        <span>
+                          {meetingDate.toLocaleDateString(undefined, {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <CalendarIcon className="size-4 text-muted-foreground" />
+                      </button>
                     }
                   />
-                  <PopoverContent align="start" className="w-auto p-0">
+                  <PopoverContent align="end" className="w-auto p-0">
                     <Calendar
                       mode="single"
                       onSelect={(date) => {
@@ -224,7 +253,12 @@ function NewMeetingPage() {
                 </Popover>
               </Field>
               <Field>
-                <FieldLabel htmlFor="participants">Participants</FieldLabel>
+                <FieldLabel htmlFor="participants">
+                  Participants{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </FieldLabel>
                 <Input
                   id="participants"
                   onChange={(e) => setParticipants(e.target.value)}
@@ -245,72 +279,94 @@ function NewMeetingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div>
-            <input
-              accept={ACCEPTED_TYPES}
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) setFile(f);
-              }}
-              ref={fileInputRef}
-              type="file"
-            />
-            {file ? (
-              <div className="flex items-center gap-3 rounded-lg border p-3">
-                {file.type.startsWith("video/") ? (
-                  <FileVideoIcon className="size-5 text-muted-foreground" />
-                ) : (
-                  <FileAudioIcon className="size-5 text-muted-foreground" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-sm">{file.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {(file.size / 1024 / 1024).toFixed(1)} MB
-                  </p>
+          {!transcriptText.trim() && (
+            <div>
+              <input
+                accept={ACCEPTED_TYPES}
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setFile(f);
+                }}
+                ref={fileInputRef}
+                type="file"
+              />
+              {file ? (
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  {file.type.startsWith("video/") ? (
+                    <FileVideoIcon className="size-5 text-muted-foreground" />
+                  ) : (
+                    <FileAudioIcon className="size-5 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-sm">{file.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {(file.size / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  </div>
+                  <Button
+                    disabled={isPending}
+                    onClick={() => {
+                      setFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    <XIcon data-icon />
+                  </Button>
                 </div>
-                <Button
-                  disabled={isPending}
-                  onClick={() => {
-                    setFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
+              ) : (
+                <button
+                  className={`flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                    dragging
+                      ? "border-primary bg-primary/5"
+                      : "hover:border-primary/50 hover:bg-muted/50"
+                  }`}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
                   }}
-                  size="sm"
-                  variant="ghost"
+                  onDragLeave={() => setDragging(false)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  type="button"
                 >
-                  <XIcon data-icon />
-                </Button>
-              </div>
-            ) : (
-              <button
-                className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/50"
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-              >
-                <UploadIcon className="size-8 text-muted-foreground" />
-                <div>
-                  <p className="font-medium text-sm">Upload a file</p>
-                  <p className="text-muted-foreground text-xs">
-                    MP4, MOV, WebM, MP3, WAV, M4A (max 500MB)
-                  </p>
-                </div>
-              </button>
-            )}
-          </div>
+                  <UploadIcon
+                    className={`size-8 ${dragging ? "text-primary" : "text-muted-foreground"}`}
+                  />
+                  <div>
+                    <p className="font-medium text-sm">
+                      {dragging
+                        ? "Drop your file here"
+                        : "Drag & drop or click to upload"}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      MP4, MOV, WebM, MP3, WAV, M4A, OGG, FLAC
+                    </p>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
 
-          <FieldSeparator>OR</FieldSeparator>
+          {!file && !transcriptText.trim() && (
+            <FieldSeparator>OR</FieldSeparator>
+          )}
 
-          <Field>
-            <FieldLabel htmlFor="transcript">Paste Transcript</FieldLabel>
-            <Textarea
-              disabled={!!file}
-              id="transcript"
-              onChange={(e) => setTranscriptText(e.target.value)}
-              placeholder="Paste your meeting transcript here..."
-              rows={8}
-              value={transcriptText}
-            />
-          </Field>
+          {!file && (
+            <Field>
+              <FieldLabel htmlFor="transcript">Paste Transcript</FieldLabel>
+              <Textarea
+                id="transcript"
+                onChange={(e) => setTranscriptText(e.target.value)}
+                placeholder="Paste your meeting transcript here..."
+                rows={8}
+                value={transcriptText}
+              />
+            </Field>
+          )}
         </CardContent>
       </Card>
 
@@ -349,7 +405,11 @@ function NewMeetingPage() {
         </Button>
       </div>
 
-      <UpgradeDialog onOpenChange={setUpgradeOpen} open={upgradeOpen} />
+      <UpgradeDialog
+        onOpenChange={setUpgradeOpen}
+        open={upgradeOpen}
+        reason={upgradeReason}
+      />
     </div>
   );
 }

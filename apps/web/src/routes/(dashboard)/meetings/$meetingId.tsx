@@ -4,19 +4,23 @@ import {
   ArrowLeftIcon,
   CalendarIcon,
   CheckCircle2Icon,
+  ChevronDownIcon,
   CircleDotIcon,
   ClockIcon,
+  DownloadIcon,
   EditIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
   PlayIcon,
+  PrinterIcon,
   SaveIcon,
   UsersIcon,
   XCircleIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +31,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,11 +44,228 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/$meetingId")({
   component: MeetingDetailPage,
+  head: () => ({
+    meta: [{ title: "Meeting — imeetly" }],
+  }),
 });
+
+function downloadMeetingMarkdown(meeting: {
+  title: string;
+  meetingDate: Date;
+  participantsText: string | null;
+  sourceType: string;
+  summary: {
+    summaryMd: string | null;
+    decisionsMd: string | null;
+    blockersMd: string | null;
+    followupsMd: string | null;
+  } | null;
+  actionItems: Array<{
+    title: string;
+    ownerName: string | null;
+    dueDate: Date | null;
+    status: string;
+  }> | null;
+  transcriptText: string | null;
+}) {
+  const date = new Date(meeting.meetingDate).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const lines: string[] = [];
+  lines.push(`# ${meeting.title}`);
+  lines.push("");
+  lines.push(`**Date:** ${date}`);
+  if (meeting.participantsText) {
+    lines.push(`**Participants:** ${meeting.participantsText}`);
+  }
+  lines.push(`**Source:** ${meeting.sourceType}`);
+  lines.push("");
+
+  if (meeting.summary?.summaryMd) {
+    lines.push("## Summary");
+    lines.push("");
+    lines.push(meeting.summary.summaryMd);
+    lines.push("");
+  }
+
+  if (meeting.summary?.decisionsMd) {
+    lines.push("## Key Decisions");
+    lines.push("");
+    lines.push(meeting.summary.decisionsMd);
+    lines.push("");
+  }
+
+  if (meeting.summary?.blockersMd) {
+    lines.push("## Blockers & Risks");
+    lines.push("");
+    lines.push(meeting.summary.blockersMd);
+    lines.push("");
+  }
+
+  if (meeting.summary?.followupsMd) {
+    lines.push("## Follow-ups");
+    lines.push("");
+    lines.push(meeting.summary.followupsMd);
+    lines.push("");
+  }
+
+  if (meeting.actionItems && meeting.actionItems.length > 0) {
+    lines.push("## Action Items");
+    lines.push("");
+    for (const item of meeting.actionItems) {
+      const checkbox = item.status === "done" ? "[x]" : "[ ]";
+      const owner = item.ownerName ? ` (${item.ownerName})` : "";
+      const due = item.dueDate
+        ? ` — due ${new Date(item.dueDate).toLocaleDateString()}`
+        : "";
+      lines.push(`- ${checkbox} ${item.title}${owner}${due}`);
+    }
+    lines.push("");
+  }
+
+  if (meeting.transcriptText) {
+    lines.push("## Transcript");
+    lines.push("");
+    lines.push(meeting.transcriptText);
+    lines.push("");
+  }
+
+  const content = lines.join("\n");
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${meeting.title.replace(/[^a-zA-Z0-9-_ ]/g, "").trim()}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadMeetingPdf(
+  meeting: Parameters<typeof downloadMeetingMarkdown>[0],
+) {
+  const date = new Date(meeting.meetingDate).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const escapeHtml = (text: string) =>
+    text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>");
+
+  const sections: string[] = [];
+
+  sections.push(`<h1>${escapeHtml(meeting.title)}</h1>`);
+  sections.push(`<p><strong>Date:</strong> ${escapeHtml(date)}</p>`);
+  if (meeting.participantsText) {
+    sections.push(
+      `<p><strong>Participants:</strong> ${escapeHtml(meeting.participantsText)}</p>`,
+    );
+  }
+  sections.push(
+    `<p><strong>Source:</strong> ${escapeHtml(meeting.sourceType)}</p>`,
+  );
+
+  if (meeting.summary?.summaryMd) {
+    sections.push(
+      `<h2>Summary</h2><pre>${escapeHtml(meeting.summary.summaryMd)}</pre>`,
+    );
+  }
+  if (meeting.summary?.decisionsMd) {
+    sections.push(
+      `<h2>Key Decisions</h2><pre>${escapeHtml(meeting.summary.decisionsMd)}</pre>`,
+    );
+  }
+  if (meeting.summary?.blockersMd) {
+    sections.push(
+      `<h2>Blockers &amp; Risks</h2><pre>${escapeHtml(meeting.summary.blockersMd)}</pre>`,
+    );
+  }
+  if (meeting.summary?.followupsMd) {
+    sections.push(
+      `<h2>Follow-ups</h2><pre>${escapeHtml(meeting.summary.followupsMd)}</pre>`,
+    );
+  }
+
+  if (meeting.actionItems && meeting.actionItems.length > 0) {
+    const items = meeting.actionItems
+      .map((item) => {
+        const checkbox = item.status === "done" ? "&#9745;" : "&#9744;";
+        const owner = item.ownerName ? ` (${escapeHtml(item.ownerName)})` : "";
+        const due = item.dueDate
+          ? ` — due ${new Date(item.dueDate).toLocaleDateString()}`
+          : "";
+        return `<li>${checkbox} ${escapeHtml(item.title)}${owner}${due}</li>`;
+      })
+      .join("\n");
+    sections.push(`<h2>Action Items</h2><ul>${items}</ul>`);
+  }
+
+  if (meeting.transcriptText) {
+    sections.push(
+      `<h2>Transcript</h2><pre>${escapeHtml(meeting.transcriptText)}</pre>`,
+    );
+  }
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(meeting.title)}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    h2 { font-size: 18px; margin-top: 24px; border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; }
+    pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; margin: 8px 0; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    p { margin: 4px 0; }
+    @media print {
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+${sections.join("\n")}
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    toast.error("Could not open print window. Please allow pop-ups.");
+    return;
+  }
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.addEventListener("load", () => {
+    printWindow.print();
+  });
+}
 
 function MeetingDetailPage() {
   const { meetingId } = Route.useParams();
   const queryClient = useQueryClient();
+
+  const { data: planData } = useQuery(client.billing.getPlan.queryOptions());
+  const canExport = planData?.plan === "pro" || planData?.plan === "team";
+  const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
 
   const { data: meeting, isLoading } = useQuery({
     ...client.meeting.getById.queryOptions({ input: { id: meetingId } }),
@@ -62,9 +289,13 @@ function MeetingDetailPage() {
       prevStatus.current !== meeting?.status &&
       (meeting?.status === "completed" || meeting?.status === "failed")
     ) {
-      queryClient.invalidateQueries({ queryKey: client.meeting.dashboard.key() });
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.dashboard.key(),
+      });
       queryClient.invalidateQueries({ queryKey: client.meeting.list.key() });
-      queryClient.invalidateQueries({ queryKey: client.meeting.getById.key({ input: { id: meetingId } }) });
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+      });
       queryClient.invalidateQueries({ queryKey: client.billing.getPlan.key() });
       queryClient.invalidateQueries({ queryKey: client.actionItem.list.key() });
     }
@@ -75,7 +306,9 @@ function MeetingDetailPage() {
   const retryMutation = useMutation(
     client.meeting.process.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: client.meeting.getById.key({ input: { id: meetingId } }) });
+        queryClient.invalidateQueries({
+          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+        });
         toast.success("Processing restarted");
       },
       onError: (err) => toast.error(err.message),
@@ -108,28 +341,39 @@ function MeetingDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start gap-4">
-        <Button nativeButton={false} render={<Link to="/meetings" />} size="sm" variant="ghost">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <Button
+          className="shrink-0"
+          nativeButton={false}
+          render={<Link to="/meetings" />}
+          size="sm"
+          variant="ghost"
+        >
           <ArrowLeftIcon data-icon />
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-semibold text-2xl tracking-tight">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="font-semibold text-xl tracking-tight sm:text-2xl">
               {meeting.title}
             </h1>
-            <Badge
-              variant={
-                meeting.status === "completed"
-                  ? "secondary"
-                  : meeting.status === "failed"
-                    ? "destructive"
-                    : meeting.status === "processing"
-                      ? "default"
+            {meeting.status === "processing" || meeting.status === "pending" ? (
+              <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
+                {meeting.status}
+              </span>
+            ) : (
+              <Badge
+                className="capitalize"
+                variant={
+                  meeting.status === "completed"
+                    ? "secondary"
+                    : meeting.status === "failed"
+                      ? "destructive"
                       : "outline"
-              }
-            >
-              {meeting.status}
-            </Badge>
+                }
+              >
+                {meeting.status}
+              </Badge>
+            )}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
             <span className="flex items-center gap-1">
@@ -159,18 +403,55 @@ function MeetingDetailPage() {
             </span>
           </div>
         </div>
+        {meeting.status === "completed" && (
+          <div className="ml-auto flex shrink-0 gap-2">
+            {canExport ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 font-medium text-sm shadow-xs hover:bg-accent hover:text-accent-foreground">
+                  <DownloadIcon className="size-4" />
+                  <span className="hidden sm:inline">Export</span>
+                  <ChevronDownIcon className="size-3.5 opacity-60" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => downloadMeetingMarkdown(meeting)}
+                  >
+                    <FileTextIcon className="size-4" />
+                    Export Markdown
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadMeetingPdf(meeting)}>
+                    <PrinterIcon className="size-4" />
+                    Export PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                onClick={() => setExportUpgradeOpen(true)}
+                size="sm"
+                variant="outline"
+              >
+                <DownloadIcon className="size-4" />
+                <span className="hidden sm:inline">Export</span>
+                <Badge className="ml-1" variant="secondary">
+                  Pro
+                </Badge>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {meeting.status === "draft" && (
         <Card size="sm">
-          <CardContent className="flex items-center justify-between py-4">
+          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-muted-foreground text-sm">
               This meeting hasn't been processed yet.
             </p>
             <Button
-              size="sm"
-              onClick={() => retryMutation.mutate({ id: meetingId })}
               disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate({ id: meetingId })}
+              size="sm"
             >
               {retryMutation.isPending ? (
                 <Spinner className="mr-2 size-3.5" />
@@ -192,6 +473,7 @@ function MeetingDetailPage() {
               : undefined
           }
           retrying={retryMutation.isPending}
+          sourceType={meeting.sourceType}
         />
       )}
 
@@ -276,40 +558,47 @@ function MeetingDetailPage() {
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Action Items</CardTitle>
-          <CardDescription>
-            {meeting.actionItems?.length ?? 0} item
-            {(meeting.actionItems?.length ?? 0) !== 1 ? "s" : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!meeting.actionItems || meeting.actionItems.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">
-              {meeting.status === "completed"
-                ? "No action items found"
-                : "Action items will appear after processing"}
-            </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {meeting.actionItems.map((item) => (
-                <ActionItemRow
-                  item={item}
-                  key={item.id}
-                  meetingId={meetingId}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {meeting.status === "completed" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Action Items</CardTitle>
+            <CardDescription>
+              {meeting.actionItems?.length ?? 0} item
+              {(meeting.actionItems?.length ?? 0) !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!meeting.actionItems || meeting.actionItems.length === 0 ? (
+              <p className="py-4 text-center text-muted-foreground text-sm">
+                No action items found
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {meeting.actionItems.map((item) => (
+                  <ActionItemRow
+                    item={item}
+                    key={item.id}
+                    meetingId={meetingId}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <UpgradeDialog
+        onOpenChange={setExportUpgradeOpen}
+        open={exportUpgradeOpen}
+        reason="export"
+      />
     </div>
   );
 }
 
 function ProcessingTimeline({
   meeting,
+  sourceType,
   onRetry,
   retrying,
 }: {
@@ -318,10 +607,11 @@ function ProcessingTimeline({
     processingStatus: string | null;
     failureReason?: string | null;
   };
+  sourceType: string;
   onRetry?: () => void;
   retrying?: boolean;
 }) {
-  const stages = [
+  const allStages = [
     { key: "queued", label: "Queued" },
     { key: "extracting_audio", label: "Extracting Audio" },
     { key: "transcribing", label: "Transcribing" },
@@ -329,6 +619,15 @@ function ProcessingTimeline({
     { key: "extracting_actions", label: "Extracting Actions" },
     { key: "completed", label: "Completed" },
   ];
+
+  // Text sources skip audio extraction and transcription
+  const stages =
+    sourceType === "text"
+      ? allStages.filter(
+          (s) => s.key !== "extracting_audio" && s.key !== "transcribing",
+        )
+      : allStages;
+
   const currentIdx = stages.findIndex(
     (s) => s.key === meeting.processingStatus,
   );
@@ -421,7 +720,9 @@ function EditableSection({
   const saveMutation = useMutation(
     client.meeting.updateSummary.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: client.meeting.getById.key({ input: { id: meetingId } }) });
+        queryClient.invalidateQueries({
+          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+        });
         setEditing(false);
         toast.success(`${title} updated`);
       },
@@ -506,9 +807,15 @@ function ActionItemRow({
   const toggleMutation = useMutation(
     client.actionItem.update.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: client.meeting.getById.key({ input: { id: meetingId } }) });
-        queryClient.invalidateQueries({ queryKey: client.meeting.dashboard.key() });
-        queryClient.invalidateQueries({ queryKey: client.actionItem.list.key() });
+        queryClient.invalidateQueries({
+          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: client.meeting.dashboard.key(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: client.actionItem.list.key(),
+        });
       },
     }),
   );

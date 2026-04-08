@@ -50,7 +50,10 @@ export function NavUser({ user }: Props) {
   }
 
   return (
-    <DropdownMenu onOpenChange={(open) => !isPending && setIsOpen(open)} open={isOpen}>
+    <DropdownMenu
+      onOpenChange={(open) => !isPending && setIsOpen(open)}
+      open={isOpen}
+    >
       <DropdownMenuTrigger className="border-0">
         <UserAvatar user={user} />
       </DropdownMenuTrigger>
@@ -68,7 +71,7 @@ export function NavUser({ user }: Props) {
                 to={"/settings/profile"}
               >
                 <UserAvatar user={user} />
-                <div className="w-full space-y-1 group-hover:text-white">
+                <div className="w-full space-y-1 group-hover:text-black dark:group-hover:text-white">
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">
                       {user.name || "--"}
@@ -113,7 +116,7 @@ function UserAvatar({ user }: Props) {
           width={35}
         />
       ) : (
-        <div className="flex size-8.75 items-center justify-center rounded-full bg-secondary uppercase hover:bg-secondary/80">
+        <div className="flex size-8.75 items-center justify-center rounded-full bg-primary text-white uppercase hover:bg-primary/80">
           {fallbackImage}
         </div>
       )}

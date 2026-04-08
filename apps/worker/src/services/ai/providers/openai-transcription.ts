@@ -9,7 +9,9 @@ export function createOpenAITranscription(
   return {
     name: "openai",
     async transcribe(fileBytes, fileName, mimeType) {
-      const file = new File([new Uint8Array(fileBytes)], fileName, { type: mimeType });
+      const file = new File([new Uint8Array(fileBytes)], fileName, {
+        type: mimeType,
+      });
       return client.audio.transcriptions.create({
         model: "whisper-1",
         file,

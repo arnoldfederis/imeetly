@@ -1,4 +1,26 @@
 services:
+  site:
+    image: ghcr.io/proghublabs/imeetly-site:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4002:4002"
+    environment:
+      - NODE_ENV=production
+      - APP_ENV=production
+      - APP_MODULE=site
+      - PORT=4002
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4002/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   web:
     image: ghcr.io/proghublabs/imeetly-web:latest
     pull_policy: always
@@ -12,6 +34,12 @@ services:
       - APP_ENV=production
       - APP_MODULE=web
       - PORT=4001
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4001/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     deploy:
       resources:
         limits:
@@ -32,6 +60,12 @@ services:
       - SERVER_PORT=4000
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
       - temporal
     deploy:

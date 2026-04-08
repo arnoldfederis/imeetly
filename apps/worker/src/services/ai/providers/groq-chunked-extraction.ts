@@ -2,7 +2,7 @@ import Groq from "groq-sdk";
 import type { Chunk } from "../chunker";
 import { chunkTranscript } from "../chunker";
 import { parseExtractionResult } from "../parse";
-import { ProviderError, type ExtractionProviderImpl } from "../types";
+import { type ExtractionProviderImpl, ProviderError } from "../types";
 
 const CHUNK_SYSTEM_PROMPT = `You are a meeting notes assistant. Analyze this PARTIAL meeting transcript chunk and extract:
 - Key points discussed
@@ -159,7 +159,9 @@ async function processChunksWithLimit(
 
   async function worker(): Promise<void> {
     while (idx < chunks.length) {
-      const chunk = chunks[idx++]!;
+      const chunk = chunks[idx];
+      idx++;
+      if (!chunk) continue;
       const result = await processSingleChunk(client, chunk);
       results.push(result);
     }
@@ -172,10 +174,7 @@ async function processChunksWithLimit(
   return results.sort((a, b) => a.index - b.index);
 }
 
-async function mergeChunkResults(
-  client: Groq,
-  chunkResults: ChunkResult[],
-) {
+async function mergeChunkResults(client: Groq, chunkResults: ChunkResult[]) {
   const partialSummaries = chunkResults
     .map(
       (r) =>
@@ -226,7 +225,9 @@ function asActionItems(
 ): Array<{ title: string; ownerName: string | null }> {
   if (!Array.isArray(val)) return [];
   return val
-    .filter((v): v is Record<string, unknown> => typeof v === "object" && v !== null)
+    .filter(
+      (v): v is Record<string, unknown> => typeof v === "object" && v !== null,
+    )
     .map((v) => ({
       title: String(v.title ?? "Untitled"),
       ownerName: v.ownerName != null ? String(v.ownerName) : null,

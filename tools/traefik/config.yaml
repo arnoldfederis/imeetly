@@ -36,6 +36,15 @@ http:
         options: imeetly
         domains:
           - main: "imeetly.dev"
+    site:
+      entryPoints:
+        - websecure
+      rule: "Host(`imeetly.dev`)"
+      service: site
+      tls:
+        options: imeetly
+        domains:
+          - main: "imeetly.dev"
     web:
       entryPoints:
         - websecure
@@ -67,6 +76,10 @@ http:
       loadbalancer:
         servers:
           - url: "http://localhost:4001"
+    site:
+      loadbalancer:
+        servers:
+          - url: "http://localhost:4002"
 tls:
   stores:
     default:

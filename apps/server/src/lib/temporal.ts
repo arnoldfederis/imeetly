@@ -9,16 +9,23 @@ function getTemporalHttpUrl(): string {
   return `http://${host}:${TEMPORAL_HTTP_PORT}`;
 }
 
-export async function startMeetingProcessing(meetingId: string) {
+export async function startMeetingProcessing(
+  meetingId: string,
+  options?: { priority?: boolean },
+) {
   const workflowId = `meeting-${meetingId}`;
   const baseUrl = getTemporalHttpUrl();
   const namespace = env.TEMPORAL_NAMESPACE;
 
   const url = `${baseUrl}/api/v1/namespaces/${namespace}/workflows/${encodeURIComponent(workflowId)}`;
 
+  const taskQueue = options?.priority
+    ? "meeting-processing-priority"
+    : "meeting-processing";
+
   const body = {
     workflowType: { name: "processMeeting" },
-    taskQueue: { name: "meeting-processing" },
+    taskQueue: { name: taskQueue },
     input: {
       payloads: [
         {

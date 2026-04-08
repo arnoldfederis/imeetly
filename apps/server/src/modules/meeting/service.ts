@@ -171,6 +171,9 @@ export abstract class MeetingService {
     });
     if (!meeting) return null;
 
+    const { plan } = await BillingService.resolveUserPlan(userId);
+    const { priorityProcessing } = getPlanLimits(plan);
+
     await db
       .update(meetings)
       .set({
@@ -181,7 +184,9 @@ export abstract class MeetingService {
       .where(eq(meetings.id, meetingId));
 
     try {
-      await startMeetingProcessing(meetingId);
+      await startMeetingProcessing(meetingId, {
+        priority: priorityProcessing,
+      });
     } catch (err) {
       // Revert status so user can retry
       const reason =
@@ -350,6 +355,9 @@ export abstract class MeetingService {
   }
 
   private static async _triggerProcessing(userId: string, meetingId: string) {
+    const { plan } = await BillingService.resolveUserPlan(userId);
+    const { priorityProcessing } = getPlanLimits(plan);
+
     await db
       .update(meetings)
       .set({
@@ -360,7 +368,9 @@ export abstract class MeetingService {
       .where(eq(meetings.id, meetingId));
 
     try {
-      const result = await startMeetingProcessing(meetingId);
+      const result = await startMeetingProcessing(meetingId, {
+        priority: priorityProcessing,
+      });
 
       await BillingService.incrementUsage(userId, "meetings_created");
 
@@ -457,7 +467,7 @@ export abstract class MeetingService {
         eq(meetingFiles.meetingId, input.meetingId),
       ),
     });
-    if (!file || !file.uploadId) {
+    if (!file?.uploadId) {
       throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
     if (file.uploadStatus !== "pending" && file.uploadStatus !== "uploading") {
@@ -473,18 +483,16 @@ export abstract class MeetingService {
         .where(eq(meetingFiles.id, input.fileId));
     }
 
-    const urls = await Promise.all(
+    return await Promise.all(
       input.partNumbers.map(async (partNumber) => ({
         partNumber,
         url: await createPresignedPartUrl(
           file.storageKey,
-          file.uploadId!,
+          file.uploadId ?? "",
           partNumber,
         ),
       })),
     );
-
-    return urls;
   }
 
   static async completeMultipartUpload(
@@ -508,7 +516,7 @@ export abstract class MeetingService {
         eq(meetingFiles.meetingId, input.meetingId),
       ),
     });
-    if (!file || !file.uploadId) {
+    if (!file?.uploadId) {
       throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
 
@@ -543,7 +551,7 @@ export abstract class MeetingService {
         eq(meetingFiles.meetingId, input.meetingId),
       ),
     });
-    if (!file || !file.uploadId) {
+    if (!file?.uploadId) {
       throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
 
@@ -603,6 +611,13 @@ export abstract class MeetingService {
         ),
       );
 
+    const [completedMeetings] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(meetings)
+      .where(
+        and(eq(meetings.userId, userId), eq(meetings.status, "completed")),
+      );
+
     const [openActions] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(actionItems)
@@ -613,6 +628,7 @@ export abstract class MeetingService {
     return {
       meetingsThisMonth: meetingsThisMonth.count,
       processingNow: processingNow.count,
+      completedMeetings: completedMeetings.count,
       openActionItems: openActions.count,
     };
   }

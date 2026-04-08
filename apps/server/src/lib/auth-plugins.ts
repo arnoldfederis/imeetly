@@ -35,6 +35,14 @@ export const authPlugins = [
   ...(env.APP_ENV === "development" ? [] : [emailHarmony()]),
   emailOTP({
     sendVerificationOTP: AuthService.sendVerificationOTP,
+    otpLength: 6,
+    expiresIn: 300, // 5 minutes
+    allowedAttempts: 5,
+    resendStrategy: "reuse", // Resend same code within window (reduces email volume)
+    rateLimit: {
+      window: 60, // 1 minute window
+      max: 3, // Max 3 send requests per minute
+    },
   }),
   inferAdditionalFields(),
   magicLink({

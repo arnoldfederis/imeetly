@@ -27,6 +27,9 @@ import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/admin/metrics")({
   component: AdminMetricsPage,
+  head: () => ({
+    meta: [{ title: "Admin Metrics — imeetly" }],
+  }),
 });
 
 function usd(n: number) {
@@ -62,7 +65,7 @@ function AdminMetricsPage() {
       </div>
 
       {/* Global Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <StatCard
           icon={<UsersIcon />}
           title="Total Users"
@@ -99,52 +102,54 @@ function AdminMetricsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Plan</TableHead>
-                <TableHead className="text-right">Users</TableHead>
-                <TableHead className="text-right">Revenue</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="text-right">Profit</TableHead>
-                <TableHead className="text-right">Avg Profit/User</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plans &&
-                (["free", "pro", "team"] as const).map((key) => {
-                  const p = plans[key];
-                  return (
-                    <TableRow key={key}>
-                      <TableCell>
-                        <Badge variant="outline">{p.plan}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {p.totalUsers}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {usd(p.totalRevenue)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {usd(p.totalCost)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span
-                          className={
-                            p.totalProfit < 0 ? "text-destructive" : ""
-                          }
-                        >
-                          {usd(p.totalProfit)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {usd(p.avgProfitPerUser)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Plan</TableHead>
+                  <TableHead className="text-right">Users</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
+                  <TableHead className="text-right">Cost</TableHead>
+                  <TableHead className="text-right">Profit</TableHead>
+                  <TableHead className="text-right">Avg Profit/User</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {plans &&
+                  (["free", "pro", "team"] as const).map((key) => {
+                    const p = plans[key];
+                    return (
+                      <TableRow key={key}>
+                        <TableCell>
+                          <Badge variant="outline">{p.plan}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {p.totalUsers}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {usd(p.totalRevenue)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {usd(p.totalCost)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span
+                            className={
+                              p.totalProfit < 0 ? "text-destructive" : ""
+                            }
+                          >
+                            {usd(p.totalProfit)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {usd(p.avgProfitPerUser)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -164,50 +169,52 @@ function AdminMetricsPage() {
               No meetings yet.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Meeting</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead className="text-right">Duration</TableHead>
-                  <TableHead className="text-right">File Size</TableHead>
-                  <TableHead className="text-right">Est. Cost</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentMeetings.map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell className="max-w-48 truncate font-medium">
-                      {m.title}
-                    </TableCell>
-                    <TableCell className="max-w-32 truncate text-muted-foreground text-xs">
-                      {m.userEmail ?? m.userId}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {m.durationMinutes
-                        ? `${Number(m.durationMinutes).toFixed(1)} min`
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {m.fileSizeMb
-                        ? `${Number(m.fileSizeMb).toFixed(1)} MB`
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {usd(Number(m.estimatedCost))}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{m.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {new Date(m.createdAt).toLocaleDateString()}
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Meeting</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead className="text-right">Duration</TableHead>
+                    <TableHead className="text-right">File Size</TableHead>
+                    <TableHead className="text-right">Est. Cost</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {recentMeetings.map((m) => (
+                    <TableRow key={m.id}>
+                      <TableCell className="max-w-48 truncate font-medium">
+                        {m.title}
+                      </TableCell>
+                      <TableCell className="max-w-32 truncate text-muted-foreground text-xs">
+                        {m.userEmail ?? m.userId}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {m.durationMinutes
+                          ? `${Number(m.durationMinutes).toFixed(1)} min`
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {m.fileSizeMb
+                          ? `${Number(m.fileSizeMb).toFixed(1)} MB`
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {usd(Number(m.estimatedCost))}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{m.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {new Date(m.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

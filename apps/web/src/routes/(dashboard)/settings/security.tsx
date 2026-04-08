@@ -35,6 +35,9 @@ import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/(dashboard)/settings/security")({
   component: SecurityPage,
+  head: () => ({
+    meta: [{ title: "Security — imeetly" }],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     error: (search.error as string | undefined) ?? undefined,
   }),
@@ -267,14 +270,18 @@ function PasskeysCard({
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Passkeys</CardTitle>
               <CardDescription>
                 Use biometrics or security keys for passwordless sign-in
               </CardDescription>
             </div>
-            <Button onClick={() => setDialogOpen(true)} size="sm">
+            <Button
+              className="shrink-0 self-start"
+              onClick={() => setDialogOpen(true)}
+              size="sm"
+            >
               <PlusIcon data-icon="inline-start" />
               Add Passkey
             </Button>

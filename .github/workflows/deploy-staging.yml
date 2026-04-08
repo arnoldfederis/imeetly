@@ -80,6 +80,18 @@ jobs:
         id: vars
         run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
+      - name: Build and push site
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/site/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:staging
+            ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:staging-${{ github.sha }}
+          build-args: |
+            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
+
       - name: Build and push web
         uses: docker/build-push-action@v6
         with:
@@ -126,6 +138,7 @@ jobs:
             -H "x-api-key: ${{ secrets.DOKPLOY_API_TOKEN }}" \
             -H "Content-Type: application/json" \
             --data '{"composeId": "${{ secrets.DOKPLOY_COMPOSE_ID }}"}'
+        continue-on-error: true
 
       - name: Redeploy compose
         run: |

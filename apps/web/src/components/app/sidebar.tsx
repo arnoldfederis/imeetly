@@ -1,4 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { Image } from "@unpic/react";
 import {
   CheckSquareIcon,
   ChevronRight,
@@ -70,15 +71,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         {sidebar.state === "collapsed" ? (
-          <div className="flex items-center justify-center rounded-lg p-2 hover:bg-secondary">
-            {/*Todo: Create app icon*/}
-            <ProjectorIcon size={14} />
-          </div>
+          <Link
+            className="flex items-center justify-center rounded-lg p-2 hover:bg-secondary"
+            to="/"
+          >
+            <Image
+              alt="imeetly"
+              className="size-5"
+              height={20}
+              src="/imeetly-transparent.png"
+              width={20}
+            />
+          </Link>
         ) : (
           <Link
-            className="rounded-md p-2 font-bold text-lg hover:bg-secondary"
-            to={"/"}
+            className="flex items-center gap-2 rounded-md p-2 font-bold text-lg hover:bg-secondary"
+            to="/"
           >
+            <Image
+              alt="imeetly"
+              className="size-6"
+              height={24}
+              src="/imeetly-transparent.png"
+              width={24}
+            />
             imeetly
           </Link>
         )}

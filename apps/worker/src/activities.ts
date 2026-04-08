@@ -1,11 +1,19 @@
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { actionItems, meetingFiles, meetingSummaries, meetings } from "@repo/db/schemas/app";
+import {
+  actionItems,
+  meetingFiles,
+  meetingSummaries,
+  meetings,
+} from "@repo/db/schemas/app";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { transcribeMeeting } from "./services/ai/transcription";
-import type { ExtractionResult, TranscriptionResult } from "./services/ai/types";
+import type {
+  ExtractionResult,
+  TranscriptionResult,
+} from "./services/ai/types";
 
 // --- Types ---
 
@@ -48,7 +56,9 @@ export async function updateMeetingStatus(
   );
 }
 
-export async function loadMeetingInput(meetingId: string): Promise<MeetingInput> {
+export async function loadMeetingInput(
+  meetingId: string,
+): Promise<MeetingInput> {
   const meeting = await db.query.meetings.findFirst({
     where: eq(meetings.id, meetingId),
     with: { files: true },
@@ -72,17 +82,25 @@ export async function loadMeetingInput(meetingId: string): Promise<MeetingInput>
 
 // --- AI activities (thin wrappers around provider layer) ---
 
-export async function extractAudioFromVideo(storageKey: string): Promise<string> {
+export async function extractAudioFromVideo(
+  storageKey: string,
+): Promise<string> {
   // For MVP, pass video directly — Whisper handles common video formats
-  console.log(`[extractAudio] Passing video through for transcription: ${storageKey}`);
+  console.log(
+    `[extractAudio] Passing video through for transcription: ${storageKey}`,
+  );
   return storageKey;
 }
 
-export async function transcribeAudio(audioKey: string): Promise<TranscriptionResult> {
+export async function transcribeAudio(
+  audioKey: string,
+): Promise<TranscriptionResult> {
   return transcribeMeeting(audioKey);
 }
 
-export async function generateExtractionResult(transcript: string): Promise<ExtractionResult> {
+export async function generateExtractionResult(
+  transcript: string,
+): Promise<ExtractionResult> {
   return extractMeetingData(transcript);
 }
 
@@ -174,9 +192,7 @@ export async function deleteSourceFile(meetingId: string): Promise<void> {
         })
         .where(eq(meetingFiles.id, file.id));
 
-      console.log(
-        `[${meetingId}] Deleted source file: ${file.storageKey}`,
-      );
+      console.log(`[${meetingId}] Deleted source file: ${file.storageKey}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.warn(

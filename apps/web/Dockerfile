@@ -2,6 +2,7 @@ FROM oven/bun:1 AS deps
 WORKDIR /app
 
 COPY package.json bun.lock turbo.json ./
+COPY apps/site/package.json apps/site/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY apps/server/package.json apps/server/package.json
 COPY apps/worker/package.json apps/worker/package.json
@@ -27,7 +28,7 @@ WORKDIR /app
 COPY --from=build /app/apps/web/.output /app/.output
 
 ENV NODE_ENV=production
-ENV PORT=4001
+ENV PORT=3000
 
-EXPOSE 4001
+EXPOSE 3000
 CMD ["bun", ".output/server/index.mjs"]

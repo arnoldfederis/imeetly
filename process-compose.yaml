@@ -106,7 +106,7 @@ processes:
       failure_threshold: 3
 
   temporal:
-    command: "temporal server start-dev"
+    command: "temporal server start-dev --http-port 7243"
     namespace: "tools"
     availability:
       restart: "always"
@@ -205,6 +205,34 @@ processes:
         port: 4000
         scheme: "http"
         path: "/rpc/health/live"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+
+  site:
+    command: "bun dev -F @repo/site"
+    namespace: "web"
+    availability:
+      restart: "always"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 4002
+        scheme: "http"
+        path: "/"
+      initial_delay_seconds: 3
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 3
+    liveness_probe:
+      http_get:
+        host: "localhost"
+        port: 4002
+        scheme: "http"
+        path: "/"
       initial_delay_seconds: 3
       period_seconds: 5
       timeout_seconds: 3

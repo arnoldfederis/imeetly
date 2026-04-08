@@ -1,34 +1,77 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClockIcon, FileTextIcon, TrashIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ClockIcon,
+  FileTextIcon,
+  SearchIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/action-items")({
   component: ActionItemsPage,
+  head: () => ({
+    meta: [{ title: "Action Items — imeetly" }],
+  }),
 });
 
 function ActionItemsPage() {
-  const [filter, setFilter] = useState(["all"]);
-
-  const filterValue = filter[0] ?? "all";
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const { data: items, isLoading } = useQuery(
     client.actionItem.list.queryOptions({
-      input: { status: filterValue === "all" ? undefined : filterValue },
+      input: { status: filter === "all" ? undefined : filter },
     }),
   );
+
+  const filtered = useMemo(() => {
+    if (!items || !search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.meetingTitle.toLowerCase().includes(q) ||
+        item.ownerName?.toLowerCase().includes(q),
+    );
+  }, [items, search]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,34 +82,48 @@ function ActionItemsPage() {
         </p>
       </div>
 
-      <ToggleGroup
-        onValueChange={(val) => {
-          if (val.length > 0) setFilter(val.slice(-1));
-        }}
-        size="sm"
-        value={filter}
-        variant="outline"
-      >
-        <ToggleGroupItem value="all">All</ToggleGroupItem>
-        <ToggleGroupItem value="open">Open</ToggleGroupItem>
-        <ToggleGroupItem value="done">Done</ToggleGroupItem>
-      </ToggleGroup>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <InputGroup className="flex-1">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search action items..."
+            value={search}
+          />
+        </InputGroup>
+        <Select onValueChange={(v) => setFilter(v ?? "all")} value={filter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="All Items">
+              {filter === "all"
+                ? "All Items"
+                : filter === "open"
+                  ? "Open"
+                  : "Done"}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Items</SelectItem>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="done">Done</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spinner className="size-6" />
-        </div>
-      ) : !items || items.length === 0 ? (
+      {!filtered || filtered.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>No action items</EmptyTitle>
             <EmptyDescription>
-              Action items from your meetings will appear here.
+              {search || filter !== "all"
+                ? "Try adjusting your search or filter."
+                : "Action items from your meetings will appear here."}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
-        <GroupedActionItems items={items} />
+        <GroupedActionItems items={filtered} />
       )}
     </div>
   );
@@ -84,7 +141,10 @@ type ActionItem = {
 
 function GroupedActionItems({ items }: { items: ActionItem[] }) {
   const grouped = useMemo(() => {
-    const map = new Map<string, { meetingId: string; meetingTitle: string; items: ActionItem[] }>();
+    const map = new Map<
+      string,
+      { meetingId: string; meetingTitle: string; items: ActionItem[] }
+    >();
     for (const item of items) {
       const existing = map.get(item.meetingId);
       if (existing) {
@@ -97,7 +157,6 @@ function GroupedActionItems({ items }: { items: ActionItem[] }) {
         });
       }
     }
-    // Sort items within each group: open first, done last
     for (const group of map.values()) {
       group.items.sort((a, b) => {
         if (a.status === b.status) return 0;
@@ -108,41 +167,59 @@ function GroupedActionItems({ items }: { items: ActionItem[] }) {
   }, [items]);
 
   return (
-    <div className="flex flex-col gap-6">
-      {grouped.map((group) => (
-        <div className="flex flex-col gap-2" key={group.meetingId}>
-          <Link
-            className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground"
-            params={{ meetingId: group.meetingId }}
-            to="/meetings/$meetingId"
-          >
-            <FileTextIcon className="size-4" />
-            <span className="font-medium">{group.meetingTitle}</span>
-            <span className="text-xs">
-              ({group.items.length})
-            </span>
-          </Link>
-          <div className="flex flex-col gap-1.5 pl-6">
-            {group.items.map((item) => (
-              <ActionItemCard item={item} key={item.id} />
-            ))}
-          </div>
-        </div>
-      ))}
+    <div className="flex flex-col gap-3">
+      {grouped.map((group, index) => {
+        const openCount = group.items.filter((i) => i.status === "open").length;
+
+        return (
+          <Collapsible defaultOpen={index === 0} key={group.meetingId}>
+            <div className="rounded-xl border">
+              <CollapsibleTrigger className="flex w-full items-center gap-3 p-4 text-left hover:bg-muted/50">
+                <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <span className="truncate font-medium text-sm">
+                    {group.meetingTitle}
+                  </span>
+                  <span className="ml-2 text-muted-foreground text-xs">
+                    {openCount > 0
+                      ? `${openCount} open · ${group.items.length} total`
+                      : `${group.items.length} total`}
+                  </span>
+                </div>
+                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 [[data-panel-open]_&]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="flex flex-col gap-1.5 px-4 py-4">
+                  {group.items.map((item) => (
+                    <ActionItemCard item={item} key={item.id} />
+                  ))}
+                  <Link
+                    className="mt-4 text-muted-foreground text-xs hover:text-foreground"
+                    params={{ meetingId: group.meetingId }}
+                    to="/meetings/$meetingId"
+                  >
+                    View meeting →
+                  </Link>
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+        );
+      })}
     </div>
   );
 }
 
-function ActionItemCard({
-  item,
-}: {
-  item: ActionItem;
-}) {
+function ActionItemCard({ item }: { item: ActionItem }) {
   const queryClient = useQueryClient();
 
   const invalidateAll = async () => {
-    await queryClient.invalidateQueries({ queryKey: client.actionItem.list.key() });
-    await queryClient.invalidateQueries({ queryKey: client.meeting.list.key() });
+    await queryClient.invalidateQueries({
+      queryKey: client.actionItem.list.key(),
+    });
+    await queryClient.invalidateQueries({
+      queryKey: client.meeting.list.key(),
+    });
   };
 
   const toggleMutation = useMutation(
