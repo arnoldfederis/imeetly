@@ -11,7 +11,7 @@ services:
       - APP_MODULE=site
       - PORT=5002
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5002/ || exit 1"]
+      test: ["CMD-SHELL", "curl -sf -o /dev/null http://localhost:5002/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -35,7 +35,7 @@ services:
       - APP_MODULE=web
       - PORT=5001
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5001/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:5001/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -63,7 +63,7 @@ services:
       - SMTP_HOST=mailpit
       - SMTP_PORT=1025
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:5000/rpc/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
