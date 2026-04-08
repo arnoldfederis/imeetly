@@ -7,7 +7,7 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UsageBanner } from "@/components/billing/usage-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,19 +48,48 @@ const STATUS_OPTIONS = [
 ] as const;
 
 function MeetingsPage() {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const shouldRestoreFocusRef = useRef(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data, isLoading } = useQuery(
+  useEffect(() => {
+    if (search.trim() === "") {
+      setDebouncedSearch("");
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
+
+  const { data, isLoading, isFetching } = useQuery(
     client.meeting.list.queryOptions({
       input: {
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter === "all" ? undefined : statusFilter,
         limit: 50,
         offset: 0,
       },
     }),
   );
+
+  useEffect(() => {
+    if (search !== debouncedSearch) {
+      shouldRestoreFocusRef.current =
+        document.activeElement === searchInputRef.current;
+      return;
+    }
+
+    if (!isFetching && shouldRestoreFocusRef.current) {
+      searchInputRef.current?.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  }, [debouncedSearch, isFetching, search]);
 
   const meetings = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -99,7 +128,14 @@ function MeetingsPage() {
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
-            onChange={(e) => setSearch(e.target.value)}
+            ref={searchInputRef}
+            onChange={(e) => {
+              const nextValue = e.target.value;
+              setSearch(nextValue);
+              if (nextValue.trim() === "") {
+                setDebouncedSearch("");
+              }
+            }}
             placeholder="Search meetings..."
             value={search}
           />
@@ -122,6 +158,11 @@ function MeetingsPage() {
           </SelectContent>
         </Select>
       </div>
+
+      <p className="text-muted-foreground text-xs">
+        Search across meeting titles, participants, transcripts, summaries,
+        decisions, blockers, and action items.
+      </p>
 
       <UsageBanner />
 

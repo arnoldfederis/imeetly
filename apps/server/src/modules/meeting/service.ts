@@ -91,7 +91,28 @@ export abstract class MeetingService {
       const pattern = `%${query.search}%`;
       const searchCondition = or(
         ilike(meetings.title, pattern),
+        ilike(meetings.participantsText, pattern),
         ilike(meetings.transcriptText, pattern),
+        sql`exists (
+          select 1
+          from ${meetingSummaries}
+          where ${meetingSummaries.meetingId} = ${meetings.id}
+            and (
+              ${meetingSummaries.summaryMd} ilike ${pattern}
+              or ${meetingSummaries.decisionsMd} ilike ${pattern}
+              or ${meetingSummaries.blockersMd} ilike ${pattern}
+              or ${meetingSummaries.followupsMd} ilike ${pattern}
+            )
+        )`,
+        sql`exists (
+          select 1
+          from ${actionItems}
+          where ${actionItems.meetingId} = ${meetings.id}
+            and (
+              ${actionItems.title} ilike ${pattern}
+              or ${actionItems.ownerName} ilike ${pattern}
+            )
+        )`,
       );
       if (searchCondition) conditions.push(searchCondition);
     }

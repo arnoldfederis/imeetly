@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BrainCircuitIcon,
+  Clock3Icon,
   CircleDotIcon,
   ClipboardListIcon,
   ClockIcon,
@@ -342,10 +343,17 @@ function WelcomeView() {
           title="AI processes your meeting"
         />
         <StepCard
-          description="Get a clean summary with structured action items. Share with your team or export as needed."
+          badge="Coming soon"
+          description="Get a clean summary with structured action items. Team sharing is planned next; exports are available today."
           icon={<ClipboardListIcon className="size-5 text-primary" />}
           step="03"
-          title="Review and take action"
+          title="Review and share"
+        />
+        <StepCard
+          description="Search across transcripts, summaries, decisions, blockers, and action items from one meeting list."
+          icon={<Clock3Icon className="size-5 text-primary" />}
+          step="04"
+          title="Search your history"
         />
       </div>
     </div>
@@ -357,11 +365,13 @@ function StepCard({
   title,
   description,
   icon,
+  badge,
 }: {
   step: string;
   title: string;
   description: string;
   icon: React.ReactNode;
+  badge?: string;
 }) {
   return (
     <div className="rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5">
@@ -370,6 +380,11 @@ function StepCard({
           {icon}
         </div>
         <span className="font-bold text-primary text-sm">{step}</span>
+        {badge ? (
+          <span className="rounded-full border border-dashed border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700">
+            {badge}
+          </span>
+        ) : null}
       </div>
       <h3 className="mb-2 font-semibold text-lg">{title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed">

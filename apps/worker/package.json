@@ -22,8 +22,8 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.85.0",
-    "@aws-sdk/client-s3": "^3.1026.0",
+    "@anthropic-ai/sdk": "^0.86.0",
+    "@aws-sdk/client-s3": "^3.1027.0",
     "@deepgram/sdk": "5.0.0",
     "@neondatabase/serverless": "^1.0.0",
     "@repo/db": "workspace:*",

@@ -1,8 +1,4 @@
-import {
-  createRootRoute,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/providers/theme";
 
 import appCss from "../styles.css?url";

@@ -62,7 +62,7 @@
   --chart-1: oklch(0.79 0.1 275);
   --chart-2: oklch(0.68 0.16 277);
   --chart-3: oklch(0.59 0.2 277);
-  --chart-4: oklch(0.59 0.2 277);
+  --chart-4: oklch(0.51 0.23 277);
   --chart-5: oklch(0.46 0.21 277);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
@@ -125,6 +125,12 @@
     @apply font-sans bg-background text-foreground;
   }
   html {
-    @apply scroll-smooth font-sans;
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }

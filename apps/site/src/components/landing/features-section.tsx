@@ -42,8 +42,9 @@ const features = [
   {
     icon: UsersIcon,
     title: "Team-ready",
+    comingSoon: true,
     description:
-      "Structured output that's easy to share. Everyone stays aligned without another status meeting.",
+      "Structured output that's easy to share. Team workflows and shared libraries are coming soon.",
   },
 ];
 
@@ -66,10 +67,17 @@ export function FeaturesSection() {
           staggerDelay={0.1}
         >
           {features.map((f) => (
-            <StaggerItem key={f.title}>
-              <div className="group rounded-2xl border bg-card p-6 transition-shadow hover:shadow-lg hover:shadow-primary/5">
-                <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
-                  <f.icon className="size-5 text-primary" />
+            <StaggerItem className="h-full" key={f.title}>
+              <div className="group flex h-full flex-col rounded-2xl border bg-card p-6 transition-shadow hover:shadow-lg hover:shadow-primary/5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+                    <f.icon className="size-5 text-primary" />
+                  </div>
+                  {f.comingSoon ? (
+                    <span className="rounded-full border border-amber-500/40 border-dashed bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700">
+                      Coming soon
+                    </span>
+                  ) : null}
                 </div>
                 <h3 className="mb-2 font-semibold">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">

@@ -59,10 +59,12 @@ export function FAQSection() {
         </FadeIn>
 
         <FadeIn delay={0.2}>
-          <Accordion collapsible type="single">
+          <Accordion>
             {faqs.map((faq, i) => (
               <AccordionItem key={i} value={`faq-${i}`}>
-                <AccordionTrigger>{faq.q}</AccordionTrigger>
+                <AccordionTrigger className="cursor-pointer">
+                  {faq.q}
+                </AccordionTrigger>
                 <AccordionContent>
                   <p>{faq.a}</p>
                 </AccordionContent>
