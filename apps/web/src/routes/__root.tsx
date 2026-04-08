@@ -43,12 +43,12 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "imeetly",
+        title: "imeetly — AI Meeting Notes for Fast-Moving Teams",
       },
       {
         name: "description",
         content:
-          "AI meeting notes — summaries, decisions, blockers, and action items from every meeting.",
+          "Upload meeting recordings or transcripts and instantly get AI-powered summaries, decisions, blockers, and action items. Start free.",
       },
       {
         name: "robots",

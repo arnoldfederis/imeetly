@@ -85,14 +85,14 @@ export function PricingSection() {
 
           <div className="mt-8 inline-flex items-center gap-3 rounded-full border bg-muted/50 p-1">
             <button
-              className={`rounded-full px-4 py-1.5 font-medium text-sm transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`cursor-pointer rounded-full px-4 py-1.5 font-medium text-sm transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setYearly(false)}
               type="button"
             >
               Monthly
             </button>
             <button
-              className={`rounded-full px-4 py-1.5 font-medium text-sm transition-colors ${yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`cursor-pointer rounded-full px-4 py-1.5 font-medium text-sm transition-colors ${yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setYearly(true)}
               type="button"
             >

@@ -1,22 +1,13 @@
 import { ScriptOnce } from "@tanstack/react-router";
 import { createClientOnlyFn, createIsomorphicFn } from "@tanstack/react-start";
 import { createContext, type ReactNode, use, useEffect, useState } from "react";
+import { z } from "zod";
 
-const validUserThemes = ["light", "dark", "system"] as const;
-const validAppThemes = ["light", "dark"] as const;
+const UserThemeSchema = z.enum(["light", "dark", "system"]).catch("system");
+const AppThemeSchema = z.enum(["light", "dark"]).catch("light");
 
-export type UserTheme = (typeof validUserThemes)[number];
-export type AppTheme = (typeof validAppThemes)[number];
-
-function parseUserTheme(value: unknown): UserTheme {
-  if (
-    typeof value === "string" &&
-    validUserThemes.includes(value as UserTheme)
-  ) {
-    return value as UserTheme;
-  }
-  return "system";
-}
+export type UserTheme = z.infer<typeof UserThemeSchema>;
+export type AppTheme = z.infer<typeof AppThemeSchema>;
 
 const themeStorageKey = "ui-theme";
 
@@ -24,11 +15,11 @@ const getStoredUserTheme = createIsomorphicFn()
   .server((): UserTheme => "system")
   .client((): UserTheme => {
     const stored = localStorage.getItem(themeStorageKey);
-    return parseUserTheme(stored);
+    return UserThemeSchema.parse(stored);
   });
 
 const setStoredTheme = createClientOnlyFn((theme: UserTheme) => {
-  const validatedTheme = parseUserTheme(theme);
+  const validatedTheme = UserThemeSchema.parse(theme);
   localStorage.setItem(themeStorageKey, validatedTheme);
 });
 
@@ -41,7 +32,7 @@ const getSystemTheme = createIsomorphicFn()
   });
 
 const handleThemeChange = createClientOnlyFn((userTheme: UserTheme) => {
-  const validatedTheme = parseUserTheme(userTheme);
+  const validatedTheme = UserThemeSchema.parse(userTheme);
 
   const root = document.documentElement;
   root.classList.remove("light", "dark", "system");
@@ -115,7 +106,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const appTheme = userTheme === "system" ? getSystemTheme() : userTheme;
 
   const setTheme = (newUserTheme: UserTheme) => {
-    const validatedTheme = parseUserTheme(newUserTheme);
+    const validatedTheme = UserThemeSchema.parse(newUserTheme);
     setUserTheme(validatedTheme);
     setStoredTheme(validatedTheme);
     handleThemeChange(validatedTheme);
