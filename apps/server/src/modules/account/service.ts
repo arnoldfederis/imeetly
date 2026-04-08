@@ -9,7 +9,7 @@ import { and, eq, ne, sql } from "drizzle-orm";
  * Account lifecycle operations — deletion, data cleanup, and impact summary.
  *
  * Deletion strategy:
- * - Cancel active Polar subscription (prevents orphaned billing state)
+ * - Delete Polar customer (cancels subscriptions + revokes benefits)
  * - Delete remaining raw files from object storage (R2)
  * - Delete auth verifications by email (not FK-linked to users)
  * - Delete user row — all other data cascades via FK onDelete: "cascade":
@@ -56,7 +56,7 @@ export abstract class AccountService {
    * Permanently deletes a user account and all associated data.
    *
    * Order of operations:
-   * 1. Cancel Polar subscription (if any)
+   * 1. Delete Polar customer (cancels subscriptions + revokes benefits)
    * 2. Delete remaining raw files from R2
    * 3. Delete email verifications
    * 4. Delete user row (cascades all relational data)
@@ -70,8 +70,8 @@ export abstract class AccountService {
   static async deleteAccount(userId: string, userEmail: string) {
     console.log(`[account] Starting account deletion for user ${userId}`);
 
-    // 1. Cancel active Polar subscription
-    await AccountService._cancelSubscription(userId);
+    // 1. Delete Polar customer (cancels subscriptions + revokes benefits)
+    await AccountService._deletePolarCustomer(userId);
 
     // 2. Delete remaining raw files from object storage
     await AccountService._deleteStorageFiles(userId);
@@ -95,38 +95,21 @@ export abstract class AccountService {
   }
 
   /**
-   * Cancels the user's Polar subscription if one exists and is active.
+   * Deletes the Polar customer by external ID (userId).
+   * This automatically cancels active subscriptions and revokes benefits.
    * Best-effort: logs failures but does not block account deletion.
    */
-  private static async _cancelSubscription(userId: string) {
-    const sub = await db.query.subscriptions.findFirst({
-      where: eq(subscriptions.userId, userId),
-    });
-
-    if (!sub?.providerSubscriptionId) {
-      console.log(`[account] No subscription to cancel for user ${userId}`);
-      return;
-    }
-
-    if (sub.status !== "active" && sub.status !== "past_due") {
-      console.log(
-        `[account] Subscription already ${sub.status} for user ${userId}`,
-      );
-      return;
-    }
-
+  private static async _deletePolarCustomer(userId: string) {
     try {
-      await polarClient.subscriptions.revoke({
-        id: sub.providerSubscriptionId,
+      await polarClient.customers.deleteExternal({
+        externalId: userId,
       });
-      console.log(
-        `[account] Revoked Polar subscription ${sub.providerSubscriptionId}`,
-      );
+      console.log(`[account] Deleted Polar customer for user ${userId}`);
     } catch (err) {
-      // Log but don't block deletion — the subscription will eventually expire,
-      // and the user record (with cascade) will remove local subscription data.
+      // Log but don't block deletion — customer may not exist in Polar
+      // (e.g. free user who never checked out).
       console.error(
-        `[account] Failed to cancel Polar subscription ${sub.providerSubscriptionId}:`,
+        `[account] Failed to delete Polar customer for user ${userId}:`,
         err instanceof Error ? err.message : err,
       );
     }
