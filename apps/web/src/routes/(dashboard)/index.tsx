@@ -4,7 +4,6 @@ import {
   BrainCircuitIcon,
   CircleDotIcon,
   ClipboardListIcon,
-  Clock3Icon,
   ClockIcon,
   CreditCardIcon,
   FileAudioIcon,
@@ -329,7 +328,7 @@ function WelcomeView() {
         </p>
       </div>
 
-      <div className="mx-auto mt-16 grid w-full max-w-4xl gap-8 lg:grid-cols-3">
+      <div className="mx-auto mt-16 grid w-full max-w-4xl gap-8 md:grid-cols-3">
         <StepCard
           description="Drop in an audio file, video recording, or paste your transcript. We support all major formats."
           icon={<UploadIcon className="size-5 text-primary" />}
@@ -343,17 +342,10 @@ function WelcomeView() {
           title="AI processes your meeting"
         />
         <StepCard
-          badge="Coming soon"
-          description="Get a clean summary with structured action items. Team sharing is planned next; exports are available today."
+          description="Get a clean summary with structured action items. Share with your team or export as needed."
           icon={<ClipboardListIcon className="size-5 text-primary" />}
           step="03"
-          title="Review and share"
-        />
-        <StepCard
-          description="Search across transcripts, summaries, decisions, blockers, and action items from one meeting list."
-          icon={<Clock3Icon className="size-5 text-primary" />}
-          step="04"
-          title="Search your history"
+          title="Review and take action"
         />
       </div>
     </div>
@@ -365,13 +357,11 @@ function StepCard({
   title,
   description,
   icon,
-  badge,
 }: {
   step: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  badge?: string;
 }) {
   return (
     <div className="rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5">
@@ -380,11 +370,6 @@ function StepCard({
           {icon}
         </div>
         <span className="font-bold text-primary text-sm">{step}</span>
-        {badge ? (
-          <span className="rounded-full border border-amber-500/40 border-dashed bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700">
-            {badge}
-          </span>
-        ) : null}
       </div>
       <h3 className="mb-2 font-semibold text-lg">{title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed">
