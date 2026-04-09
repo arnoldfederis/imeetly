@@ -1,3 +1,4 @@
+import { env } from "@repo/env";
 import type { UnwrapSchema } from "elysia";
 import { z } from "zod";
 
@@ -16,19 +17,19 @@ export const planSlugSchema = z.enum([
 
 export const POLAR_PRODUCTS = {
   "pro-monthly": {
-    productId: "d93a06d1-5b31-4102-a022-b5de81f4802f",
+    productId: env.PRO_MONTHLY_PLAN,
     plan: "pro" as const,
   },
   "pro-yearly": {
-    productId: "abb029b2-d36d-4bb3-b2bc-eaea327495a6",
+    productId: env.PRO_YEARLY_PLAN,
     plan: "pro" as const,
   },
   "team-monthly": {
-    productId: "4d0aeb3a-d855-48f3-94bc-a61196c2f4dc",
+    productId: env.TEAM_MONTHLY_PLAN,
     plan: "team" as const,
   },
   "team-yearly": {
-    productId: "0c27c0d4-a299-4a00-8325-f4f8bad4c67a",
+    productId: env.TEAM_YEARLY_PLAN,
     plan: "team" as const,
   },
 } as const;

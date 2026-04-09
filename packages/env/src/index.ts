@@ -53,6 +53,18 @@ export const env = createEnv({
     TEMPORAL_NAMESPACE: string().check(
       minLength(1, "TEMPORAL_NAMESPACE is required"),
     ),
+    PRO_MONTHLY_PLAN: string().check(
+      minLength(1, "PRO_MONTHLY_PLAN is required"),
+    ),
+    PRO_YEARLY_PLAN: string().check(
+      minLength(1, "PRO_YEARLY_PLAN is required"),
+    ),
+    TEAM_MONTHLY_PLAN: string().check(
+      minLength(1, "TEAM_MONTHLY_PLAN is required"),
+    ),
+    TEAM_YEARLY_PLAN: string().check(
+      minLength(1, "TEAM_YEARLY_PLAN is required"),
+    ),
     TEMPORAL_HTTP_URL: optional(string()),
     // AI Provider Keys (optional - providers are skipped if missing)
     OPENAI_API_KEY: optional(string()),
