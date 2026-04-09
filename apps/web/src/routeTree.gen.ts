@@ -14,6 +14,7 @@ import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as dashboardIndexRouteImport } from './routes/(dashboard)/index'
 import { Route as HealthReadyRouteImport } from './routes/health/ready'
 import { Route as HealthLiveRouteImport } from './routes/health/live'
+import { Route as dashboardOnboardingRouteImport } from './routes/(dashboard)/onboarding'
 import { Route as dashboardActionItemsRouteImport } from './routes/(dashboard)/action-items'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as dashboardSettingsRouteRouteImport } from './routes/(dashboard)/settings/route'
@@ -51,6 +52,11 @@ const HealthLiveRoute = HealthLiveRouteImport.update({
   id: '/health/live',
   path: '/health/live',
   getParentRoute: () => rootRouteImport,
+} as any)
+const dashboardOnboardingRoute = dashboardOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => dashboardRouteRoute,
 } as any)
 const dashboardActionItemsRoute = dashboardActionItemsRouteImport.update({
   id: '/action-items',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof dashboardSettingsRouteRouteWithChildren
   '/login': typeof authLoginRoute
   '/action-items': typeof dashboardActionItemsRoute
+  '/onboarding': typeof dashboardOnboardingRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/': typeof dashboardIndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/admin': typeof dashboardAdminRouteRouteWithChildren
   '/login': typeof authLoginRoute
   '/action-items': typeof dashboardActionItemsRoute
+  '/onboarding': typeof dashboardOnboardingRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/': typeof dashboardIndexRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/(dashboard)/settings': typeof dashboardSettingsRouteRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(dashboard)/action-items': typeof dashboardActionItemsRoute
+  '/(dashboard)/onboarding': typeof dashboardOnboardingRoute
   '/health/live': typeof HealthLiveRoute
   '/health/ready': typeof HealthReadyRoute
   '/(dashboard)/': typeof dashboardIndexRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/login'
     | '/action-items'
+    | '/onboarding'
     | '/health/live'
     | '/health/ready'
     | '/'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/action-items'
+    | '/onboarding'
     | '/health/live'
     | '/health/ready'
     | '/'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/settings'
     | '/(auth)/login'
     | '/(dashboard)/action-items'
+    | '/(dashboard)/onboarding'
     | '/health/live'
     | '/health/ready'
     | '/(dashboard)/'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/health/live'
       preLoaderRoute: typeof HealthLiveRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(dashboard)/onboarding': {
+      id: '/(dashboard)/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof dashboardOnboardingRouteImport
+      parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/action-items': {
       id: '/(dashboard)/action-items'
@@ -445,6 +464,7 @@ interface dashboardRouteRouteChildren {
   dashboardAdminRouteRoute: typeof dashboardAdminRouteRouteWithChildren
   dashboardSettingsRouteRoute: typeof dashboardSettingsRouteRouteWithChildren
   dashboardActionItemsRoute: typeof dashboardActionItemsRoute
+  dashboardOnboardingRoute: typeof dashboardOnboardingRoute
   dashboardIndexRoute: typeof dashboardIndexRoute
   dashboardMeetingsMeetingIdRoute: typeof dashboardMeetingsMeetingIdRoute
   dashboardMeetingsNewRoute: typeof dashboardMeetingsNewRoute
@@ -455,6 +475,7 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardAdminRouteRoute: dashboardAdminRouteRouteWithChildren,
   dashboardSettingsRouteRoute: dashboardSettingsRouteRouteWithChildren,
   dashboardActionItemsRoute: dashboardActionItemsRoute,
+  dashboardOnboardingRoute: dashboardOnboardingRoute,
   dashboardIndexRoute: dashboardIndexRoute,
   dashboardMeetingsMeetingIdRoute: dashboardMeetingsMeetingIdRoute,
   dashboardMeetingsNewRoute: dashboardMeetingsNewRoute,

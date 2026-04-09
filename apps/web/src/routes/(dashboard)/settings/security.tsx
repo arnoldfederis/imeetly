@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/(dashboard)/settings/security")({
   component: SecurityPage,
@@ -92,20 +92,18 @@ function SecurityPage() {
   }, [error, navigate]);
 
   if (accountsLoading || passkeysLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
-    );
+    return <SecuritySkeleton />;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">Security</h1>
-        <p className="text-muted-foreground text-sm">
-          Manage your account security and authentication methods
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">Security</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your account security and authentication methods
+          </p>
+        </div>
       </div>
 
       {accounts?.some((a) => a.providerId === "google") && (
@@ -115,6 +113,23 @@ function SecurityPage() {
         />
       )}
       <PasskeysCard passkeys={passkeys ?? []} refetch={refetchPasskeys} />
+    </div>
+  );
+}
+
+function SecuritySkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">Security</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your account security and authentication methods
+          </p>
+        </div>
+      </div>
+      <Skeleton className="h-36 rounded-4xl" />
+      <Skeleton className="h-56 rounded-4xl" />
     </div>
   );
 }

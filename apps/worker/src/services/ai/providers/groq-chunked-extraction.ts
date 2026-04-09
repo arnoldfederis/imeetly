@@ -4,44 +4,109 @@ import { chunkTranscript } from "../chunker";
 import { parseExtractionResult } from "../parse";
 import { type ExtractionProviderImpl, ProviderError } from "../types";
 
-const CHUNK_SYSTEM_PROMPT = `You are a meeting notes assistant. Analyze this PARTIAL meeting transcript chunk and extract:
-- Key points discussed
-- Any decisions made
-- Any blockers or risks mentioned
-- Any follow-ups or action items mentioned
+const CHUNK_SYSTEM_PROMPT = `You are an AI assistant analyzing a PARTIAL meeting transcript chunk. Extract raw data for later merging.
 
-Return a JSON object:
+Return ONLY valid JSON:
 {
-  "keyPoints": ["..."],
-  "decisions": ["..."],
-  "blockers": ["..."],
-  "followups": ["..."],
-  "actionItems": [{"title": "...", "ownerName": null}]
+  "keyPoints": ["string"],
+  "decisions": ["string"],
+  "blockers": ["string"],
+  "followUps": ["string"],
+  "actionItems": [{"title": "string", "ownerName": "string or null"}]
 }
 
-Return ONLY valid JSON. No markdown fences.`;
+Rules:
+- keyPoints: brief factual statements of what was discussed
+- decisions: clear decisions made, start with action verbs
+- blockers: only real blockers or risks mentioned
+- followUps: actionable next steps with context
+- actionItems: specific tasks with owners when named
+- Empty array [] if none in any field
 
-const MERGE_SYSTEM_PROMPT = `You are a meeting notes assistant. You will receive partial summaries from different chunks of the same meeting transcript. Merge and deduplicate them into a single coherent result.
+Output ONLY JSON. No markdown fences. No extra text.`;
 
-Return a JSON object with these fields:
-- "summary": A concise markdown summary (bullet points, under 500 words)
-- "decisions": Markdown bullet list of key decisions. "No decisions recorded." if none.
-- "blockers": Markdown bullet list of blockers/risks. "No blockers or risks identified." if none.
-- "followups": Markdown bullet list of follow-ups/next steps. "No follow-ups identified." if none.
-- "actionItems": JSON array of objects with "title" (string) and "ownerName" (string or null)
+const MERGE_SYSTEM_PROMPT = `You are an AI assistant merging partial summaries from chunks of the same meeting transcript. Deduplicate and synthesize into a single coherent result.
 
-Deduplicate items that appear in multiple chunks. Preserve all unique information.
-Return ONLY valid JSON. No markdown fences.`;
+Return ONLY valid JSON in this exact shape:
+{
+  "summary": "string",
+  "decisions": ["string"],
+  "blockers": ["string"],
+  "followUps": ["string"],
+  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+}
 
-const SINGLE_SYSTEM_PROMPT = `You are a meeting notes assistant. Analyze the meeting transcript and return a JSON object with these fields:
+SECTION GUIDELINES:
 
-- "summary": A concise markdown summary (bullet points, under 500 words)
-- "decisions": Markdown bullet list of key decisions. "No decisions recorded." if none.
-- "blockers": Markdown bullet list of blockers/risks. "No blockers or risks identified." if none.
-- "followups": Markdown bullet list of follow-ups/next steps. "No follow-ups identified." if none.
-- "actionItems": JSON array of objects with "title" (string) and "ownerName" (string or null)
+summary:
+- 2–4 sentences max, focus on outcomes
+- Executive-level, clear, no filler
+- Do NOT use bullet points
 
-Return ONLY valid JSON. No markdown fences.`;
+decisions:
+- Each item = one clear, decisive statement, start with action verbs
+- Deduplicate across chunks, empty array [] if none
+
+blockers:
+- Only real blockers or risks, concise and specific
+- Empty array [] if none
+
+followUps:
+- Actionable next steps starting with verbs
+- Empty array [] if none
+
+actionItems:
+- Deduplicated tasks with owners when identifiable
+- ownerName: person's name or null
+
+TONE: Professional, product-oriented. No "It was discussed that..." phrases.
+
+Output ONLY JSON. No markdown fences. No extra text.`;
+
+const SINGLE_SYSTEM_PROMPT = `You are an AI assistant that transforms raw meeting transcripts into structured, high-quality, UI-ready meeting insights.
+
+Return ONLY valid JSON in this exact shape:
+
+{
+  "summary": "string",
+  "decisions": ["string"],
+  "blockers": ["string"],
+  "followUps": ["string"],
+  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+}
+
+SECTION GUIDELINES:
+
+summary:
+- 2–4 sentences max
+- Focus on outcome, not discussion
+- Executive-level, clear, no filler
+- Do NOT use bullet points
+
+decisions:
+- Each item = one clear, decisive statement
+- Start with strong action verbs
+- Short and specific
+- Empty array [] if none
+
+blockers:
+- Only real blockers or risks
+- Concise and specific
+- Empty array [] if none
+
+followUps:
+- Actionable next steps, start with verbs
+- Include context when useful
+- Empty array [] if none
+
+actionItems:
+- Specific tasks with clear owners when identifiable
+- title: short task description
+- ownerName: person's name or null if unassigned
+
+TONE: Professional, clear, product-oriented. No phrases like "It was discussed that..." or "The meeting covered..."
+
+Output ONLY JSON. No markdown fences. No extra text.`;
 
 const MODEL = "llama-3.3-70b-versatile";
 const MAX_CONCURRENT = 5;
@@ -144,7 +209,9 @@ async function processSingleChunk(
     keyPoints: asStringArray(parsed.keyPoints ?? parsed.key_points),
     decisions: asStringArray(parsed.decisions),
     blockers: asStringArray(parsed.blockers),
-    followups: asStringArray(parsed.followups ?? parsed.follow_ups),
+    followups: asStringArray(
+      parsed.followUps ?? parsed.followups ?? parsed.follow_ups,
+    ),
     actionItems: asActionItems(parsed.actionItems ?? parsed.action_items),
   };
 }

@@ -5,6 +5,7 @@ import {
   CrownIcon,
   ExternalLinkIcon,
   LoaderCircleIcon,
+  SparklesIcon,
   UsersIcon,
   ZapIcon,
 } from "lucide-react";
@@ -25,8 +26,7 @@ import {
   ProgressValue,
 } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/settings/billing")({
@@ -119,11 +119,7 @@ function BillingPage() {
   }, [checkout, queryClient, navigate]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
-    );
+    return <BillingSkeleton />;
   }
 
   const currentPlan = planData?.plan ?? "free";
@@ -131,13 +127,15 @@ function BillingPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">
-          Billing & Plans
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Manage your subscription and view usage
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">
+            Billing & Plans
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your subscription and view usage
+          </p>
+        </div>
       </div>
 
       <UsageCard planData={planData} />
@@ -200,60 +198,68 @@ function BillingPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3 text-muted-foreground text-sm">
-            <div>
-              <p className="font-medium text-foreground">
-                When do my meeting limits reset?
-              </p>
-              <p>
-                Free plan limits reset on the 1st of each calendar month. Paid
-                plans follow your subscription billing cycle.
-              </p>
-            </div>
+            <FaqItem
+              answer="Free plan limits reset on the 1st of each calendar month. Paid plans follow your subscription billing cycle."
+              question="When do my meeting limits reset?"
+            />
             <Separator />
-            <div>
-              <p className="font-medium text-foreground">
-                What happens when I upgrade?
-              </p>
-              <p>
-                You will be redirected to our payment provider to complete the
-                checkout. Your meeting quota increases immediately after
-                payment.
-              </p>
-            </div>
+            <FaqItem
+              answer="You will be redirected to our payment provider to complete the checkout. Your meeting quota increases immediately after payment."
+              question="What happens when I upgrade?"
+            />
             <Separator />
-            <div>
-              <p className="font-medium text-foreground">
-                What's the difference between monthly and yearly?
-              </p>
-              <p>
-                Yearly plans save you 20% compared to monthly. Usage limits
-                remain the same — they reset every month regardless of billing
-                cycle.
-              </p>
-            </div>
+            <FaqItem
+              answer="Yearly plans save you 20% compared to monthly. Usage limits remain the same — they reset every month regardless of billing cycle."
+              question="What's the difference between monthly and yearly?"
+            />
             <Separator />
-            <div>
-              <p className="font-medium text-foreground">
-                Is my payment information secure?
-              </p>
-              <p>
-                We do not store your card details. All payments are securely
-                handled by our payment provider, Polar.
-              </p>
-            </div>
+            <FaqItem
+              answer="We do not store your card details. All payments are securely handled by our payment provider, Polar."
+              question="Is my payment information secure?"
+            />
             <Separator />
-            <div>
-              <p className="font-medium text-foreground">
-                Can I cancel anytime?
-              </p>
-              <p>
-                Yes. Cancel through the billing portal and your plan remains
-                active until the end of the current billing period.
-              </p>
-            </div>
+            <FaqItem
+              answer="Yes. Cancel through the billing portal and your plan remains active until the end of the current billing period."
+              question="Can I cancel anytime?"
+            />
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  return (
+    <div>
+      <p className="font-medium text-foreground">{question}</p>
+      <p className="mt-1">{answer}</p>
+    </div>
+  );
+}
+
+function BillingSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">
+            Billing & Plans
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your subscription and view usage
+          </p>
+        </div>
+      </div>
+      <Skeleton className="h-40 rounded-4xl" />
+      <div className="flex flex-col gap-8">
+        <Skeleton className="h-10 w-48" />
+        <div className="grid gap-x-4 gap-y-8 lg:grid-cols-2 xl:grid-cols-3">
+          <Skeleton className="h-96 rounded-4xl" />
+          <Skeleton className="h-96 rounded-4xl" />
+          <Skeleton className="h-96 rounded-4xl" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -277,14 +283,19 @@ function UsageCard({
 }) {
   const used = planData?.usage.meetingsThisMonth ?? 0;
   const limit = planData?.limits.meetingsPerMonth ?? 5;
-  const meetingPercent = limit > 0 ? Math.round((used / limit) * 100) : 0;
+  const isUnlimited = limit === -1;
+  const meetingPercent =
+    !isUnlimited && limit > 0 ? Math.round((used / limit) * 100) : 0;
+  const planName = planData?.plan ?? "free";
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Current Usage</CardTitle>
-          <Badge variant="secondary">{planData?.plan ?? "free"}</Badge>
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-semibold text-primary text-xs capitalize">
+            {planName}
+          </span>
         </div>
         {planData?.period && (
           <CardDescription>
@@ -295,17 +306,26 @@ function UsageCard({
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Progress value={Math.min(meetingPercent, 100)}>
-          <ProgressLabel>Meetings</ProgressLabel>
+        <Progress value={isUnlimited ? 0 : Math.min(meetingPercent, 100)}>
+          <ProgressLabel>Meetings this month</ProgressLabel>
           <ProgressValue>
-            {() => `${used} / ${limit === -1 ? "∞" : limit}`}
+            {() => `${used} / ${isUnlimited ? "∞" : limit}`}
           </ProgressValue>
         </Progress>
         {planData?.usage.limitReached && (
-          <p className="font-medium text-destructive text-sm">
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 font-medium text-destructive text-sm">
             You've reached your monthly meeting limit. Upgrade to continue.
           </p>
         )}
+        {!planData?.usage.limitReached &&
+          !isUnlimited &&
+          (planData?.usage.meetingsRemaining ?? 5) <= 2 && (
+            <p className="rounded-lg bg-orange-500/10 px-3 py-2 text-orange-600 text-sm dark:text-orange-400">
+              Only {planData?.usage.meetingsRemaining} meeting
+              {planData?.usage.meetingsRemaining === 1 ? "" : "s"} remaining
+              this month.
+            </p>
+          )}
       </CardContent>
     </Card>
   );
@@ -355,7 +375,7 @@ function PlanCard({
 
   return (
     <Card
-      className={`relative flex flex-col ${isCurrent ? "border-primary" : isHighlighted ? "border-primary shadow-lg shadow-primary/10" : ""}`}
+      className={`relative flex flex-col ${isCurrent ? "border-primary/50 bg-primary/[0.02]" : isHighlighted ? "border-primary shadow-lg shadow-primary/10" : ""}`}
     >
       {isHighlighted && !isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 font-medium text-primary-foreground text-xs">
@@ -370,13 +390,23 @@ function PlanCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">{plan.icon}</span>
+            <span
+              className={
+                isHighlighted ? "text-primary" : "text-muted-foreground"
+              }
+            >
+              {plan.icon}
+            </span>
             <CardTitle>{plan.name}</CardTitle>
           </div>
-          {isCurrent && <Badge>Current</Badge>}
+          {isCurrent && (
+            <Badge className="capitalize" variant="secondary">
+              Current
+            </Badge>
+          )}
         </div>
-        <div className="mt-1">
-          <span className="font-bold text-2xl">{price}</span>
+        <div className="mt-2">
+          <span className="font-bold text-3xl">{price}</span>
           <span className="text-muted-foreground text-sm">{periodLabel}</span>
         </div>
         {yearly &&
@@ -392,14 +422,14 @@ function PlanCard({
         <ul className="flex flex-1 flex-col gap-2 text-sm">
           {plan.features.map((f) => (
             <li className="flex items-center gap-2" key={f}>
-              <CheckIcon className="size-4 text-primary" />
+              <CheckIcon className="size-4 shrink-0 text-primary" />
               {f}
             </li>
           ))}
         </ul>
         <Separator />
         {isCurrent ? (
-          <Button disabled size="sm" variant="outline">
+          <Button disabled size="sm" variant="secondary">
             Current Plan
           </Button>
         ) : isComingSoon ? (
@@ -412,6 +442,7 @@ function PlanCard({
           </Button>
         ) : (
           <Button
+            className={isHighlighted ? "" : ""}
             disabled={isCheckingOut || isOtherCheckingOut}
             onClick={handleUpgrade}
             size="sm"
@@ -419,7 +450,10 @@ function PlanCard({
             {isCheckingOut ? (
               <LoaderCircleIcon className="animate-spin" />
             ) : (
-              `Upgrade to ${plan.name}`
+              <>
+                <SparklesIcon data-icon="inline-start" />
+                Upgrade to {plan.name}
+              </>
             )}
           </Button>
         )}

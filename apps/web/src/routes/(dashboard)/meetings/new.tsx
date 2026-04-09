@@ -4,8 +4,9 @@ import {
   CalendarIcon,
   FileAudioIcon,
   FileVideoIcon,
+  SparklesIcon,
   TrendingUpIcon,
-  UploadIcon,
+  UploadCloudIcon,
   XIcon,
 } from "lucide-react";
 import { type DragEvent, useCallback, useRef, useState } from "react";
@@ -32,7 +33,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useMultipartUpload } from "@/hooks/use-multipart-upload";
@@ -107,7 +107,6 @@ function NewMeetingPage() {
             const msg = err instanceof Error ? err.message : "Upload failed";
             toast.error(msg);
             multipartUpload.reset();
-            // Still navigate — meeting was created, just upload failed
             await invalidateAll();
             navigate({
               to: "/meetings/$meetingId",
@@ -116,7 +115,6 @@ function NewMeetingPage() {
             return;
           }
         } else if (transcriptText) {
-          // Text-only: trigger processing directly
           await server.meeting.process({ id: meeting.id });
         }
 
@@ -166,39 +164,37 @@ function NewMeetingPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">New Meeting</h1>
-        <p className="text-muted-foreground text-sm">
-          Upload a recording or paste your transcript
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">New Meeting</h1>
+          <p className="text-muted-foreground text-sm">
+            Upload a recording or paste your transcript
+          </p>
+        </div>
       </div>
 
       {limitReached && (
-        <Card className="border-destructive bg-destructive/5">
-          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-sm">
-                You've reached your free plan limit
-              </p>
-              <p className="text-muted-foreground text-xs">
-                You've used {planData?.usage.meetingsThisMonth ?? 0} /{" "}
-                {planData?.limits.meetingsPerMonth ?? 5} meetings this month.
-                Upgrade to create more.
-              </p>
-            </div>
-            <Button
-              className="shrink-0 self-start"
-              onClick={() => {
-                setUpgradeReason("limit-reached");
-                setUpgradeOpen(true);
-              }}
-              size="sm"
-            >
-              <TrendingUpIcon data-icon="inline-start" />
-              Start Pro
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-sm">Monthly limit reached</p>
+            <p className="text-muted-foreground text-xs">
+              You've used {planData?.usage.meetingsThisMonth ?? 0} /{" "}
+              {planData?.limits.meetingsPerMonth ?? 5} meetings this month.
+              Upgrade to continue.
+            </p>
+          </div>
+          <Button
+            className="shrink-0 self-start"
+            onClick={() => {
+              setUpgradeReason("limit-reached");
+              setUpgradeOpen(true);
+            }}
+            size="sm"
+          >
+            <TrendingUpIcon data-icon="inline-start" />
+            Upgrade to Pro
+          </Button>
+        </div>
       )}
 
       <Card>
@@ -292,36 +288,59 @@ function NewMeetingPage() {
                 type="file"
               />
               {file ? (
-                <div className="flex items-center gap-3 rounded-lg border p-3">
-                  {file.type.startsWith("video/") ? (
-                    <FileVideoIcon className="size-5 text-muted-foreground" />
-                  ) : (
-                    <FileAudioIcon className="size-5 text-muted-foreground" />
-                  )}
+                <div className="flex items-center gap-3 rounded-xl border bg-muted/30 p-4">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm">
+                    {file.type.startsWith("video/") ? (
+                      <FileVideoIcon className="size-5 text-muted-foreground" />
+                    ) : (
+                      <FileAudioIcon className="size-5 text-muted-foreground" />
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-sm">{file.name}</p>
                     <p className="text-muted-foreground text-xs">
                       {(file.size / 1024 / 1024).toFixed(1)} MB
                     </p>
+                    {uploadState === "uploading" && (
+                      <div className="mt-2">
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="text-muted-foreground text-xs">
+                            Uploading...
+                          </span>
+                          <span className="font-medium text-xs tabular-nums">
+                            {uploadProgress}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    disabled={isPending}
-                    onClick={() => {
-                      setFile(null);
-                      if (fileInputRef.current) fileInputRef.current.value = "";
-                    }}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <XIcon data-icon />
-                  </Button>
+                  {uploadState === "idle" && (
+                    <Button
+                      disabled={isPending}
+                      onClick={() => {
+                        setFile(null);
+                        if (fileInputRef.current)
+                          fileInputRef.current.value = "";
+                      }}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <XIcon data-icon />
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <button
-                  className={`flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                  className={`group flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-all ${
                     dragging
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-primary/50 hover:bg-muted/50"
+                      ? "border-primary bg-primary/5 shadow-inner"
+                      : "hover:border-primary/40 hover:bg-muted/30"
                   }`}
                   onClick={() => fileInputRef.current?.click()}
                   onDragEnter={(e) => {
@@ -333,16 +352,24 @@ function NewMeetingPage() {
                   onDrop={handleDrop}
                   type="button"
                 >
-                  <UploadIcon
-                    className={`size-8 ${dragging ? "text-primary" : "text-muted-foreground"}`}
-                  />
+                  <div
+                    className={`flex size-12 items-center justify-center rounded-xl transition-colors ${
+                      dragging
+                        ? "bg-primary/10"
+                        : "bg-muted group-hover:bg-primary/10"
+                    }`}
+                  >
+                    <UploadCloudIcon
+                      className={`size-6 transition-colors ${dragging ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`}
+                    />
+                  </div>
                   <div>
-                    <p className="font-medium text-sm">
+                    <p className="font-semibold text-sm">
                       {dragging
                         ? "Drop your file here"
                         : "Drag & drop or click to upload"}
                     </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="mt-1 text-muted-foreground text-xs">
                       MP4, MOV, WebM, MP3, WAV, M4A, OGG, FLAC
                     </p>
                   </div>
@@ -370,10 +397,6 @@ function NewMeetingPage() {
         </CardContent>
       </Card>
 
-      {uploadState === "uploading" && (
-        <Progress className="h-2" value={uploadProgress} />
-      )}
-
       <div className="flex items-center justify-between">
         <Button
           disabled={isPending}
@@ -400,7 +423,10 @@ function NewMeetingPage() {
               {uploadLabel ?? "Creating..."}
             </>
           ) : (
-            "Create & Process"
+            <>
+              <SparklesIcon data-icon="inline-start" />
+              Create & Process
+            </>
           )}
         </Button>
       </div>

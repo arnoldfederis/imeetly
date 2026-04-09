@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, SparklesIcon } from "lucide-react";
 import { useState } from "react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { buttonVariants } from "@/components/ui/button";
@@ -82,7 +82,7 @@ export function PricingSection() {
             Start free. Upgrade when you're ready. No surprises.
           </p>
 
-          <div className="mt-8 inline-flex items-center gap-3 rounded-full border bg-muted/50 p-1">
+          <div className="mt-8 inline-flex items-center gap-1 rounded-full border bg-muted/50 p-1">
             <button
               className={`cursor-pointer rounded-full px-4 py-1.5 font-medium text-sm transition-colors ${!yearly ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setYearly(false)}
@@ -111,12 +111,11 @@ export function PricingSection() {
             return (
               <StaggerItem key={plan.name}>
                 <div
-                  className={`relative flex h-full flex-col rounded-2xl border transition-shadow ${
+                  className={`relative flex h-full flex-col rounded-2xl border transition-all ${
                     plan.highlighted
                       ? "border-primary bg-primary/[0.02] p-8 shadow-lg shadow-primary/10 md:-my-4 md:py-12"
                       : "bg-card p-8 hover:shadow-lg hover:shadow-primary/5"
                   }`}
-                  key={plan.name}
                 >
                   {plan.highlighted && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 font-medium text-primary-foreground text-xs">
@@ -129,7 +128,7 @@ export function PricingSection() {
                     </div>
                   )}
 
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <h3 className="font-semibold text-lg">{plan.name}</h3>
                     <p className="mt-1 text-muted-foreground text-sm">
                       {plan.description}
@@ -164,7 +163,7 @@ export function PricingSection() {
                     <span
                       className={buttonVariants({
                         variant: "outline",
-                        className: "pointer-events-none w-full opacity-60",
+                        className: "pointer-events-none w-full opacity-50",
                       })}
                     >
                       {plan.cta}
@@ -173,12 +172,15 @@ export function PricingSection() {
                     <a
                       className={buttonVariants({
                         variant: plan.highlighted ? "default" : "outline",
-                        className: "w-full",
+                        className: "w-full gap-1.5",
                       })}
                       href={APP_URL}
                       rel="noopener noreferrer"
                       target="_blank"
                     >
+                      {plan.highlighted && (
+                        <SparklesIcon className="size-3.5" />
+                      )}
                       {plan.cta}
                     </a>
                   )}

@@ -1,14 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  LoaderIcon,
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/meetings/")({
@@ -46,9 +46,12 @@ const STATUS_OPTIONS = [
   { value: "failed", label: "Failed" },
 ] as const;
 
+const PAGE_SIZE = 20;
+
 function MeetingsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shouldRestoreFocusRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -58,57 +61,73 @@ function MeetingsPage() {
       setDebouncedSearch("");
       return;
     }
-
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(search.trim());
     }, 300);
-
     return () => window.clearTimeout(timeoutId);
   }, [search]);
 
-  const { data, isLoading, isFetching } = useQuery(
-    client.meeting.list.queryOptions({
-      input: {
-        search: debouncedSearch || undefined,
-        status: statusFilter === "all" ? undefined : statusFilter,
-        limit: 50,
-        offset: 0,
-      },
-    }),
-  );
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } =
+    useInfiniteQuery(
+      client.meeting.list.infiniteOptions({
+        input: (pageParam) => ({
+          search: debouncedSearch || undefined,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          limit: PAGE_SIZE,
+          offset: pageParam as number,
+        }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) => {
+          const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
+          return loaded < lastPage.total ? loaded : undefined;
+        },
+      }),
+    );
 
+  // Restore search focus after fetch
   useEffect(() => {
     if (search !== debouncedSearch) {
       shouldRestoreFocusRef.current =
         document.activeElement === searchInputRef.current;
       return;
     }
-
     if (!isFetching && shouldRestoreFocusRef.current) {
       searchInputRef.current?.focus();
       shouldRestoreFocusRef.current = false;
     }
   }, [debouncedSearch, isFetching, search]);
 
-  const meetings = data?.items ?? [];
-  const total = data?.total ?? 0;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
+  // IntersectionObserver sentinel → load next page
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetching) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" },
     );
-  }
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetching, fetchNextPage]);
+
+  const meetings = data?.pages.flatMap((p) => p.items) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex h-14 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
           <h1 className="font-semibold text-2xl tracking-tight">Meetings</h1>
-          <p className="text-muted-foreground text-sm">
-            {total} meeting{total !== 1 ? "s" : ""}
-          </p>
+          {isLoading ? (
+            <Skeleton className="flex h-5 w-24 items-center justify-center" />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              {total} meeting{total !== 1 ? "s" : ""}
+            </p>
+          )}
         </div>
         <Button
           className="shrink-0"
@@ -143,7 +162,7 @@ function MeetingsPage() {
           onValueChange={(v) => setStatusFilter(v ?? "all")}
           value={statusFilter}
         >
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full sm:w-50">
             <SelectValue placeholder="All Statuses">
               {STATUS_OPTIONS.find((s) => s.value === statusFilter)?.label}
             </SelectValue>
@@ -163,8 +182,10 @@ function MeetingsPage() {
         decisions, blockers, and action items.
       </p>
 
-      {meetings.length === 0 ? (
-        <Empty>
+      {isLoading ? (
+        <MeetingListSkeleton />
+      ) : meetings.length === 0 ? (
+        <Empty className="border">
           <EmptyHeader>
             <EmptyTitle>No meetings found</EmptyTitle>
             <EmptyDescription>
@@ -186,15 +207,15 @@ function MeetingsPage() {
           )}
         </Empty>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {meetings.map((m) => (
             <Link
-              className="flex items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50"
+              className="group flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-border hover:bg-muted/40 hover:shadow-sm"
               key={m.id}
               params={{ meetingId: m.id }}
               to="/meetings/$meetingId"
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-background">
                 {m.sourceType === "video" ? (
                   <FileVideoIcon className="size-4 text-muted-foreground" />
                 ) : m.sourceType === "audio" ? (
@@ -218,8 +239,33 @@ function MeetingsPage() {
               <MeetingStatusBadge status={m.status} />
             </Link>
           ))}
+
+          {/* Sentinel + loading indicator */}
+          <div ref={sentinelRef} />
+          {isFetching && !isLoading && (
+            <div className="flex justify-center py-4">
+              <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+function MeetingListSkeleton() {
+  return (
+    <div className="flex flex-col gap-2">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div className="flex items-center gap-3 rounded-xl border p-4" key={i}>
+          <Skeleton className="size-9 shrink-0 rounded-lg" />
+          <div className="flex h-9 flex-1 flex-col gap-1.5">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="h-5 w-[78.6166px] rounded-full" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -227,23 +273,31 @@ function MeetingsPage() {
 function MeetingStatusBadge({ status }: { status: string }) {
   if (status === "processing" || status === "pending") {
     return (
-      <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-primary/10 px-2 font-medium text-primary text-xs capitalize">
+        {status}
+      </span>
+    );
+  }
+
+  if (status === "completed") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-emerald-500/10 px-2 font-medium text-emerald-600 text-xs capitalize dark:text-emerald-400">
+        {status}
+      </span>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-destructive/10 px-2 font-medium text-destructive text-xs capitalize">
         {status}
       </span>
     );
   }
 
   return (
-    <Badge
-      variant={
-        status === "completed"
-          ? "secondary"
-          : status === "failed"
-            ? "destructive"
-            : "outline"
-      }
-    >
+    <span className="inline-flex h-5 shrink-0 items-center rounded-full border px-2 font-medium text-muted-foreground text-xs capitalize">
       {status}
-    </Badge>
+    </span>
   );
 }

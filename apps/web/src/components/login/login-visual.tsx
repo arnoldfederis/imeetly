@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
 import {
+  AlertTriangleIcon,
+  CalendarClockIcon,
   CalendarIcon,
   CheckCircle2Icon,
   CheckIcon,
   EditIcon,
   FileAudioIcon,
+  ListChecksIcon,
   UsersIcon,
 } from "lucide-react";
 
@@ -92,7 +95,7 @@ export function LoginVisual() {
               <span className="font-semibold text-[13px] text-foreground/80 dark:text-white/80">
                 Q4 Planning — Product Sync
               </span>
-              <span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-[10px] text-muted-foreground dark:bg-white/10 dark:text-white/60">
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-[10px] text-emerald-600 dark:text-emerald-400">
                 Completed
               </span>
             </div>
@@ -111,60 +114,112 @@ export function LoginVisual() {
               </span>
             </div>
 
-            {/* Summary + Decisions */}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"
-                initial={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.6, ease }}
-              >
-                <div className="flex items-center justify-between">
+            {/* Summary — full width */}
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"
+              initial={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.5, delay: 0.55, ease }}
+            >
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex size-3.5 items-center justify-center rounded bg-primary/20">
+                    <EditIcon className="size-2 text-primary/70" />
+                  </div>
                   <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
                     Summary
                   </span>
-                  <EditIcon className="size-2.5 text-muted-foreground/50 dark:text-white/20" />
                 </div>
-                <p className="mt-1.5 text-[10px] text-muted-foreground/70 leading-relaxed dark:text-white/35">
-                  The team aligned on the Q4 roadmap, prioritizing the dashboard
-                  redesign and API v2.
-                </p>
-              </motion.div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 leading-relaxed dark:text-white/35">
+                The team aligned on the Q4 roadmap, prioritizing the dashboard
+                redesign and API v2 before end of quarter.
+              </p>
+            </motion.div>
+
+            {/* Decisions + Blockers — side by side */}
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"
+                className="rounded-lg border border-emerald-500/20 bg-emerald-50/40 p-2.5 dark:bg-emerald-950/20"
                 initial={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.7, ease }}
+                transition={{ duration: 0.5, delay: 0.65, ease }}
               >
-                <div className="flex items-center justify-between">
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <div className="flex size-3.5 items-center justify-center rounded bg-emerald-500/15">
+                    <CheckCircle2Icon className="size-2 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
                     Key Decisions
                   </span>
-                  <EditIcon className="size-2.5 text-muted-foreground/50 dark:text-white/20" />
                 </div>
-                <div className="mt-1.5 space-y-1">
+                <div className="space-y-1">
                   <MiniDecision text="Ship API v2 before dashboard" />
                   <MiniDecision text="Delay billing refactor to Q1" />
                 </div>
               </motion.div>
+
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-lg border border-orange-500/20 bg-orange-50/40 p-2.5 dark:bg-orange-950/20"
+                initial={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.5, delay: 0.7, ease }}
+              >
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <div className="flex size-3.5 items-center justify-center rounded bg-orange-500/15">
+                    <AlertTriangleIcon className="size-2 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
+                    Blockers
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground/70 leading-relaxed dark:text-white/35">
+                  Auth migration blocking API v2 rollout.
+                </p>
+              </motion.div>
             </div>
 
-            {/* Action items */}
+            {/* Follow-ups — full width */}
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 rounded-lg border border-violet-500/20 bg-violet-50/40 p-2.5 dark:bg-violet-950/20"
+              initial={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.5, delay: 0.75, ease }}
+            >
+              <div className="mb-1 flex items-center gap-1.5">
+                <div className="flex size-3.5 items-center justify-center rounded bg-violet-500/15">
+                  <CalendarClockIcon className="size-2 text-violet-600 dark:text-violet-400" />
+                </div>
+                <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
+                  Follow-ups
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 leading-relaxed dark:text-white/35">
+                Schedule auth review by Nov 18. Share API v2 timeline.
+              </p>
+            </motion.div>
+
+            {/* Action Items — full width */}
             <motion.div
               animate={{ opacity: 1, y: 0 }}
               className="mt-2 rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"
               initial={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.5, delay: 0.8, ease }}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
-                  Action Items
-                </span>
-                <span className="text-[9px] text-muted-foreground/60 dark:text-white/30">
-                  3 items
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex size-3.5 items-center justify-center rounded bg-primary/20">
+                    <ListChecksIcon className="size-2 text-primary/70" />
+                  </div>
+                  <span className="font-medium text-[10px] text-muted-foreground dark:text-white/60">
+                    Action Items
+                  </span>
+                </div>
+                <span className="rounded-full bg-orange-500/10 px-1.5 py-0.5 font-medium text-[9px] text-orange-600 dark:text-orange-400">
+                  2 open
                 </span>
               </div>
-              <div className="mt-1.5 space-y-1">
+              <div className="space-y-1">
                 <MiniAction text="Draft API v2 migration guide" />
                 <MiniAction text="Finalize dashboard wireframes" />
                 <MiniAction done text="Schedule QA review for Nov 1" />
@@ -184,7 +239,7 @@ export function LoginVisual() {
 function MiniDecision({ text }: { text: string }) {
   return (
     <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground/70 dark:text-white/35">
-      <CheckCircle2Icon className="mt-0.5 size-2.5 shrink-0 text-emerald-500/60" />
+      <CheckCircle2Icon className="mt-0.5 size-2.5 shrink-0 text-emerald-500/70" />
       <span>{text}</span>
     </div>
   );

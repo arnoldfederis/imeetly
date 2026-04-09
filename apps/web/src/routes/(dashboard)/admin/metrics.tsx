@@ -57,11 +57,15 @@ function AdminMetricsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">Admin Metrics</h1>
-        <p className="text-muted-foreground text-sm">
-          Internal cost tracking and profit analysis
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">
+            Admin Metrics
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Internal cost tracking and profit analysis
+          </p>
+        </div>
       </div>
 
       {/* Global Stats */}

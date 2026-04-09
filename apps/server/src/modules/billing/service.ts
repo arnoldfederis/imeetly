@@ -87,10 +87,12 @@ export abstract class BillingService {
 
   /**
    * Atomically increments usage for a metric. Creates the record if it doesn't exist.
-   * Supports any metric string (meetings_created, minutes_processed, storage_bytes, etc.)
+   * Uses the user's actual billing period (subscription period for paid users,
+   * calendar month for free users) so reads and writes use the same period key.
    */
   static async incrementUsage(userId: string, metric: string) {
-    const { start, end } = getCurrentPeriod();
+    const { currentPeriodStart, currentPeriodEnd } =
+      await BillingService.resolveUserPlan(userId);
 
     await db
       .insert(usageTracking)
@@ -98,8 +100,8 @@ export abstract class BillingService {
         userId,
         metric,
         count: 1,
-        periodStart: start,
-        periodEnd: end,
+        periodStart: currentPeriodStart,
+        periodEnd: currentPeriodEnd,
       })
       .onConflictDoUpdate({
         target: [

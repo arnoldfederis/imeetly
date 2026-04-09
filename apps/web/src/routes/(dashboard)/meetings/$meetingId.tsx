@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  AlertTriangleIcon,
   ArrowLeftIcon,
+  CalendarClockIcon,
   CalendarIcon,
   CheckCircle2Icon,
   ChevronDownIcon,
@@ -12,6 +14,7 @@ import {
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  ListChecksIcon,
   PlayIcon,
   PrinterIcon,
   SaveIcon,
@@ -38,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { client } from "@/lib/orpc";
@@ -272,7 +276,6 @@ function MeetingDetailPage() {
     refetchInterval: (query) => {
       const data = query.state.data;
       if (!data) return false;
-      // Poll every 3s while processing, stop when completed or failed
       const isProcessing =
         data.status === "pending" || data.status === "processing";
       if (isProcessing) return 3000;
@@ -281,7 +284,6 @@ function MeetingDetailPage() {
     refetchIntervalInBackground: true,
   });
 
-  // When processing finishes, invalidate dashboard/list queries so they're fresh
   const prevStatus = useRef(meeting?.status);
   useEffect(() => {
     if (
@@ -302,7 +304,6 @@ function MeetingDetailPage() {
     prevStatus.current = meeting?.status;
   }, [meeting?.status, queryClient]);
 
-  // Retry processing mutation
   const retryMutation = useMutation(
     client.meeting.process.mutationOptions({
       onSuccess: () => {
@@ -316,19 +317,22 @@ function MeetingDetailPage() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
-    );
+    return <MeetingDetailSkeleton />;
   }
 
   if (!meeting) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-muted-foreground">Meeting not found</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
+          <FileTextIcon className="size-6 text-muted-foreground" />
+        </div>
+        <div className="text-center">
+          <p className="font-medium">Meeting not found</p>
+          <p className="text-muted-foreground text-sm">
+            This meeting may have been deleted or doesn't exist.
+          </p>
+        </div>
         <Button
-          className="mt-4"
           nativeButton={false}
           render={<Link to="/meetings" />}
           variant="outline"
@@ -339,11 +343,17 @@ function MeetingDetailPage() {
     );
   }
 
+  const openCount =
+    meeting.actionItems?.filter((i) => i.status !== "done").length ?? 0;
+  const doneCount =
+    meeting.actionItems?.filter((i) => i.status === "done").length ?? 0;
+
   return (
     <div className="flex flex-col gap-6">
+      {/* ── Header ── */}
       <div className="flex items-start gap-3 sm:gap-4">
         <Button
-          className="shrink-0"
+          className="mt-0.5 shrink-0"
           nativeButton={false}
           render={<Link to="/meetings" />}
           size="sm"
@@ -356,27 +366,10 @@ function MeetingDetailPage() {
             <h1 className="font-semibold text-xl tracking-tight sm:text-2xl">
               {meeting.title}
             </h1>
-            {meeting.status === "processing" || meeting.status === "pending" ? (
-              <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs capitalize">
-                {meeting.status}
-              </span>
-            ) : (
-              <Badge
-                className="capitalize"
-                variant={
-                  meeting.status === "completed"
-                    ? "secondary"
-                    : meeting.status === "failed"
-                      ? "destructive"
-                      : "outline"
-                }
-              >
-                {meeting.status}
-              </Badge>
-            )}
+            <MeetingStatusBadge status={meeting.status} />
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
-            <span className="flex items-center gap-1">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
+            <span className="flex items-center gap-1.5">
               <CalendarIcon className="size-3.5" />
               {new Date(meeting.meetingDate).toLocaleDateString(undefined, {
                 weekday: "long",
@@ -386,12 +379,12 @@ function MeetingDetailPage() {
               })}
             </span>
             {meeting.participantsText && (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1.5">
                 <UsersIcon className="size-3.5" />
                 {meeting.participantsText}
               </span>
             )}
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5 capitalize">
               {meeting.sourceType === "video" ? (
                 <FileVideoIcon className="size-3.5" />
               ) : meeting.sourceType === "audio" ? (
@@ -442,6 +435,7 @@ function MeetingDetailPage() {
         )}
       </div>
 
+      {/* ── Draft state ── */}
       {meeting.status === "draft" && (
         <Card size="sm">
           <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -464,6 +458,7 @@ function MeetingDetailPage() {
         </Card>
       )}
 
+      {/* ── Processing timeline ── */}
       {meeting.status !== "completed" && meeting.status !== "draft" && (
         <ProcessingTimeline
           meeting={meeting}
@@ -477,24 +472,126 @@ function MeetingDetailPage() {
         />
       )}
 
+      {/* ── AI Summary sections — value-first order ── */}
+      {meeting.summary && (
+        <div className="flex flex-col gap-4">
+          {/* Summary — full width, larger text */}
+          <EditableSection
+            content={meeting.summary.summaryMd}
+            field="summaryMd"
+            meetingId={meetingId}
+            title="Summary"
+            variant="summary"
+          />
+
+          {/* Decisions + Blockers — side by side */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <EditableSection
+              content={meeting.summary.decisionsMd}
+              field="decisionsMd"
+              meetingId={meetingId}
+              title="Key Decisions"
+              variant="decisions"
+            />
+            <EditableSection
+              content={meeting.summary.blockersMd}
+              field="blockersMd"
+              meetingId={meetingId}
+              title="Blockers & Risks"
+              variant="blockers"
+            />
+          </div>
+
+          {/* Follow-ups — full width */}
+          <EditableSection
+            content={meeting.summary.followupsMd}
+            field="followupsMd"
+            meetingId={meetingId}
+            title="Follow-ups"
+            variant="followups"
+          />
+        </div>
+      )}
+
+      {/* ── Action Items ── */}
+      {meeting.status === "completed" && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+                  <ListChecksIcon className="size-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Action Items</CardTitle>
+                  <CardDescription>
+                    {openCount > 0
+                      ? `${openCount} open · ${doneCount} done`
+                      : doneCount > 0
+                        ? `All ${doneCount} done`
+                        : "No action items found"}
+                  </CardDescription>
+                </div>
+              </div>
+              {(meeting.actionItems?.length ?? 0) > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
+                    {openCount} open
+                  </span>
+                  {doneCount > 0 && (
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs dark:text-emerald-400">
+                      {doneCount} done
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!meeting.actionItems || meeting.actionItems.length === 0 ? (
+              <p className="py-6 text-center text-muted-foreground text-sm">
+                No action items were found in this meeting.
+              </p>
+            ) : (
+              <div className="flex flex-col divide-y">
+                {meeting.actionItems.map((item) => (
+                  <ActionItemRow
+                    item={item}
+                    key={item.id}
+                    meetingId={meetingId}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Supporting data — moved below the value content ── */}
+
+      {/* Source file */}
       {meeting.files && meeting.files.length > 0 && (
         <Card size="sm">
           <CardHeader>
-            <CardTitle>Source File</CardTitle>
+            <CardTitle className="text-sm">Source File</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
               {meeting.files.map((f) => (
                 <div
-                  className="flex items-center gap-3 rounded-md border p-2 text-sm"
+                  className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 text-sm"
                   key={f.id}
                 >
-                  {f.mimeType.startsWith("video/") ? (
-                    <FileVideoIcon className="size-4 text-muted-foreground" />
-                  ) : (
-                    <FileAudioIcon className="size-4 text-muted-foreground" />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">{f.fileName}</span>
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-background">
+                    {f.mimeType.startsWith("video/") ? (
+                      <FileVideoIcon className="size-4 text-muted-foreground" />
+                    ) : (
+                      <FileAudioIcon className="size-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {f.fileName}
+                  </span>
                   <span className="text-muted-foreground text-xs">
                     {(Number(f.fileSize) / 1024 / 1024).toFixed(1)} MB
                   </span>
@@ -514,75 +611,18 @@ function MeetingDetailPage() {
         </Card>
       )}
 
+      {/* Transcript */}
       {meeting.transcriptText && (
         <Card>
           <CardHeader>
-            <CardTitle>Transcript</CardTitle>
+            <CardTitle className="text-sm">Transcript</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="max-h-64 overflow-y-auto rounded-md">
-              <div className="overflow-y-auto whitespace-pre-wrap rounded-md bg-muted/50 p-4 font-mono text-sm">
+            <div className="max-h-64 overflow-y-auto rounded-xl border bg-muted/30">
+              <div className="whitespace-pre-wrap p-4 font-mono text-sm leading-relaxed">
                 {meeting.transcriptText}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {meeting.summary && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <EditableSection
-            content={meeting.summary.summaryMd}
-            field="summaryMd"
-            meetingId={meetingId}
-            title="Summary"
-          />
-          <EditableSection
-            content={meeting.summary.decisionsMd}
-            field="decisionsMd"
-            meetingId={meetingId}
-            title="Key Decisions"
-          />
-          <EditableSection
-            content={meeting.summary.blockersMd}
-            field="blockersMd"
-            meetingId={meetingId}
-            title="Blockers & Risks"
-          />
-          <EditableSection
-            content={meeting.summary.followupsMd}
-            field="followupsMd"
-            meetingId={meetingId}
-            title="Follow-ups"
-          />
-        </div>
-      )}
-
-      {meeting.status === "completed" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Action Items</CardTitle>
-            <CardDescription>
-              {meeting.actionItems?.length ?? 0} item
-              {(meeting.actionItems?.length ?? 0) !== 1 ? "s" : ""}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!meeting.actionItems || meeting.actionItems.length === 0 ? (
-              <p className="py-4 text-center text-muted-foreground text-sm">
-                No action items found
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {meeting.actionItems.map((item) => (
-                  <ActionItemRow
-                    item={item}
-                    key={item.id}
-                    meetingId={meetingId}
-                  />
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
@@ -595,6 +635,73 @@ function MeetingDetailPage() {
     </div>
   );
 }
+
+// ── Skeleton ──
+
+function MeetingDetailSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <Skeleton className="mt-0.5 size-8 rounded-lg" />
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-7 w-64" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <div className="flex gap-4">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+      </div>
+      {/* Summary — full width */}
+      <Skeleton className="h-44 rounded-4xl" />
+      {/* Decisions + Blockers — 2 col */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-36 rounded-4xl" />
+        <Skeleton className="h-36 rounded-4xl" />
+      </div>
+      {/* Follow-ups */}
+      <Skeleton className="h-32 rounded-4xl" />
+      {/* Action Items */}
+      <Skeleton className="h-52 rounded-4xl" />
+    </div>
+  );
+}
+
+// ── Meeting Status Badge ──
+
+function MeetingStatusBadge({ status }: { status: string }) {
+  if (status === "processing" || status === "pending") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-primary/10 px-2.5 font-medium text-primary text-xs capitalize">
+        {status}
+      </span>
+    );
+  }
+  if (status === "completed") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-emerald-500/10 px-2.5 font-medium text-emerald-600 text-xs capitalize dark:text-emerald-400">
+        {status}
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-destructive/10 px-2.5 font-medium text-destructive text-xs capitalize">
+        {status}
+      </span>
+    );
+  }
+  return (
+    <Badge className="capitalize" variant="outline">
+      {status}
+    </Badge>
+  );
+}
+
+// ── Processing Timeline ──
 
 function ProcessingTimeline({
   meeting,
@@ -620,7 +727,6 @@ function ProcessingTimeline({
     { key: "completed", label: "Completed" },
   ];
 
-  // Text sources skip audio extraction and transcription
   const stages =
     sourceType === "text"
       ? allStages.filter(
@@ -641,7 +747,7 @@ function ProcessingTimeline({
         <CardTitle>Processing Status</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Progress value={isFailed ? progressPercent : progressPercent} />
+        <Progress value={progressPercent} />
         <div className="flex flex-col gap-2 overflow-x-auto overflow-y-hidden md:flex-row md:items-center">
           {stages.map((stage, idx) => {
             const isDone = idx < currentIdx;
@@ -675,11 +781,9 @@ function ProcessingTimeline({
         </div>
         {isFailed && (
           <div className="flex items-center gap-3">
-            {meeting.failureReason && (
-              <p className="flex-1 rounded-md bg-destructive/10 px-3 py-2 text-destructive text-xs">
-                {meeting.failureReason}
-              </p>
-            )}
+            <p className="flex-1 rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-xs leading-relaxed">
+              {meeting.failureReason ?? "Processing failed. Please try again."}
+            </p>
             {onRetry && (
               <Button
                 disabled={retrying}
@@ -702,20 +806,73 @@ function ProcessingTimeline({
   );
 }
 
+// ── Editable Section (color-coded) ──
+
+type SectionVariant = "summary" | "decisions" | "blockers" | "followups";
+
+const SECTION_CONFIG: Record<
+  SectionVariant,
+  {
+    icon: React.ReactNode;
+    borderClass: string;
+    bgClass: string;
+    iconBgClass: string;
+    iconColorClass: string;
+    emptyText: string;
+  }
+> = {
+  summary: {
+    icon: <FileTextIcon className="size-4" />,
+    borderClass: "",
+    bgClass: "",
+    iconBgClass: "bg-primary/10",
+    iconColorClass: "text-primary",
+    emptyText: "No summary generated yet.",
+  },
+  decisions: {
+    icon: <CheckCircle2Icon className="size-3.5" />,
+    borderClass: "ring-emerald-500/30 dark:ring-emerald-500/50",
+    bgClass: "bg-emerald-50/50 dark:bg-emerald-950/20",
+    iconBgClass: "bg-emerald-500/10",
+    iconColorClass: "text-emerald-600 dark:text-emerald-400",
+    emptyText: "No decisions captured.",
+  },
+  blockers: {
+    icon: <AlertTriangleIcon className="size-3.5" />,
+    borderClass: "ring-orange-500/30 dark:ring-orange-500/50",
+    bgClass: "bg-orange-50/50 dark:bg-orange-950/20",
+    iconBgClass: "bg-orange-500/10",
+    iconColorClass: "text-orange-600 dark:text-orange-400",
+    emptyText: "No blockers or risks identified.",
+  },
+  followups: {
+    icon: <CalendarClockIcon className="size-3.5" />,
+    borderClass: "ring-violet-500/30 dark:ring-violet-500/50",
+    bgClass: "bg-violet-50/50 dark:bg-violet-950/20",
+    iconBgClass: "bg-violet-500/10",
+    iconColorClass: "text-violet-600 dark:text-violet-400",
+    emptyText: "No follow-ups identified.",
+  },
+};
+
 function EditableSection({
   meetingId,
   title,
   field,
   content,
+  variant = "summary",
 }: {
   meetingId: string;
   title: string;
   field: "summaryMd" | "decisionsMd" | "blockersMd" | "followupsMd";
   content: string | null;
+  variant?: SectionVariant;
 }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(content ?? "");
   const queryClient = useQueryClient();
+  const config = SECTION_CONFIG[variant];
+  const isSummary = variant === "summary";
 
   const saveMutation = useMutation(
     client.meeting.updateSummary.mutationOptions({
@@ -731,10 +888,21 @@ function EditableSection({
   );
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className={`${config.borderClass} ${config.bgClass}`}>
+      <CardHeader className={isSummary ? "pb-3" : undefined}>
         <div className="flex items-center justify-between">
-          <CardTitle>{title}</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`flex shrink-0 items-center justify-center rounded-md ${isSummary ? "size-7" : "size-6"} ${config.iconBgClass} ${config.iconColorClass}`}
+            >
+              {config.icon}
+            </div>
+            <CardTitle
+              className={isSummary ? "text-base" : "font-semibold text-sm"}
+            >
+              {title}
+            </CardTitle>
+          </div>
           {!editing ? (
             <Button onClick={() => setEditing(true)} size="sm" variant="ghost">
               <EditIcon data-icon />
@@ -773,22 +941,26 @@ function EditableSection({
         {editing ? (
           <Textarea
             onChange={(e) => setValue(e.target.value)}
-            rows={6}
+            rows={isSummary ? 8 : 6}
             value={value}
           />
         ) : content ? (
-          <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
+          <div
+            className={`whitespace-pre-wrap leading-relaxed ${isSummary ? "text-base text-foreground/90" : "text-sm"}`}
+          >
             {content}
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm italic">
-            Not yet generated
+          <p className={`text-sm italic ${config.iconColorClass} opacity-60`}>
+            {config.emptyText}
           </p>
         )}
       </CardContent>
     </Card>
   );
 }
+
+// ── Action Item Row ──
 
 function ActionItemRow({
   item,
@@ -820,33 +992,45 @@ function ActionItemRow({
     }),
   );
 
+  const isDone = item.status === "done";
+
   return (
-    <div className="flex items-center gap-3 rounded-md border p-3">
+    <div
+      className={`group flex items-start gap-3 py-3 transition-colors first:pt-0 last:pb-0 ${isDone ? "opacity-50" : "hover:bg-muted/20"} -mx-1 rounded-lg px-1`}
+    >
       <Checkbox
-        checked={item.status === "done"}
+        checked={isDone}
+        className="mt-0.5 shrink-0"
         disabled={toggleMutation.isPending}
         onCheckedChange={() =>
           toggleMutation.mutate({
             id: item.id,
-            status: item.status === "open" ? "done" : "open",
+            status: isDone ? "open" : "done",
           })
         }
       />
       <div className="min-w-0 flex-1">
         <p
-          className={`text-sm ${item.status === "done" ? "text-muted-foreground line-through" : "font-medium"}`}
+          className={`text-sm leading-snug ${isDone ? "text-muted-foreground line-through" : "font-medium"}`}
         >
           {item.title}
         </p>
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          {item.ownerName && <span>{item.ownerName}</span>}
-          {item.dueDate && (
-            <span className="flex items-center gap-1">
-              <ClockIcon className="size-3" />
-              {new Date(item.dueDate).toLocaleDateString()}
-            </span>
-          )}
-        </div>
+        {(item.ownerName || item.dueDate) && (
+          <div className="mt-1 flex items-center gap-3 text-muted-foreground text-xs">
+            {item.ownerName && (
+              <span className="flex items-center gap-1">
+                <UsersIcon className="size-3" />
+                {item.ownerName}
+              </span>
+            )}
+            {item.dueDate && (
+              <span className="flex items-center gap-1">
+                <ClockIcon className="size-3" />
+                {new Date(item.dueDate).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

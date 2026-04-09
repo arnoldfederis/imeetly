@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  CheckSquareIcon,
   ChevronDownIcon,
   ClockIcon,
   FileTextIcon,
+  LoaderIcon,
   SearchIcon,
   TrashIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/action-items")({
@@ -65,21 +67,17 @@ function ActionItemsPage() {
     );
   }, [items, search]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">Action Items</h1>
-        <p className="text-muted-foreground text-sm">
-          Track follow-ups from your meetings
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">
+            Action Items
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Track follow-ups from your meetings
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -111,9 +109,14 @@ function ActionItemsPage() {
         </Select>
       </div>
 
-      {!filtered || filtered.length === 0 ? (
-        <Empty>
+      {isLoading ? (
+        <ActionItemsSkeleton />
+      ) : !filtered || filtered.length === 0 ? (
+        <Empty className="border">
           <EmptyHeader>
+            <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
+              <CheckSquareIcon className="size-5 text-muted-foreground" />
+            </div>
             <EmptyTitle>No action items</EmptyTitle>
             <EmptyDescription>
               {search || filter !== "all"
@@ -129,6 +132,25 @@ function ActionItemsPage() {
   );
 }
 
+function ActionItemsSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div className="h-19 rounded-xl border" key={i}>
+          <div className="flex items-center gap-3 p-4">
+            <Skeleton className="size-7 rounded-lg" />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Skeleton className="h-[17.5px] w-48" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="size-4" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type ActionItem = {
   id: string;
   meetingId: string;
@@ -139,7 +161,12 @@ type ActionItem = {
   meetingTitle: string;
 };
 
+const GROUP_PAGE_SIZE = 10;
+
 function GroupedActionItems({ items }: { items: ActionItem[] }) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(GROUP_PAGE_SIZE);
+
   const grouped = useMemo(() => {
     const map = new Map<
       string,
@@ -166,35 +193,66 @@ function GroupedActionItems({ items }: { items: ActionItem[] }) {
     return Array.from(map.values());
   }, [items]);
 
+  // Reset visible count when items change (search/filter)
+  useEffect(() => {
+    setVisibleCount(GROUP_PAGE_SIZE);
+  }, [items]);
+
+  const visibleGroups = grouped.slice(0, visibleCount);
+  const hasMore = visibleCount < grouped.length;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((c) => c + GROUP_PAGE_SIZE);
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
+
   return (
     <div className="flex flex-col gap-3">
-      {grouped.map((group, index) => {
+      {visibleGroups.map((group) => {
         const openCount = group.items.filter((i) => i.status === "open").length;
+        const totalCount = group.items.length;
 
         return (
-          <Collapsible defaultOpen={index === 0} key={group.meetingId}>
-            <div className="rounded-xl border">
-              <CollapsibleTrigger className="flex w-full items-center gap-3 p-4 text-left hover:bg-muted/50">
-                <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
+          <Collapsible key={group.meetingId}>
+            <div className="overflow-hidden rounded-xl border">
+              <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40">
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
+                  <FileTextIcon className="size-3.5 text-muted-foreground" />
+                </div>
                 <div className="min-w-0 flex-1">
                   <span className="truncate font-medium text-sm">
                     {group.meetingTitle}
                   </span>
-                  <span className="ml-2 text-muted-foreground text-xs">
-                    {openCount > 0
-                      ? `${openCount} open · ${group.items.length} total`
-                      : `${group.items.length} total`}
-                  </span>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {openCount > 0 && (
+                      <span className="inline-flex h-4 items-center rounded-full bg-orange-500/10 px-1.5 font-medium text-orange-600 text-xs dark:text-orange-400">
+                        {openCount} open
+                      </span>
+                    )}
+                    <span className="text-muted-foreground text-xs">
+                      {totalCount} total
+                    </span>
+                  </div>
                 </div>
                 <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 [[data-panel-open]_&]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="flex flex-col gap-1.5 px-4 py-4">
+                <div className="flex flex-col gap-1.5 border-t bg-muted/20 px-4 py-3">
                   {group.items.map((item) => (
                     <ActionItemCard item={item} key={item.id} />
                   ))}
                   <Link
-                    className="mt-4 text-muted-foreground text-xs hover:text-foreground"
+                    className="mt-2 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
                     params={{ meetingId: group.meetingId }}
                     to="/meetings/$meetingId"
                   >
@@ -206,6 +264,14 @@ function GroupedActionItems({ items }: { items: ActionItem[] }) {
           </Collapsible>
         );
       })}
+
+      {/* Sentinel + loader */}
+      <div ref={sentinelRef} />
+      {hasMore && (
+        <div className="flex justify-center py-4">
+          <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
     </div>
   );
 }
@@ -237,25 +303,26 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     }),
   );
 
+  const isDone = item.status === "done";
+
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/30">
+    <div
+      className={`group flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-muted/30 ${isDone ? "opacity-60" : ""}`}
+    >
       <Checkbox
-        checked={item.status === "done"}
+        checked={isDone}
+        className="cursor-pointer"
         disabled={toggleMutation.isPending}
         onCheckedChange={() =>
           toggleMutation.mutate({
             id: item.id,
-            status: item.status === "open" ? "done" : "open",
+            status: isDone ? "open" : "done",
           })
         }
       />
       <div className="min-w-0 flex-1">
         <p
-          className={`text-sm ${
-            item.status === "done"
-              ? "text-muted-foreground line-through"
-              : "font-medium"
-          }`}
+          className={`text-sm ${isDone ? "text-muted-foreground line-through" : "font-medium"}`}
         >
           {item.title}
         </p>
@@ -273,6 +340,7 @@ function ActionItemCard({ item }: { item: ActionItem }) {
         )}
       </div>
       <Button
+        className="opacity-0 transition-opacity group-hover:opacity-100"
         disabled={deleteMutation.isPending}
         onClick={() => deleteMutation.mutate({ id: item.id })}
         size="sm"

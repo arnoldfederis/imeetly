@@ -44,7 +44,20 @@ export function parseActionItems(raw: string): ActionItem[] {
 }
 
 /**
+ * Convert an array of strings to a markdown bullet list, or pass through
+ * a raw string as-is (for backwards compatibility with old prompt format).
+ */
+function toMarkdownList(val: unknown): string {
+  if (Array.isArray(val)) {
+    const items = val.filter((v) => typeof v === "string" && v.trim());
+    return items.map((v) => `- ${v}`).join("\n");
+  }
+  return String(val ?? "");
+}
+
+/**
  * Parse a structured extraction result from raw JSON model output.
+ * Handles both the legacy markdown-string format and the new array format.
  */
 export function parseExtractionResult(raw: string): {
   summary: string;
@@ -58,9 +71,11 @@ export function parseExtractionResult(raw: string): {
 
   return {
     summary: String(parsed.summary ?? ""),
-    decisions: String(parsed.decisions ?? ""),
-    blockers: String(parsed.blockers ?? ""),
-    followups: String(parsed.followups ?? parsed.follow_ups ?? ""),
+    decisions: toMarkdownList(parsed.decisions),
+    blockers: toMarkdownList(parsed.blockers),
+    followups: toMarkdownList(
+      parsed.followUps ?? parsed.followups ?? parsed.follow_ups,
+    ),
     actionItems: Array.isArray(parsed.actionItems ?? parsed.action_items)
       ? parseActionItems(
           JSON.stringify(parsed.actionItems ?? parsed.action_items),

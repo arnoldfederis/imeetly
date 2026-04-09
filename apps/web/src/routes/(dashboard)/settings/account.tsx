@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { client, server } from "@/lib/orpc";
 
 export const Route = createFileRoute("/(dashboard)/settings/account")({
@@ -48,27 +48,43 @@ function AccountPage() {
   if (!session) return null;
 
   if (impactLoading || planLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner className="size-6" />
-      </div>
-    );
+    return <AccountSkeleton />;
   }
 
   const { user } = session;
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-semibold text-2xl tracking-tight">Account</h1>
-        <p className="text-muted-foreground text-sm">
-          Manage your account and data
-        </p>
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">Account</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your account and data
+          </p>
+        </div>
       </div>
 
       <AccountOverview plan={planData?.plan} user={user} />
       <Separator />
       <DeleteAccountSection user={user} />
+    </div>
+  );
+}
+
+function AccountSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex h-14 items-center gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">Account</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your account and data
+          </p>
+        </div>
+      </div>
+      <Skeleton className="h-48 rounded-4xl" />
+      <Skeleton className="h-px w-full" />
+      <Skeleton className="h-72 rounded-4xl" />
     </div>
   );
 }
@@ -129,10 +145,7 @@ function DeleteAccountSection({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {loadingImpact ? (
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Spinner className="size-4" />
-            Loading account data...
-          </div>
+          <Skeleton className="h-28 w-full rounded-xl" />
         ) : (
           impact && (
             <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-4 text-sm">
