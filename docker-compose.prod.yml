@@ -144,6 +144,7 @@ services:
       - POSTGRES_USER=temporal
       - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD:-temporal}
       - POSTGRES_SEEDS=temporal-db
+      - DEFAULT_NAMESPACE=default
     depends_on:
       temporal-db:
         condition: service_healthy

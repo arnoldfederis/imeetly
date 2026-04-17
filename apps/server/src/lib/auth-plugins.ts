@@ -37,9 +37,7 @@ function resolveAppBaseUrl() {
 
     try {
       return new URL(value).toString().replace(/\/$/, "");
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return null;

@@ -19,9 +19,7 @@ const siteUrl = (() => {
       const parts = url.hostname.split(".");
       url.hostname = parts.slice(-2).join(".");
       return url.origin;
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return "/";

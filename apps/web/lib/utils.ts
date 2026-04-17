@@ -11,8 +11,16 @@ export function formatMeetingDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
 
-  const localDay = (dt: Date) => dt.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
-  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const localDay = (dt: Date) =>
+    dt.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  const time = d.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
   if (localDay(d) === localDay(now)) return `Today, ${time}`;
 
@@ -26,7 +34,11 @@ export function formatMeetingDate(date: Date | string): string {
     return `${d.toLocaleDateString(undefined, { weekday: "long" })}, ${time}`;
   }
 
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export function downloadMeetingMarkdown(

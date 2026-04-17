@@ -21,7 +21,9 @@ export function ManageBillingButton() {
           const interval = setInterval(() => {
             if (portalTab.closed) {
               clearInterval(interval);
-              void server.billing.syncSubscription().then(() => router.refresh());
+              void server.billing
+                .syncSubscription()
+                .then(() => router.refresh());
             }
           }, 500);
         }

@@ -50,7 +50,12 @@ export abstract class ActionItemService {
 
   static async listForUser(
     userId: string,
-    opts: { status?: string; search?: string; limit?: number; offset?: number } = {},
+    opts: {
+      status?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
   ) {
     const { status, search, limit = 30, offset = 0 } = opts;
 

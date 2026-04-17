@@ -1,6 +1,10 @@
 "use client";
 
-import { useInfiniteQuery, useMutation, useQueryClient, } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   CheckIcon,
   CheckSquareIcon,
@@ -16,10 +20,29 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
-import { InputGroup, InputGroupAddon, InputGroupInput, } from "@/components/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
@@ -42,7 +65,7 @@ export function ActionItemsContainer() {
     return () => window.clearTimeout(id);
   }, [search]);
 
-  const {data, isLoading, isFetching, fetchNextPage, hasNextPage} =
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
       client.actionItem.list.infiniteOptions({
         input: (pageParam) => ({
@@ -82,7 +105,7 @@ export function ActionItemsContainer() {
           void fetchNextPage();
         }
       },
-      {rootMargin: "200px"},
+      { rootMargin: "200px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -120,7 +143,7 @@ export function ActionItemsContainer() {
             Action Items
           </h1>
           {isLoading ? (
-            <Skeleton className="h-5 w-24"/>
+            <Skeleton className="h-5 w-24" />
           ) : (
             <p className="text-muted-foreground text-sm">
               {total} item{total !== 1 ? "s" : ""}
@@ -132,7 +155,7 @@ export function ActionItemsContainer() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <InputGroup className="flex-1">
           <InputGroupAddon>
-            <SearchIcon/>
+            <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
             onChange={(e) => {
@@ -164,12 +187,12 @@ export function ActionItemsContainer() {
       </div>
 
       {isLoading ? (
-        <ActionItemsSkeleton/>
+        <ActionItemsSkeleton />
       ) : grouped.length === 0 ? (
         <Empty className="border">
           <EmptyHeader>
             <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
-              <CheckSquareIcon className="size-5 text-muted-foreground"/>
+              <CheckSquareIcon className="size-5 text-muted-foreground" />
             </div>
             <EmptyTitle>No action items</EmptyTitle>
             <EmptyDescription>
@@ -188,10 +211,9 @@ export function ActionItemsContainer() {
             return (
               <Collapsible key={group.meetingId}>
                 <div className="overflow-hidden rounded-xl border">
-                  <CollapsibleTrigger
-                    className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:opacity-80">
+                  <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:opacity-80">
                     <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <FileTextIcon className="size-3.5 text-muted-foreground"/>
+                      <FileTextIcon className="size-3.5 text-muted-foreground" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="truncate font-medium text-sm">
@@ -199,8 +221,7 @@ export function ActionItemsContainer() {
                       </span>
                       <div className="mt-0.5 flex items-center gap-2">
                         {openCount > 0 && (
-                          <span
-                            className="inline-flex h-4 items-center rounded-full bg-orange-500/10 px-1.5 font-medium text-orange-600 text-xs dark:text-orange-400">
+                          <span className="inline-flex h-4 items-center rounded-full bg-orange-500/10 px-1.5 font-medium text-orange-600 text-xs dark:text-orange-400">
                             {openCount} open
                           </span>
                         )}
@@ -209,13 +230,12 @@ export function ActionItemsContainer() {
                         </span>
                       </div>
                     </div>
-                    <ChevronDownIcon
-                      className="size-4 shrink-0 in-data-panel-open:rotate-180 text-muted-foreground transition-transform duration-200"/>
+                    <ChevronDownIcon className="size-4 shrink-0 in-data-panel-open:rotate-180 text-muted-foreground transition-transform duration-200" />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="flex flex-col gap-1.5 border-t bg-muted/20 px-4 py-3">
                       {group.items.map((item) => (
-                        <ActionItemCard item={item} key={item.id}/>
+                        <ActionItemCard item={item} key={item.id} />
                       ))}
                       <Link
                         className="mt-2 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
@@ -230,10 +250,10 @@ export function ActionItemsContainer() {
             );
           })}
 
-          <div ref={sentinelRef}/>
+          <div ref={sentinelRef} />
           {isFetching && !isLoading && (
             <div className="flex justify-center py-4">
-              <LoaderIcon className="size-4 animate-spin text-muted-foreground"/>
+              <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
             </div>
           )}
         </div>
@@ -245,15 +265,15 @@ export function ActionItemsContainer() {
 function ActionItemsSkeleton() {
   return (
     <div className="flex flex-col gap-3">
-      {Array.from({length: 3}).map((_, i) => (
+      {Array.from({ length: 3 }).map((_, i) => (
         <div className="h-19 rounded-xl border" key={i}>
           <div className="flex items-center gap-3 p-4">
-            <Skeleton className="size-7 rounded-lg"/>
+            <Skeleton className="size-7 rounded-lg" />
             <div className="flex flex-1 flex-col gap-1.5">
-              <Skeleton className="h-[17.5px] w-48"/>
-              <Skeleton className="h-4 w-24"/>
+              <Skeleton className="h-[17.5px] w-48" />
+              <Skeleton className="h-4 w-24" />
             </div>
-            <Skeleton className="size-4"/>
+            <Skeleton className="size-4" />
           </div>
         </div>
       ))}
@@ -271,7 +291,7 @@ type ActionItem = {
   meetingTitle: string;
 };
 
-function ActionItemCard({item}: { item: ActionItem }) {
+function ActionItemCard({ item }: { item: ActionItem }) {
   const queryClient = useQueryClient();
   const [optimisticDone, setOptimisticDone] = useState(item.status === "done");
 
@@ -293,14 +313,14 @@ function ActionItemCard({item}: { item: ActionItem }) {
     type Page = { items: ActionItem[]; total: number };
     type CacheData = { pages: Page[]; pageParams: unknown[] };
     queryClient.setQueriesData(
-      {queryKey: client.actionItem.list.key()},
+      { queryKey: client.actionItem.list.key() },
       (old: CacheData | undefined) => {
         if (!old?.pages) return old;
         return {
           ...old,
           pages: old.pages.map((page) => ({
             ...page,
-            items: page.items.map((i) => (i.id === id ? {...i, status} : i)),
+            items: page.items.map((i) => (i.id === id ? { ...i, status } : i)),
           })),
         };
       },
@@ -333,7 +353,7 @@ function ActionItemCard({item}: { item: ActionItem }) {
   const handleToggle = () => {
     const newDone = !isDone;
     setOptimisticDone(newDone);
-    toggleMutation.mutate({id: item.id, status: newDone ? "done" : "open"});
+    toggleMutation.mutate({ id: item.id, status: newDone ? "done" : "open" });
   };
 
   return (
@@ -349,7 +369,7 @@ function ActionItemCard({item}: { item: ActionItem }) {
         <div
           className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${isDone ? "border-primary bg-primary" : "border-input"}`}
         >
-          {isDone && <CheckIcon className="size-2.5 text-primary-foreground"/>}
+          {isDone && <CheckIcon className="size-2.5 text-primary-foreground" />}
         </div>
         <div className="min-w-0 flex-1">
           <span
@@ -361,13 +381,13 @@ function ActionItemCard({item}: { item: ActionItem }) {
             <div className="mt-0.5 flex items-center gap-3 text-muted-foreground text-xs">
               {item.ownerName && (
                 <span className="flex items-center gap-1">
-                  <UsersIcon className="size-3"/>
+                  <UsersIcon className="size-3" />
                   {item.ownerName}
                 </span>
               )}
               {item.dueDate && (
                 <span className="flex items-center gap-1">
-                  <ClockIcon className="size-3"/>
+                  <ClockIcon className="size-3" />
                   {new Date(item.dueDate).toLocaleDateString()}
                 </span>
               )}
@@ -378,10 +398,10 @@ function ActionItemCard({item}: { item: ActionItem }) {
           className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
           disabled={deleteMutation.isPending}
           nativeButton={false}
-          onClick={() => deleteMutation.mutate({id: item.id})}
+          onClick={() => deleteMutation.mutate({ id: item.id })}
           render={
             <div>
-              <TrashIcon className="text-muted-foreground" data-icon/>
+              <TrashIcon className="text-muted-foreground" data-icon />
             </div>
           }
           variant="secondary"

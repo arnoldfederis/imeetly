@@ -1,6 +1,11 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
-import { actionItems, meetingFiles, meetings, meetingSummaries, } from "@repo/db/schemas/app";
+import {
+  actionItems,
+  meetingFiles,
+  meetingSummaries,
+  meetings,
+} from "@repo/db/schemas/app";
 import { env } from "@repo/env";
 import {
   abortR2MultipartUpload,
@@ -16,22 +21,22 @@ import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 
 export abstract class MeetingService {
   static async checkUsageLimit(userId: string) {
-    const {plan, currentPeriodStart, currentPeriodEnd} =
+    const { plan, currentPeriodStart, currentPeriodEnd } =
       await BillingService.resolveUserPlan(userId);
-    const {meetingsPerMonth: limit} = getPlanLimits(plan);
+    const { meetingsPerMonth: limit } = getPlanLimits(plan);
 
     if (limit === -1) return; // unlimited
 
-    const {count} = await BillingService.getUserUsage(
+    const { count } = await BillingService.getUserUsage(
       userId,
       "meetings_created",
-      {start: currentPeriodStart, end: currentPeriodEnd},
+      { start: currentPeriodStart, end: currentPeriodEnd },
     );
 
     if (count >= limit) {
       throw new ORPCError("FORBIDDEN", {
         message: `Monthly meeting limit reached (${count}/${limit}). Upgrade your plan for more.`,
-        data: {code: "PLAN_LIMIT_REACHED", plan, used: count, limit},
+        data: { code: "PLAN_LIMIT_REACHED", plan, used: count, limit },
       });
     }
   }
@@ -114,7 +119,7 @@ export abstract class MeetingService {
 
     const where = and(...conditions);
 
-    const [items, [{count}]] = await Promise.all([
+    const [items, [{ count }]] = await Promise.all([
       db
         .select()
         .from(meetings)
@@ -123,12 +128,12 @@ export abstract class MeetingService {
         .limit(query.limit)
         .offset(query.offset),
       db
-        .select({count: sql<number>`count(*)::int`})
+        .select({ count: sql<number>`count(*)::int` })
         .from(meetings)
         .where(where),
     ]);
 
-    return {items, total: count};
+    return { items, total: count };
   }
 
   static async getById(userId: string, meetingId: string) {
@@ -159,8 +164,8 @@ export abstract class MeetingService {
     const [updated] = await db
       .update(meetings)
       .set({
-        ...(input.title && {title: input.title}),
-        ...(input.meetingDate && {meetingDate: new Date(input.meetingDate)}),
+        ...(input.title && { title: input.title }),
+        ...(input.meetingDate && { meetingDate: new Date(input.meetingDate) }),
         ...(input.participantsText !== undefined && {
           participantsText: input.participantsText,
         }),
@@ -189,8 +194,8 @@ export abstract class MeetingService {
     });
     if (!meeting) return null;
 
-    const {plan} = await BillingService.resolveUserPlan(userId);
-    const {priorityProcessing} = getPlanLimits(plan);
+    const { plan } = await BillingService.resolveUserPlan(userId);
+    const { priorityProcessing } = getPlanLimits(plan);
 
     await db
       .update(meetings)
@@ -227,7 +232,7 @@ export abstract class MeetingService {
     // Only count usage after processing successfully starts
     await BillingService.incrementUsage(userId, "meetings_created");
 
-    return {meetingId, status: "queued" as const};
+    return { meetingId, status: "queued" as const };
   }
 
   static async getStatus(userId: string, meetingId: string) {
@@ -246,7 +251,7 @@ export abstract class MeetingService {
   static async getSummary(userId: string, meetingId: string) {
     const meeting = await db.query.meetings.findFirst({
       where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
-      columns: {id: true},
+      columns: { id: true },
     });
     if (!meeting) return null;
 
@@ -269,7 +274,7 @@ export abstract class MeetingService {
   ) {
     const meeting = await db.query.meetings.findFirst({
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
-      columns: {id: true},
+      columns: { id: true },
     });
     if (!meeting) return null;
 
@@ -317,7 +322,7 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     // Storage key: userId/yyyy/mm/meetingId/original-filename
@@ -349,7 +354,7 @@ export abstract class MeetingService {
       storageKey,
       uploadUrl,
       method: "PUT" as const,
-      headers: {"Content-Type": input.mimeType},
+      headers: { "Content-Type": input.mimeType },
     };
   }
 
@@ -361,20 +366,20 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     await db
       .update(meetingFiles)
-      .set({uploadStatus: "completed"})
+      .set({ uploadStatus: "completed" })
       .where(eq(meetingFiles.id, input.fileId));
 
     return MeetingService._triggerProcessing(userId, input.meetingId);
   }
 
   private static async _triggerProcessing(userId: string, meetingId: string) {
-    const {plan} = await BillingService.resolveUserPlan(userId);
-    const {priorityProcessing} = getPlanLimits(plan);
+    const { plan } = await BillingService.resolveUserPlan(userId);
+    const { priorityProcessing } = getPlanLimits(plan);
 
     await db
       .update(meetings)
@@ -432,7 +437,7 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     const now = new Date();
@@ -476,7 +481,7 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     const file = await db.query.meetingFiles.findFirst({
@@ -486,7 +491,7 @@ export abstract class MeetingService {
       ),
     });
     if (!file?.uploadId) {
-      throw new ORPCError("NOT_FOUND", {message: "Upload not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
     if (file.uploadStatus !== "pending" && file.uploadStatus !== "uploading") {
       throw new ORPCError("BAD_REQUEST", {
@@ -497,7 +502,7 @@ export abstract class MeetingService {
     if (file.uploadStatus === "pending") {
       await db
         .update(meetingFiles)
-        .set({uploadStatus: "uploading"})
+        .set({ uploadStatus: "uploading" })
         .where(eq(meetingFiles.id, input.fileId));
     }
 
@@ -525,7 +530,7 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     const file = await db.query.meetingFiles.findFirst({
@@ -535,7 +540,7 @@ export abstract class MeetingService {
       ),
     });
     if (!file?.uploadId) {
-      throw new ORPCError("NOT_FOUND", {message: "Upload not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
 
     await completeR2MultipartUpload(
@@ -546,7 +551,7 @@ export abstract class MeetingService {
 
     await db
       .update(meetingFiles)
-      .set({uploadStatus: "completed"})
+      .set({ uploadStatus: "completed" })
       .where(eq(meetingFiles.id, input.fileId));
 
     return MeetingService._triggerProcessing(userId, input.meetingId);
@@ -560,7 +565,7 @@ export abstract class MeetingService {
       where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
     });
     if (!meeting) {
-      throw new ORPCError("NOT_FOUND", {message: "Meeting not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Meeting not found" });
     }
 
     const file = await db.query.meetingFiles.findFirst({
@@ -570,28 +575,28 @@ export abstract class MeetingService {
       ),
     });
     if (!file?.uploadId) {
-      throw new ORPCError("NOT_FOUND", {message: "Upload not found"});
+      throw new ORPCError("NOT_FOUND", { message: "Upload not found" });
     }
 
     await abortR2MultipartUpload(file.storageKey, file.uploadId);
 
     await db
       .update(meetingFiles)
-      .set({uploadStatus: "failed"})
+      .set({ uploadStatus: "failed" })
       .where(eq(meetingFiles.id, input.fileId));
 
-    return {success: true};
+    return { success: true };
   }
 
   static async getUsage(userId: string) {
-    const {plan, currentPeriodStart, currentPeriodEnd} =
+    const { plan, currentPeriodStart, currentPeriodEnd } =
       await BillingService.resolveUserPlan(userId);
     const limits = getPlanLimits(plan);
 
-    const {count} = await BillingService.getUserUsage(
+    const { count } = await BillingService.getUserUsage(
       userId,
       "meetings_created",
-      {start: currentPeriodStart, end: currentPeriodEnd},
+      { start: currentPeriodStart, end: currentPeriodEnd },
     );
 
     return {
@@ -610,7 +615,7 @@ export abstract class MeetingService {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [meetingsThisMonth] = await db
-      .select({count: sql<number>`count(*)::int`})
+      .select({ count: sql<number>`count(*)::int` })
       .from(meetings)
       .where(
         and(
@@ -620,7 +625,7 @@ export abstract class MeetingService {
       );
 
     const [processingNow] = await db
-      .select({count: sql<number>`count(*)::int`})
+      .select({ count: sql<number>`count(*)::int` })
       .from(meetings)
       .where(
         and(
@@ -630,14 +635,14 @@ export abstract class MeetingService {
       );
 
     const [completedMeetings] = await db
-      .select({count: sql<number>`count(*)::int`})
+      .select({ count: sql<number>`count(*)::int` })
       .from(meetings)
       .where(
         and(eq(meetings.userId, userId), eq(meetings.status, "completed")),
       );
 
     const [openActions] = await db
-      .select({count: sql<number>`count(*)::int`})
+      .select({ count: sql<number>`count(*)::int` })
       .from(actionItems)
       .where(
         and(eq(actionItems.userId, userId), eq(actionItems.status, "open")),

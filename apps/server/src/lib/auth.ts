@@ -16,9 +16,7 @@ function resolveAuthBaseUrl() {
 
     try {
       return new URL(value).toString().replace(/\/$/, "");
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return "http://localhost:4000";

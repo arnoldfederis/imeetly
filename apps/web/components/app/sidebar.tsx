@@ -1,11 +1,21 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CheckSquareIcon, ChevronRight, LayoutDashboardIcon, ProjectorIcon, SettingsIcon, } from "lucide-react";
+import {
+  CheckSquareIcon,
+  ChevronRight,
+  LayoutDashboardIcon,
+  ProjectorIcon,
+  SettingsIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,

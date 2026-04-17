@@ -26,7 +26,13 @@ import { EditableSection } from "@/components/meetings/details/editable-section"
 import { ProcessingTimeline } from "@/components/meetings/details/processing-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -333,10 +339,7 @@ export function MeetingDetailsContainer(props: Props) {
             ) : (
               <div className="flex flex-col gap-1.5">
                 {meeting.actionItems.map((item) => (
-                  <ActionItemRow
-                    item={item}
-                    key={item.id}
-                  />
+                  <ActionItemRow item={item} key={item.id} />
                 ))}
               </div>
             )}
