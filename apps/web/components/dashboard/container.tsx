@@ -16,19 +16,14 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
+import { FormattedDate } from "@/components/common/formatted-date";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { formatMeetingDate } from "@/lib/utils";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 
 interface Props {
   data: RouterOutputs["meeting"]["dashboard"];
-  actionItemsData: RouterOutputs["actionItem"]["list"];
+  actionItemsData: RouterOutputs["actionItem"]["list"] | null;
   planData: RouterOutputs["billing"]["getPlan"];
 }
 
@@ -199,13 +194,13 @@ export function DashboardContainer({ data, actionItemsData, planData }: Props) {
           <div className="rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <p className="font-semibold text-sm">Action Items</p>
-              {(actionItemsData?.length ?? 0) > 0 && (
+              {(actionItemsData?.total ?? 0) > 0 && (
                 <span className="rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
-                  {actionItemsData?.length} open
+                  {actionItemsData?.total} open
                 </span>
               )}
             </div>
-            {!actionItemsData || actionItemsData.length === 0 ? (
+            {!actionItemsData || actionItemsData.items.length === 0 ? (
               <div className="px-4 py-6">
                 <Empty className="border py-6">
                   <EmptyHeader>
@@ -216,7 +211,7 @@ export function DashboardContainer({ data, actionItemsData, planData }: Props) {
             ) : (
               <>
                 <div className="divide-y px-2">
-                  {actionItemsData.slice(0, 5).map((item) => (
+                  {actionItemsData.items.map((item) => (
                     <div
                       className="flex items-start gap-2.5 py-2.5"
                       key={item.id}
@@ -224,7 +219,7 @@ export function DashboardContainer({ data, actionItemsData, planData }: Props) {
                       <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
                         <CircleDotIcon className="size-3 text-orange-500" />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1 space-y-1.5">
                         <p className="truncate font-medium text-sm leading-tight">
                           {item.title}
                         </p>
@@ -308,10 +303,10 @@ function MeetingRow({
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-muted/70">
         {icon}
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <p className="truncate font-medium text-sm">{meeting.title}</p>
         <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
-          {formatMeetingDate(meeting.meetingDate)}
+          <FormattedDate date={meeting.meetingDate} />
         </p>
       </div>
       <StatusBadge status={meeting.status} />

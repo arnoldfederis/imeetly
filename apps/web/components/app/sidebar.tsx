@@ -1,20 +1,11 @@
 "use client";
 
-import {
-  CheckSquareIcon,
-  ChevronRight,
-  LayoutDashboardIcon,
-  ProjectorIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { CheckSquareIcon, ChevronRight, LayoutDashboardIcon, ProjectorIcon, SettingsIcon, } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +19,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { client } from "@/lib/orpc";
 
 export interface SidebarNav {
   icon: React.ReactNode;
@@ -69,13 +61,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const firstPath = `/${pathname.split("/").filter(Boolean).slice(0, 1).join("/")}`;
   const sidebar = useSidebar();
 
+  const { data } = useQuery(
+    client.meeting.dashboard.queryOptions({
+      context: { cache: true },
+    }),
+  );
+
+  const isNewUser =
+    (data?.stats?.meetingsThisMonth ?? 0) === 0 &&
+    (data?.stats?.completedMeetings ?? 0) === 0 &&
+    (data?.recent?.length ?? 0) === 0;
+
+  const href = isNewUser ? "/onboarding" : "/";
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         {sidebar.state === "collapsed" ? (
           <Link
-            className="flex items-center justify-center rounded-lg p-2 hover:bg-secondary"
-            href="/"
+            className="flex items-center justify-center rounded-full p-2 hover:bg-secondary"
+            href={href}
           >
             <Image
               alt="imeetly"
@@ -89,7 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ) : (
           <Link
             className="flex items-center gap-2 rounded-md p-2 font-bold text-lg hover:bg-secondary"
-            href="/"
+            href={href}
           >
             <Image
               alt="imeetly"
@@ -108,6 +113,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {navs.map((nav) => {
               if (!nav.items?.length) {
+                nav.url = nav.title === "Dashboard" ? href : nav.url;
+
                 return (
                   <SidebarMenuItem key={nav.title}>
                     <SidebarMenuButton

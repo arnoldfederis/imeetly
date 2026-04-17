@@ -1,6 +1,5 @@
 import type { RouterOutputs } from "@repo/server/types";
 import { type ClassValue, clsx } from "clsx";
-import { format, isThisWeek, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
@@ -10,10 +9,24 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatMeetingDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  if (isToday(d)) return `Today, ${format(d, "h:mm a")}`;
-  if (isYesterday(d)) return `Yesterday, ${format(d, "h:mm a")}`;
-  if (isThisWeek(d)) return format(d, "EEEE, h:mm a");
-  return format(d, "MMM d, yyyy");
+  const now = new Date();
+
+  const localDay = (dt: Date) => dt.toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
+  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+
+  if (localDay(d) === localDay(now)) return `Today, ${time}`;
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (localDay(d) === localDay(yesterday)) return `Yesterday, ${time}`;
+
+  const sixDaysAgo = new Date(now);
+  sixDaysAgo.setDate(now.getDate() - 6);
+  if (d >= sixDaysAgo) {
+    return `${d.toLocaleDateString(undefined, { weekday: "long" })}, ${time}`;
+  }
+
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 export function downloadMeetingMarkdown(

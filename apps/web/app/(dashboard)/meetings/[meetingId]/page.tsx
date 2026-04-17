@@ -11,7 +11,9 @@ export async function generateMetadata({
   params: Promise<{ meetingId: string }>;
 }): Promise<Metadata> {
   const { meetingId } = await params;
-  return { title: meetingId ? "Meeting Details" : "Meeting" };
+  const meeting = await server.meeting.getById({ id: meetingId });
+
+  return { title: meeting ? meeting.title : "Meeting Details" };
 }
 
 export default async function Page({
@@ -32,5 +34,11 @@ export default async function Page({
 
   const canExport = planData.plan === "pro" || planData.plan === "team";
 
-  return <MeetingDetailsContainer canExport={canExport} meeting={meeting} />;
+  return (
+    <MeetingDetailsContainer
+      canExport={canExport}
+      meeting={meeting}
+      meetingId={meetingId}
+    />
+  );
 }

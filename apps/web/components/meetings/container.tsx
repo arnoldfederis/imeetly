@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { FormattedDate } from "@/components/common/formatted-date";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -32,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
-import { formatMeetingDate } from "@/lib/utils";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
@@ -206,11 +206,11 @@ export function MeetingsContainer() {
         <div className="flex flex-col gap-2">
           {meetings.map((m) => (
             <Link
-              className="group flex items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/30"
+              className="group flex items-center gap-3 rounded-xl border p-4 transition-colors hover:opacity-80"
               href={`/meetings/${m.id}`}
               key={m.id}
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-background">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-muted/70">
                 {m.sourceType === "video" ? (
                   <FileVideoIcon className="size-4 text-muted-foreground" />
                 ) : m.sourceType === "audio" ? (
@@ -222,7 +222,7 @@ export function MeetingsContainer() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-sm">{m.title}</p>
                 <p className="text-muted-foreground text-xs">
-                  {formatMeetingDate(m.meetingDate)}
+                  <FormattedDate date={m.meetingDate} />
                   {m.participantsText && ` · ${m.participantsText}`}
                 </p>
               </div>

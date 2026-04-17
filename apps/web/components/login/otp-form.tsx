@@ -71,9 +71,7 @@ export function OtpForm() {
       (data.stats?.completedMeetings ?? 0) === 0 &&
       (data.recent?.length ?? 0) === 0;
 
-    const href = isNewUser ? "/onboarding" : "/";
-
-    window.location.href = href;
+    window.location.href = isNewUser ? "/onboarding" : "/";
   }
 
   return (

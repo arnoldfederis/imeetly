@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-export const metadata: Metadata = { title: "Dashboard" };
-export const dynamic = "force-dynamic";
-
 import { redirect } from "next/navigation";
 import { DashboardContainer } from "@/components/dashboard/container";
 import { server } from "@/lib/orpc";
 
+export const metadata: Metadata = { title: "Dashboard" };
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const [data, actionItemsData, planData] = await Promise.all([
     server.meeting.dashboard(),
-    server.actionItem.list({ status: "open" }),
+    server.actionItem.list({ status: "open", limit: 3 }),
     server.billing.getPlan(),
   ]);
 
