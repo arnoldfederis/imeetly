@@ -12,6 +12,7 @@ import { AuthService } from "@repo/server/modules/auth/service";
 import { POLAR_PRODUCTS } from "@repo/server/modules/billing/model";
 import { BillingService } from "@repo/server/modules/billing/service";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import { nextCookies } from "better-auth/next-js";
 import {
   admin,
   bearer,
@@ -21,7 +22,6 @@ import {
   organization,
   username,
 } from "better-auth/plugins";
-import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { emailHarmony } from "better-auth-harmony";
 
 // Derive checkout products from the single source of truth in billing/model.ts
@@ -48,6 +48,7 @@ export const authPlugins = [
   magicLink({
     sendMagicLink: AuthService.sendMagicLink,
   }),
+  nextCookies(),
   organization({
     teams: { enabled: true },
   }),
@@ -138,7 +139,6 @@ export const authPlugins = [
       }),
     ],
   }),
-  tanstackStartCookies(),
   username(),
   ...(env.APP_ENV === "development" && env.APP_MODULE === "server"
     ? [openAPI()]

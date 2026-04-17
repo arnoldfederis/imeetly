@@ -10,5 +10,3 @@ export const authController = base.router({
       AuthService.signInSimple(input, context.headers),
     ),
 });
-
-export default authController;

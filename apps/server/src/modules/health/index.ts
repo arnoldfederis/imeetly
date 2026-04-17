@@ -15,5 +15,3 @@ export const healthController = base.prefix("/health").router({
     .route({ path: "/live", method: "GET" })
     .handler(() => ({ message: "Server is alive." })),
 });
-
-export default healthController;

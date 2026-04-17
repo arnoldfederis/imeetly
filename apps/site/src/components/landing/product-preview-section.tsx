@@ -2,7 +2,6 @@ import {
   ArrowRightIcon,
   CheckSquareIcon,
   CircleDotIcon,
-  ClockIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
@@ -219,7 +218,6 @@ function MeetingRow({
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-sm">{title}</p>
         <p className="flex items-center gap-1 text-muted-foreground text-xs">
-          <ClockIcon className="size-3 shrink-0" />
           <span className="truncate">{date}</span>
         </p>
       </div>

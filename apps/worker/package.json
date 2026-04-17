@@ -22,32 +22,32 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.86.0",
-    "@aws-sdk/client-s3": "^3.1027.0",
+    "@anthropic-ai/sdk": "^0.90.0",
+    "@aws-sdk/client-s3": "^3.1031.0",
     "@deepgram/sdk": "5.0.0",
     "@neondatabase/serverless": "^1.0.0",
     "@repo/db": "workspace:*",
     "@repo/env": "workspace:*",
     "@t3-oss/env-core": "0.13.11",
-    "@temporalio/activity": "^1.15.0",
-    "@temporalio/envconfig": "^1.15.0",
-    "@temporalio/worker": "^1.15.0",
-    "@temporalio/workflow": "^1.15.0",
+    "@temporalio/activity": "^1.16.0",
+    "@temporalio/envconfig": "^1.16.0",
+    "@temporalio/worker": "^1.16.0",
+    "@temporalio/workflow": "^1.16.0",
     "drizzle-orm": "catalog:",
     "groq-sdk": "^1.1.2",
-    "nanoid": "^5.1.6",
-    "openai": "^6.33.0",
+    "nanoid": "^5.1.9",
+    "openai": "^6.34.0",
     "pg": "^8.20.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "dotenv-cli": "catalog:dev",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   }
 }

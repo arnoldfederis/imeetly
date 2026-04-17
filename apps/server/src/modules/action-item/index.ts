@@ -29,5 +29,3 @@ export const actionItemController = base.router({
       ActionItemService.remove(context.user.id, input.id),
     ),
 });
-
-export default actionItemController;

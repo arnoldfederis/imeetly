@@ -51,5 +51,3 @@ export const adminController = base.router({
     return { costConfig, planPricing };
   }),
 });
-
-export default adminController;

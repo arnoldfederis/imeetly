@@ -107,5 +107,3 @@ export const meetingController = base.router({
     MeetingService.getUsage(context.user.id),
   ),
 });
-
-export default meetingController;

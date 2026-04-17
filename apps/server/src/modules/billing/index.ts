@@ -154,5 +154,3 @@ export const billingController = base.router({
     return { url: session.customerPortalUrl };
   }),
 });
-
-export default billingController;

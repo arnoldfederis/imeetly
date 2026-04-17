@@ -3,7 +3,7 @@ name: Deploy Staging
 on:
   workflow_dispatch:
   push:
-    branches: [staging]
+    branches: [ staging ]
 
 concurrency:
   group: deploy-staging
@@ -102,8 +102,8 @@ jobs:
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-web:staging-${{ github.sha }}
           build-args: |
-            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
-            VITE_SERVER_URL=${{ vars.VITE_SERVER_URL }}
+            NEXT_PUBLIC_APP_BASE_URL=${{ vars.NEXT_PUBLIC_APP_BASE_URL }}
+            NEXT_PUBLIC_APP_SERVER_URL=${{ vars.NEXT_PUBLIC_APP_SERVER_URL }}
 
       - name: Build and push server
         uses: docker/build-push-action@v6
