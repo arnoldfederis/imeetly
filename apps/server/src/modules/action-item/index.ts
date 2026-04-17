@@ -4,9 +4,16 @@ import { z } from "zod";
 
 export const actionItemController = base.router({
   list: privateProcedure
-    .input(z.object({ status: z.string().optional() }))
+    .input(
+      z.object({
+        status: z.string().optional(),
+        search: z.string().optional(),
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      }),
+    )
     .handler(async ({ input, context }) =>
-      ActionItemService.listForUser(context.user.id, input.status),
+      ActionItemService.listForUser(context.user.id, input),
     ),
 
   update: privateProcedure
@@ -29,5 +36,3 @@ export const actionItemController = base.router({
       ActionItemService.remove(context.user.id, input.id),
     ),
 });
-
-export default actionItemController;

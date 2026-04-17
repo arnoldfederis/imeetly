@@ -1,7 +1,8 @@
-import { createEnv } from "@t3-oss/env-core";
-import { minLength, object, optional, string } from "zod/mini";
+import { createEnv } from "@t3-oss/env-nextjs";
+import { minLength, optional, string } from "zod/mini";
 
 export const env = createEnv({
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
     APP_BASE_URL: string().check(minLength(1, "APP_BASE_URL is required")),
     APP_ENV: string().check(minLength(1, "APP_ENV is required")),
@@ -80,27 +81,17 @@ export const env = createEnv({
     SMTP_USER: optional(string()),
     SMTP_PASS: optional(string()),
   },
-  runtimeEnv: process.env,
+  client: {
+    NEXT_PUBLIC_APP_BASE_URL: string().check(
+      minLength(1, "NEXT_PUBLIC_APP_BASE_URL is required"),
+    ),
+    NEXT_PUBLIC_APP_SERVER_URL: string().check(
+      minLength(1, "NEXT_PUBLIC_APP_SERVER_URL is required"),
+    ),
+  },
+  shared: {},
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_APP_BASE_URL: process.env.NEXT_PUBLIC_APP_BASE_URL,
+    NEXT_PUBLIC_APP_SERVER_URL: process.env.NEXT_PUBLIC_APP_SERVER_URL,
+  },
 });
-
-const clientSchema = object({
-  VITE_APP_BASE_URL: string().check(
-    minLength(1, "VITE_APP_BASE_URL is required"),
-  ),
-  VITE_SERVER_URL: string().check(minLength(1, "VITE_SERVER_URL is required")),
-});
-
-// During SSR, VITE_* vars are not in import.meta.env — read from process.env instead.
-const isSSR = typeof window === "undefined";
-export const clientEnv = isSSR
-  ? ({
-      VITE_APP_BASE_URL:
-        process.env.VITE_APP_BASE_URL ?? import.meta.env.VITE_APP_BASE_URL,
-      VITE_SERVER_URL:
-        process.env.VITE_SERVER_URL ?? import.meta.env.VITE_SERVER_URL,
-    } as { VITE_APP_BASE_URL: string; VITE_SERVER_URL: string })
-  : clientSchema.parse(import.meta.env);
-
-// Helper functions for environment checks (use functions to avoid accessing server env at module load on the client)
-export const isProduction = () => env.APP_ENV === "production";
-export const isDevelopment = () => env.APP_ENV === "development";

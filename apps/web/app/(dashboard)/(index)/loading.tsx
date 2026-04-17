@@ -1,0 +1,108 @@
+import { PlusIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Loading() {
+  return (
+    <div className="flex min-w-0 flex-col gap-6">
+      {/* Header */}
+      <div className="flex h-14 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col justify-between gap-1">
+          <h1 className="font-semibold text-2xl tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">
+            Your meetings, summarized in seconds
+          </p>
+        </div>
+        <Button className="shrink-0" disabled>
+          <PlusIcon data-icon="inline-start" />
+          <span className="hidden sm:inline">New Meeting</span>
+          <span className="sm:hidden">New</span>
+        </Button>
+      </div>
+
+      {/* Usage Overview */}
+      <div className="rounded-xl border p-4">
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-48 rounded-lg" />
+            <Skeleton className="h-5 w-10 rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-10 rounded-lg" />
+        </div>
+        <Skeleton className="mb-3 h-1.5 w-full rounded-full" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-44 rounded-lg" />
+          <Skeleton className="h-6 w-24 rounded-md" />
+        </div>
+      </div>
+
+      {/* Main grid */}
+      <div className="grid min-w-0 gap-5 lg:grid-cols-3">
+        {/* Recent Meetings */}
+        <div className="min-w-0 lg:col-span-2">
+          <div className="rounded-xl border">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <div className="flex flex-col gap-1">
+                <Skeleton className="h-5 w-32 rounded-lg" />
+                <Skeleton className="h-3 w-44 rounded-lg" />
+              </div>
+              <Skeleton className="h-3 w-12 rounded-lg" />
+            </div>
+            <div className="divide-y px-2 py-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                  key={i}
+                >
+                  <Skeleton className="size-8 shrink-0 rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <Skeleton className="h-5 w-3/4 rounded-lg" />
+                    <Skeleton className="h-4 w-1/3 rounded-lg" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="flex min-w-0 flex-col gap-4">
+          {/* Action Items */}
+          <div className="rounded-xl border">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <Skeleton className="h-5 w-24 rounded-lg" />
+              <Skeleton className="h-5 w-12 rounded-full" />
+            </div>
+            <div className="divide-y px-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div className="flex items-start gap-2.5 py-2.5" key={i}>
+                  <Skeleton className="mt-0.5 size-5 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <Skeleton className="h-[17.5px] w-full rounded-lg" />
+                    <Skeleton className="h-4 w-2/3 rounded-lg" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center border-t px-4 py-2.5">
+              <Skeleton className="h-4 w-12 rounded-lg" />
+            </div>
+          </div>
+
+          {/* Quick stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5 rounded-xl border p-3">
+              <Skeleton className="h-3 w-16 rounded-lg" />
+              <Skeleton className="h-7 w-12 rounded-lg" />
+            </div>
+            <div className="space-y-1.5 rounded-xl border p-3">
+              <Skeleton className="h-3 w-16 rounded-lg" />
+              <Skeleton className="h-7 w-12 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

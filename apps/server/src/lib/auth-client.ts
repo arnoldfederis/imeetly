@@ -1,6 +1,6 @@
 import { passkeyClient } from "@better-auth/passkey/client";
 import { polarClient } from "@polar-sh/better-auth";
-import { clientEnv } from "@repo/env";
+import { env } from "@repo/env";
 import type { auth } from "@repo/server/lib/auth";
 import {
   adminClient,
@@ -13,7 +13,7 @@ import {
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL: clientEnv.VITE_SERVER_URL,
+  baseURL: env.NEXT_PUBLIC_APP_SERVER_URL,
   plugins: [
     adminClient(),
     emailOTPClient(),

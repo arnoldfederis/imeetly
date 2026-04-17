@@ -1,13 +1,10 @@
-import { Pool } from "@neondatabase/serverless";
 import { env } from "@repo/db/env";
 import { appRelations } from "@repo/db/relations/app";
 import { authRelations } from "@repo/db/relations/auth";
 import { appSchema } from "@repo/db/schemas/app";
 import { authSchema } from "@repo/db/schemas/auth";
-import { SQL } from "bun";
-import { drizzle as drizzleBun } from "drizzle-orm/bun-sql";
 import { ConsoleLogWriter, DefaultLogger } from "drizzle-orm/logger";
-import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 export const schema = {
   ...appSchema,
@@ -21,10 +18,7 @@ const logger =
     ? new DefaultLogger({ writer: new ConsoleLogWriter() })
     : undefined;
 
-const pool = new Pool({ connectionString: env.DATABASE_URL });
-const prodDb = drizzleNeon({ client: pool, schema, logger });
-
-const client = new SQL(env.DATABASE_URL);
-const devDb = drizzleBun({ client, schema, logger });
-
-export const db = env.APP_ENV === "development" ? devDb : prodDb;
+// Better Auth's Drizzle adapter relies on relational query APIs exposed on
+// `db.query[...]`. The node-postgres driver consistently provides the shape
+// needed by auth/session lookups across build-time and request-time execution.
+export const db = drizzle(env.DATABASE_URL, { schema, logger });

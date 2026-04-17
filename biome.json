@@ -12,6 +12,8 @@
       "!**/routeTree.gen.ts",
       "!apps/**/src/components/ui",
       "!**/apps/**/src/components/ui",
+      "!apps/**/components/ui",
+      "!**/apps/**/components/ui",
       "!packages/**/src/generated",
       "!**/packages/**/src/generated",
       "!apps/**/.next",

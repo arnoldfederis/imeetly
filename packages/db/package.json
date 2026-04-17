@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
-    "@t3-oss/env-core": "0.13.11",
+    "@t3-oss/env-nextjs": "^0.13.11",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
     "zod": "catalog:"

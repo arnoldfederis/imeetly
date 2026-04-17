@@ -1,3 +1,4 @@
+import type { UnwrapSchema } from "elysia";
 import { z } from "zod";
 
 export const meetingModel = {
@@ -73,3 +74,7 @@ export const meetingModel = {
     fileId: z.string(),
   }),
 } as const;
+
+export type MeetingModel = {
+  [k in keyof typeof meetingModel]: UnwrapSchema<(typeof meetingModel)[k]>;
+};

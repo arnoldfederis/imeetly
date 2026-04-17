@@ -2,12 +2,11 @@ import {
   ArrowRightIcon,
   CheckSquareIcon,
   CircleDotIcon,
-  ClockIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  PlusIcon,
   SparklesIcon,
-  UploadIcon,
 } from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
 
@@ -38,7 +37,7 @@ export function ProductPreviewSection() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground text-sm">
-                  <UploadIcon className="size-4" />
+                  <PlusIcon className="size-4" />
                   <span className="hidden sm:inline">New Meeting</span>
                   <span className="sm:hidden">New</span>
                 </div>
@@ -52,7 +51,7 @@ export function ProductPreviewSection() {
                       3 of 5 meetings used this month
                     </p>
                     <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-                      free
+                      Free
                     </span>
                   </div>
                   <span className="text-muted-foreground text-xs">2 left</span>
@@ -107,12 +106,6 @@ export function ProductPreviewSection() {
                         title="Sprint Retrospective"
                         type="text"
                       />
-                      <MeetingRow
-                        date="Mon, 10:15 AM"
-                        status="completed"
-                        title="Client Onboarding — Acme Inc"
-                        type="audio"
-                      />
                     </div>
                   </div>
                 </div>
@@ -143,7 +136,7 @@ export function ProductPreviewSection() {
                     </div>
                     <div className="flex items-center justify-center border-t px-4 py-2.5">
                       <span className="flex items-center gap-1 text-muted-foreground text-xs">
-                        View all action items
+                        View all
                         <ArrowRightIcon className="size-3" />
                       </span>
                     </div>
@@ -199,15 +192,15 @@ function MeetingRow({
   const badge =
     status === "completed" ? (
       <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs dark:text-emerald-400">
-        completed
+        Completed
       </span>
     ) : status === "processing" ? (
       <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
-        processing
+        Processing
       </span>
     ) : (
       <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 font-medium text-destructive text-xs">
-        failed
+        Failed
       </span>
     );
 
@@ -216,10 +209,9 @@ function MeetingRow({
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
         <Icon className="size-4 text-muted-foreground" />
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <p className="truncate font-medium text-sm">{title}</p>
         <p className="flex items-center gap-1 text-muted-foreground text-xs">
-          <ClockIcon className="size-3 shrink-0" />
           <span className="truncate">{date}</span>
         </p>
       </div>
@@ -234,8 +226,8 @@ function ActionRow({ text, meeting }: { text: string; meeting: string }) {
       <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
         <CircleDotIcon className="size-3 text-orange-500" />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-sm">{text}</p>
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <p className="truncate font-medium text-sm leading-tight">{text}</p>
         <p className="truncate text-muted-foreground text-xs">{meeting}</p>
       </div>
     </div>

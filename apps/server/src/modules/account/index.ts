@@ -64,5 +64,3 @@ export const accountController = base.router({
       return { deleted: true };
     }),
 });
-
-export default accountController;
