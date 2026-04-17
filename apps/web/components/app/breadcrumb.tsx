@@ -28,7 +28,7 @@ function formatSegment(segment: string) {
 
 export function AppBreadcrumb() {
   const pathname = usePathname();
-  const isMobile = useIsMobile(1024);
+  const isMobile = useIsMobile();
   const segments = pathname.split("/").filter((s) => s);
 
   if (segments.length === 0) {

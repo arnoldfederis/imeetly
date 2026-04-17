@@ -89,7 +89,7 @@
       },
     },
     "apps/web": {
-      "name": "@repo/web1",
+      "name": "@repo/web",
       "version": "0.1.0",
       "dependencies": {
         "@base-ui/react": "^1.4.0",
@@ -996,7 +996,7 @@
 
     "@repo/site": ["@repo/site@workspace:apps/site"],
 
-    "@repo/web1": ["@repo/web1@workspace:apps/web"],
+    "@repo/web": ["@repo/web@workspace:apps/web"],
 
     "@repo/worker": ["@repo/worker@workspace:apps/worker"],
 

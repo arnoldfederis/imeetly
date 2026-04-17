@@ -1,5 +1,5 @@
 {
-  "name": "@repo/web1",
+  "name": "@repo/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,8 @@
     "lint": "bunx biome lint",
     "format": "bunx biome check --write --unsafe",
     "format:file": "bunx biome format --write",
-    "pre:push": "bun lint && bun format"
+    "pre:push": "bun lint && bun format",
+    "check-types": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

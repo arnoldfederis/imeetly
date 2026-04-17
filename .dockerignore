@@ -8,8 +8,6 @@ tools
 prompts
 **/*.md
 **/dist
-apps/*/lib
-packages/*/lib
 **/.output
 .env
 .env.*
