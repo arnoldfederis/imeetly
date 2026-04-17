@@ -8,8 +8,7 @@ function resolveAuthBaseUrl() {
   const candidates = [
     process.env.BETTER_AUTH_URL,
     env.SERVER_URL,
-    env.APP_BASE_URL,
-    env.NEXT_PUBLIC_APP_BASE_URL,
+    env.NEXT_PUBLIC_APP_SERVER_URL,
   ];
 
   for (const value of candidates) {
@@ -22,7 +21,7 @@ function resolveAuthBaseUrl() {
     }
   }
 
-  return "http://localhost:3000";
+  return "http://localhost:4000";
 }
 
 function resolveAuthSecret() {
