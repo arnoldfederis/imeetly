@@ -1,4 +1,4 @@
-import { createEnv } from "@t3-oss/env-core";
+import { createEnv } from "@t3-oss/env-nextjs";
 import { minLength, optional, string } from "zod/mini";
 
 export const env = createEnv({
@@ -40,7 +40,9 @@ export const env = createEnv({
     AI_TRANSCRIPTION_FALLBACK: optional(string()),
     AI_EXTRACTION_FALLBACK: optional(string()),
   },
-  runtimeEnv: process.env,
+  client: {},
+  shared: {},
+  experimental__runtimeEnv: {},
 });
 
 export const isDevelopment = env.APP_ENV === "development";
