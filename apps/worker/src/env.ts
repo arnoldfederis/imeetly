@@ -2,6 +2,7 @@ import { createEnv } from "@t3-oss/env-core";
 import { minLength, optional, string } from "zod/mini";
 
 export const env = createEnv({
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
     APP_ENV: string().check(minLength(1, "APP_ENV is required")),
     DATABASE_URL: string().check(minLength(1, "DATABASE_URL is required")),

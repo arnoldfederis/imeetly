@@ -1,6 +1,6 @@
 "use client";
 
-import { env } from "@repo/env";
+import { env } from "@repo/env/web";
 import { authClient } from "@repo/server/lib/auth-client";
 import type { RouterOutputs } from "@repo/server/types";
 import { LoaderCircleIcon, PlusIcon, UnlinkIcon } from "lucide-react";

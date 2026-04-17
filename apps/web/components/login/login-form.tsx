@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { env } from "@repo/env";
+import { env } from "@repo/env/web";
 import { authClient } from "@repo/server/lib/auth-client";
 import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
 import { useMutation } from "@tanstack/react-query";
