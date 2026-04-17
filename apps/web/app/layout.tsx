@@ -1,4 +1,5 @@
 import "../lib/orpc.server";
+import { env } from "@repo/env";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { RootProvider } from "@/components/providers";
@@ -7,12 +8,29 @@ const title = "Your meetings, summarized in seconds. Start free — imeetly";
 const description =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 
+function resolveMetadataBase() {
+  const candidates = [env.APP_BASE_URL, env.NEXT_PUBLIC_APP_BASE_URL];
+
+  for (const value of candidates) {
+    if (!value) continue;
+
+    try {
+      return new URL(value);
+    } catch {
+      continue;
+    }
+  }
+
+  return new URL("http://localhost:3000");
+}
+
 export const metadata: Metadata = {
   title: {
     default: title,
     template: "%s | imeetly",
   },
   description,
+  metadataBase: resolveMetadataBase(),
   robots: { index: false, follow: false },
   icons: {
     icon: [

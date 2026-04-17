@@ -3,14 +3,15 @@ import { notFound } from "next/navigation";
 import { MeetingDetailsContainer } from "@/components/meetings/details/container";
 import { server } from "@/lib/orpc";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ meetingId: string }>;
 }): Promise<Metadata> {
   const { meetingId } = await params;
-  const meeting = await server.meeting.getById({ id: meetingId });
-  return { title: meeting?.title ?? "Meeting" };
+  return { title: meetingId ? "Meeting Details" : "Meeting" };
 }
 
 export default async function Page({

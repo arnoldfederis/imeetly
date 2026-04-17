@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { client, server } from "@/lib/orpc";
+import { client } from "@/lib/orpc";
 
 const UPGRADE_PLANS = [
   {
@@ -100,6 +100,7 @@ export function UpgradeDialog({
   ) {
     setLoading(slug);
     try {
+      const { server } = await import("@/lib/orpc");
       const { url } = await server.billing.createCheckout({
         planSlug: slug,
         returnUrl: pathname,

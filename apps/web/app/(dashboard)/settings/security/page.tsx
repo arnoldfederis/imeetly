@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Security" };
+export const dynamic = "force-dynamic";
 
 import { ConnectedAccountsCard } from "@/components/settings/security/connected-account-card";
 import { SecurityContainer } from "@/components/settings/security/container";

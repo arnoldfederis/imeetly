@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Sign In" };
+export const dynamic = "force-dynamic";
 
 import { env } from "@repo/env";
 import Image from "next/image";
@@ -8,10 +9,22 @@ import { LoginContainer } from "@/components/login/container";
 import { LoginVisual } from "@/components/login/login-visual";
 
 const siteUrl = (() => {
-  const url = new URL(env.APP_BASE_URL);
-  const parts = url.hostname.split(".");
-  url.hostname = parts.slice(-2).join(".");
-  return url.origin;
+  const candidates = [env.APP_BASE_URL, env.NEXT_PUBLIC_APP_BASE_URL];
+
+  for (const value of candidates) {
+    if (!value) continue;
+
+    try {
+      const url = new URL(value);
+      const parts = url.hostname.split(".");
+      url.hostname = parts.slice(-2).join(".");
+      return url.origin;
+    } catch {
+      continue;
+    }
+  }
+
+  return "/";
 })();
 
 export default function Page() {

@@ -44,7 +44,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useMultipartUpload } from "@/hooks/use-multipart-upload";
-import { client, server } from "@/lib/orpc";
+import { client } from "@/lib/orpc";
 
 interface Props {
   planData: RouterOutputs["billing"]["getPlan"];
@@ -104,6 +104,7 @@ export function NewMeetingForm({
             return;
           }
         } else if (transcriptText) {
+          const { server } = await import("@/lib/orpc");
           await server.meeting.process({ id: meeting.id });
         }
 

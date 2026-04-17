@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { server } from "@/lib/orpc";
 
 export function ManageBillingButton() {
   const router = useRouter();
@@ -14,6 +13,7 @@ export function ManageBillingButton() {
   async function handlePortal() {
     setLoading(true);
     try {
+      const { server } = await import("@/lib/orpc");
       const res = await server.billing.getPortalUrl();
       if (res.url) {
         const portalTab = window.open(res.url, "_blank");
@@ -21,7 +21,7 @@ export function ManageBillingButton() {
           const interval = setInterval(() => {
             if (portalTab.closed) {
               clearInterval(interval);
-              server.billing.syncSubscription().then(() => router.refresh());
+              void server.billing.syncSubscription().then(() => router.refresh());
             }
           }, 500);
         }

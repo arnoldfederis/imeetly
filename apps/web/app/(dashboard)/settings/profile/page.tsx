@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Profile" };
+export const dynamic = "force-dynamic";
 
 import { AvatarCard } from "@/components/settings/profile/avatar-card";
 import { ProfileForm } from "@/components/settings/profile/form";

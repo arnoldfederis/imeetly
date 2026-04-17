@@ -18,7 +18,6 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { server } from "@/lib/orpc";
 
 export function OtpForm() {
   const { email, isVerifying } = useAtomValue(loginAtom);
@@ -64,6 +63,7 @@ export function OtpForm() {
       return;
     }
 
+    const { server } = await import("@/lib/orpc");
     const data = await server.meeting.dashboard();
 
     const isNewUser =

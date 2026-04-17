@@ -13,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { server } from "@/lib/orpc";
 
 export function PlanCard({
   plan,
@@ -45,6 +44,7 @@ export function PlanCard({
 
     onCheckoutChange(plan.plan);
     try {
+      const { server } = await import("@/lib/orpc");
       const { url } = await server.billing.createCheckout({
         planSlug: slug,
       });

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "New Meeting" };
+export const dynamic = "force-dynamic";
 
 import { NewMeetingContainer } from "@/components/meetings/new/container";
 import { server } from "@/lib/orpc";

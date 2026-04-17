@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Billing" };
+export const dynamic = "force-dynamic";
 
 import { BillingFaq } from "@/components/settings/billing/billing-faq";
 import { BillingPlan } from "@/components/settings/billing/billing-plan";

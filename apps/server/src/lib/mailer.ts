@@ -17,7 +17,22 @@ const mailerClient = nodemailer.createTransport({
   },
 });
 
-const resendClient = new Resend(env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+  if (resendClient) {
+    return resendClient;
+  }
+
+  if (!env.RESEND_API_KEY) {
+    throw new Error(
+      "RESEND_API_KEY is required to send production email via Resend.",
+    );
+  }
+
+  resendClient = new Resend(env.RESEND_API_KEY);
+  return resendClient;
+}
 
 interface EmailPayload {
   from: string;
@@ -35,7 +50,7 @@ async function sendMail(payload: EmailPayload) {
 
   try {
     if (env.APP_ENV === "production") {
-      await resendClient.emails.send({
+      await getResendClient().emails.send({
         from,
         to: payload.email,
         subject: payload.subject,

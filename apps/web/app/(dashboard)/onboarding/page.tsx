@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Get Started" };
+export const dynamic = "force-dynamic";
 
 import { BrainCircuitIcon, ClipboardListIcon, UploadIcon } from "lucide-react";
 import Link from "next/link";
