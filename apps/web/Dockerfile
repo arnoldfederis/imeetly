@@ -26,6 +26,7 @@ RUN cd apps/web && bun run build
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
+ENV SKIP_ENV_VALIDATION=1
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=4000

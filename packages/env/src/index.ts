@@ -2,6 +2,7 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { minLength, optional, string } from "zod/mini";
 
 export const env = createEnv({
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
     APP_BASE_URL: string().check(minLength(1, "APP_BASE_URL is required")),
     APP_ENV: string().check(minLength(1, "APP_ENV is required")),
