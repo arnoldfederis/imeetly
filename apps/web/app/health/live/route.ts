@@ -1,4 +1,4 @@
-import { env } from "@repo/env/web";
+import { env } from "@repo/env";
 
 export async function GET() {
   if (env) {

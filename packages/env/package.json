@@ -17,7 +17,6 @@
     "dotenv-cli": "catalog:dev"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./web": "./src/web.ts"
+    ".": "./src/index.ts"
   }
 }

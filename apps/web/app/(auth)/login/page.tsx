@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Sign In" };
 
-import { env } from "@repo/env/web";
+import { env } from "@repo/env";
 import Image from "next/image";
 import { ThemeSwitcher } from "@/components/common/theme-switcher";
 import { LoginContainer } from "@/components/login/container";
 import { LoginVisual } from "@/components/login/login-visual";
 
 const siteUrl = (() => {
-  const url = new URL(env.NEXT_PUBLIC_APP_BASE_URL);
+  const url = new URL(env.APP_BASE_URL);
   const parts = url.hostname.split(".");
   url.hostname = parts.slice(-2).join(".");
   return url.origin;
