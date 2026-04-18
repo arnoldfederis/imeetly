@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { KeyRoundIcon, LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
@@ -54,10 +55,12 @@ export function LoginForm() {
   const isDisabled = login.isPending || isSocialSigningIn || isPasskeySigningIn;
 
   function handleSubmit(data: AuthModel["signInSimpleRequest"]) {
+    posthog.capture("login_email_submitted", { email: data.email });
     login.mutate(data);
   }
 
   async function handleGoogleAuth() {
+    posthog.capture("login_google_clicked");
     setLoginAtom((prevState) => ({
       ...prevState,
       isSocialSigningIn: true,
@@ -82,6 +85,7 @@ export function LoginForm() {
   }
 
   async function handlePasskeyAuth() {
+    posthog.capture("login_passkey_clicked");
     setLoginAtom((prevState) => ({
       ...prevState,
       isPasskeySigningIn: true,

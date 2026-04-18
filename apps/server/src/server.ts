@@ -6,7 +6,31 @@ import { Elysia } from "elysia";
 import pino from "pino";
 import pretty from "pino-pretty";
 
-const logger = pino(env.APP_ENV === "development" ? pretty() : undefined);
+const pinoOptions: pino.LoggerOptions = {
+  formatters: {
+    log(obj: Record<string, unknown>) {
+      const store = obj.store as { responseTime?: number } | undefined;
+      const set = obj.set as { status?: number } | undefined;
+      const out: Record<string, unknown> = {
+        path: obj.path,
+        route: obj.route,
+        status: set?.status ?? 200,
+        ms:
+          store?.responseTime != null
+            ? +store.responseTime.toFixed(2)
+            : undefined,
+        isError: obj.isError,
+      };
+      if (obj.err) out.err = obj.err;
+      return out;
+    },
+  },
+};
+
+const logger = pino(
+  pinoOptions,
+  env.APP_ENV === "development" ? pretty() : undefined,
+);
 
 // Simple per-IP sliding-window rate limiter (100 req / 60 s)
 const RATE_LIMIT_MAX = 100;

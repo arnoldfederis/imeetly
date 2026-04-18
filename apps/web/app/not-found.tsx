@@ -14,8 +14,8 @@ export default function NotFound() {
       />
       <h1 className="font-bold text-3xl">404 Not Found</h1>
       <h2 className="text-center text-muted-foreground">
-        imeetly having hard time to find the page
-        <br /> you’re looking for right now.
+        imeetly having trouble finding the <br />
+        page you’re looking for.
       </h2>
       <Button render={<Link href={"/"} />} variant="secondary">
         Go Home

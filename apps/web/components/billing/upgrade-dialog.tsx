@@ -8,7 +8,8 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import posthog from "posthog-js";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,9 +96,19 @@ export function UpgradeDialog({
 
   const copy = REASON_COPY[reason];
 
+  useEffect(() => {
+    if (open) {
+      posthog.capture("upgrade_dialog_opened", { reason });
+    }
+  }, [open, reason]);
+
   async function handleCheckout(
     slug: "pro-monthly" | "pro-yearly" | "team-monthly" | "team-yearly",
   ) {
+    posthog.capture("checkout_started", {
+      plan_slug: slug,
+      billing_period: yearly ? "yearly" : "monthly",
+    });
     setLoading(slug);
     try {
       const { server } = await import("@/lib/orpc");
@@ -108,6 +119,7 @@ export function UpgradeDialog({
       window.location.href = url;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      posthog.captureException(err instanceof Error ? err : new Error(message));
       console.error("[checkout] failed:", message);
       toast.error(`Checkout failed: ${message}`);
       setLoading(null);

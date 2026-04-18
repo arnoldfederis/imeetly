@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
@@ -100,6 +101,9 @@ export function MeetingDetailsContainer(props: Props) {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
           queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+        });
+        posthog.capture("meeting_processing_retried", {
+          meeting_id: meetingId,
         });
         toast.success("Processing restarted");
       },
@@ -192,12 +196,26 @@ export function MeetingDetailsContainer(props: Props) {
                 ></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => downloadMeetingMarkdown(meeting)}
+                    onClick={() => {
+                      posthog.capture("meeting_exported", {
+                        meeting_id: meetingId,
+                        format: "markdown",
+                      });
+                      downloadMeetingMarkdown(meeting);
+                    }}
                   >
                     <FileTextIcon className="size-4" />
                     Export Markdown
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => downloadMeetingPdf(meeting)}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      posthog.capture("meeting_exported", {
+                        meeting_id: meetingId,
+                        format: "pdf",
+                      });
+                      downloadMeetingPdf(meeting);
+                    }}
+                  >
                     <PrinterIcon className="size-4" />
                     Export PDF
                   </DropdownMenuItem>
@@ -230,6 +248,7 @@ export function MeetingDetailsContainer(props: Props) {
               disabled={retryMutation.isPending}
               onClick={() => retryMutation.mutate({ id: meetingId })}
               size="sm"
+              variant="secondary"
             >
               {retryMutation.isPending ? (
                 <Spinner className="mr-2 size-3.5" />

@@ -23,7 +23,7 @@ function PrivacyPage() {
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 9, 2026
+            Last updated: April 18, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -71,6 +71,11 @@ function PrivacyPage() {
                 <li>
                   <strong>Usage data:</strong> which features you use, how many
                   meetings you have processed, and similar activity information.
+                  We use PostHog to collect product analytics including pages
+                  visited, features used, interactions, and device/browser
+                  information. This data may be associated with your account
+                  (user ID and email) to help us understand how individual users
+                  experience the product.
                 </li>
                 <li>
                   <strong>Billing information:</strong> subscription status and
@@ -201,6 +206,21 @@ function PrivacyPage() {
                   &quot;Sign in with Google,&quot; Google shares basic profile
                   information with us.
                 </li>
+                <li>
+                  <strong>PostHog</strong> — product analytics. PostHog
+                  collects usage events and interactions to help us understand
+                  how the product is used and where to improve it. Data is not
+                  used for advertising. See{" "}
+                  <a
+                    className="text-primary underline underline-offset-4 hover:text-primary/80"
+                    href="https://posthog.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    PostHog&apos;s Privacy Policy
+                  </a>
+                  .
+                </li>
               </ul>
               <p className="mt-3">
                 These providers may change over time. We will update this
@@ -221,6 +241,14 @@ function PrivacyPage() {
                 you authenticate. This cookie does not contain personal data
                 beyond an opaque session identifier. We do not use third-party
                 advertising cookies or tracking pixels.
+              </p>
+              <p className="mt-3">
+                We also use cookies set by PostHog for product analytics
+                purposes. These cookies help us track usage patterns and improve
+                the product. They are not used for advertising or sold to third
+                parties. You can control or clear these cookies through your
+                browser settings; doing so will not affect your ability to use
+                the service, though analytics tracking will stop.
               </p>
               <p className="mt-3">
                 You can clear cookies via your browser settings. Doing so will

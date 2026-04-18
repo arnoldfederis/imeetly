@@ -2,6 +2,7 @@
 
 import type { RouterOutputs } from "@repo/server/types";
 import { AlertTriangleIcon, LoaderCircleIcon, TrashIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,8 @@ function DeleteAccountDialog({ email }: { email: string }) {
         confirmationText: confirmText,
       });
 
+      posthog.capture("account_deleted");
+      posthog.reset();
       toast.success("Your account has been deleted.");
 
       // Redirect to login — session is already invalidated
@@ -103,6 +106,7 @@ function DeleteAccountDialog({ email }: { email: string }) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete account";
+      posthog.captureException(err instanceof Error ? err : new Error(message));
       toast.error(message);
       setDeleting(false);
     }

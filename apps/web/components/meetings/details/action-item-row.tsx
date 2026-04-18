@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, ClockIcon, UsersIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { client } from "@/lib/orpc";
@@ -91,7 +92,12 @@ export function ActionItemRow({
   const handleToggle = () => {
     const newDone = !isDone;
     setOptimisticDone(newDone);
-    toggleMutation.mutate({ id: item.id, status: newDone ? "done" : "open" });
+    const newStatus = newDone ? "done" : "open";
+    posthog.capture("action_item_toggled", {
+      action_item_id: item.id,
+      new_status: newStatus,
+    });
+    toggleMutation.mutate({ id: item.id, status: newStatus });
   };
 
   return (

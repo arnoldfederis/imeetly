@@ -25,7 +25,7 @@ function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 9, 2026
+            Last updated: April 18, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -57,6 +57,14 @@ function TermsPage() {
               <p className="mt-3">
                 The Service is provided on a best-effort basis. Features and
                 availability may change over time.
+              </p>
+              <p className="mt-3">
+                To improve the Service, we collect aggregated usage data — such
+                as which features are used and how users navigate the product —
+                using PostHog analytics. This data is used solely to understand
+                usage patterns and improve the product. It is not sold, shared
+                for advertising, or used for any purpose unrelated to operating
+                and improving the Service.
               </p>
             </section>
 

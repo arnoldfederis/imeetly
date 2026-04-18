@@ -6,6 +6,7 @@ import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderCircleIcon } from "lucide-react";
+import posthog from "posthog-js";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -53,6 +54,10 @@ export function OtpForm() {
     });
 
     if (error) {
+      posthog.capture("login_otp_failed", {
+        error_code: error.code,
+        error_message: error.message,
+      });
       setLoginAtom((prevState) => ({
         ...prevState,
         isVerifying: false,
@@ -70,6 +75,9 @@ export function OtpForm() {
       (data.stats?.meetingsThisMonth ?? 0) === 0 &&
       (data.stats?.completedMeetings ?? 0) === 0 &&
       (data.recent?.length ?? 0) === 0;
+
+    posthog.identify(email, { email });
+    posthog.capture("login_otp_verified", { email, is_new_user: isNewUser });
 
     window.location.href = isNewUser ? "/onboarding" : "/";
   }
