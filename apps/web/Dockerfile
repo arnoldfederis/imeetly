@@ -1,7 +1,5 @@
-FROM node:alpine AS deps
+FROM oven/bun:1 AS deps
 WORKDIR /app
-
-RUN npm install -g bun
 
 COPY package.json bun.lock turbo.json ./
 COPY apps/site/package.json apps/site/package.json
@@ -26,7 +24,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY . .
 RUN cd apps/web && bun run build
 
-FROM node:alpine AS runner
+FROM oven/bun:1-slim AS runner
 WORKDIR /app
 
 ENV SKIP_ENV_VALIDATION=1
@@ -40,4 +38,4 @@ COPY --from=build /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build /app/apps/web/public ./apps/web/public
 
 EXPOSE 4000
-CMD ["node", "apps/web/server.js"]
+CMD ["bun", "apps/web/server.js"]

@@ -60,15 +60,55 @@ jobs:
           TEMPORAL_ADDRESS: localhost:7233
           TEMPORAL_NAMESPACE: default
 
-  build:
-    name: Build Production Images
+  changes:
+    name: Detect Changed Apps
     needs: ci
+    runs-on: ubuntu-latest
+    outputs:
+      site: ${{ steps.filter.outputs.site }}
+      web: ${{ steps.filter.outputs.web }}
+      server: ${{ steps.filter.outputs.server }}
+      worker: ${{ steps.filter.outputs.worker }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            site:
+              - 'apps/site/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'turbo.json'
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'turbo.json'
+            server:
+              - 'apps/server/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'turbo.json'
+            worker:
+              - 'apps/worker/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'turbo.json'
+
+  build-site:
+    name: Build site
+    needs: [ci, changes]
+    if: needs.changes.outputs.site == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
     permissions:
       contents: read
       packages: write
-
     steps:
       - uses: actions/checkout@v4
 
@@ -100,6 +140,32 @@ jobs:
           cache-from: type=gha,scope=imeetly-site-production
           cache-to: type=gha,mode=max,scope=imeetly-site-production
 
+  build-web:
+    name: Build web
+    needs: [ci, changes]
+    if: needs.changes.outputs.web == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract lowercase repo owner
+        id: vars
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build and push web
         uses: docker/build-push-action@v6
         with:
@@ -115,6 +181,32 @@ jobs:
           cache-from: type=gha,scope=imeetly-web-production
           cache-to: type=gha,mode=max,scope=imeetly-web-production
 
+  build-server:
+    name: Build server
+    needs: [ci, changes]
+    if: needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract lowercase repo owner
+        id: vars
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build and push server
         uses: docker/build-push-action@v6
         with:
@@ -126,6 +218,32 @@ jobs:
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-server:${{ github.sha }}
           cache-from: type=gha,scope=imeetly-server-production
           cache-to: type=gha,mode=max,scope=imeetly-server-production
+
+  build-worker:
+    name: Build worker
+    needs: [ci, changes]
+    if: needs.changes.outputs.worker == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract lowercase repo owner
+        id: vars
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Build and push worker
         uses: docker/build-push-action@v6
@@ -141,7 +259,8 @@ jobs:
 
   deploy:
     name: Deploy Production
-    needs: build
+    needs: [build-site, build-web, build-server, build-worker]
+    if: ${{ always() && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: production
 
