@@ -178,6 +178,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_APP_BASE_URL=${{ vars.NEXT_PUBLIC_APP_BASE_URL }}
             NEXT_PUBLIC_APP_SERVER_URL=${{ vars.NEXT_PUBLIC_APP_SERVER_URL }}
+            NEXT_PUBLIC_POSTHOG_TOKEN=${{ secrets.NEXT_PUBLIC_POSTHOG_TOKEN }}
+            NEXT_PUBLIC_POSTHOG_HOST=${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
           cache-from: type=gha,scope=imeetly-web-production
           cache-to: type=gha,mode=max,scope=imeetly-web-production
 
