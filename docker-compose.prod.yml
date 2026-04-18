@@ -124,7 +124,7 @@ services:
       POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
       POSTGRES_DB: temporal
     volumes:
-      - temporal-data:/var/lib/postgresql/data
+      - temporal-data-prod:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U temporal"]
       interval: 5s
@@ -136,7 +136,7 @@ services:
           memory: 256M
 
   temporal:
-    image: temporalio/auto-setup:latest
+    image: temporalio/auto-setup:1.26.2
     restart: unless-stopped
     environment:
       - DB=postgres12
@@ -154,7 +154,7 @@ services:
           memory: 512M
 
   temporal-ui:
-    image: temporalio/ui:latest
+    image: temporalio/ui:2.36.0
     restart: unless-stopped
     ports:
       - "${TAILSCALE_IP:-127.0.0.1}:8233:8080"
@@ -164,4 +164,5 @@ services:
       - temporal
 
 volumes:
-  temporal-data:
+  temporal-data-prod:
+    external: true
