@@ -14,13 +14,7 @@ import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
 import { GoogleIcon } from "@/components/svgs/google-icon";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator, } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { client } from "@/lib/orpc";
 
@@ -66,22 +60,26 @@ export function LoginForm() {
       isSocialSigningIn: true,
     }));
 
-    const { error } = await authClient.signIn.social({
-      provider: "google",
-      callbackURL: env.NEXT_PUBLIC_APP_BASE_URL,
-    });
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: env.NEXT_PUBLIC_APP_BASE_URL,
+      });
 
-    if (error) {
+      if (error) {
+        toast.error(`Failed to login using google. ${error.message}`);
+        return;
+      }
+
+      router.replace("/");
+    } catch {
+      toast.error("Failed to login using google.");
+    } finally {
       setLoginAtom((prevState) => ({
         ...prevState,
         isSocialSigningIn: false,
       }));
-
-      toast.error(`Failed to login using google. ${error.message}`);
-      return;
     }
-
-    router.replace("/");
   }
 
   async function handlePasskeyAuth() {
@@ -91,19 +89,23 @@ export function LoginForm() {
       isPasskeySigningIn: true,
     }));
 
-    const { error } = await authClient.signIn.passkey();
+    try {
+      const { error } = await authClient.signIn.passkey();
 
-    if (error) {
+      if (error) {
+        toast.error(`Failed to login using passkey. ${error.message}`);
+        return;
+      }
+
+      router.replace("/");
+    } catch {
+      toast.error("Failed to login using passkey.");
+    } finally {
       setLoginAtom((prevState) => ({
         ...prevState,
         isPasskeySigningIn: false,
       }));
-
-      toast.error(`Failed to login using passkey. ${error.message}`);
-      return;
     }
-
-    router.replace("/");
   }
 
   return (
