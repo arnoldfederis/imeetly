@@ -8,6 +8,7 @@ export const meetingModel = {
     participantsText: z.string().optional(),
     sourceType: z.enum(["text", "audio", "video"]).default("text"),
     transcriptText: z.string().optional(),
+    language: z.string().optional(),
   }),
   updateRequest: z.object({
     id: z.string(),

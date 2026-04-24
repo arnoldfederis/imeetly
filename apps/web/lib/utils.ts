@@ -100,7 +100,7 @@ export function downloadMeetingMarkdown(
       const checkbox = item.status === "done" ? "[x]" : "[ ]";
       const owner = item.ownerName ? ` (${item.ownerName})` : "";
       const due = item.dueDate
-        ? ` — due ${new Date(item.dueDate).toLocaleDateString()}`
+        ? ` - due ${new Date(item.dueDate).toLocaleDateString()}`
         : "";
       lines.push(`- ${checkbox} ${item.title}${owner}${due}`);
     }
@@ -186,7 +186,7 @@ export function downloadMeetingPdf(
         const checkbox = item.status === "done" ? "&#9745;" : "&#9744;";
         const owner = item.ownerName ? ` (${escapeHtml(item.ownerName)})` : "";
         const due = item.dueDate
-          ? ` — due ${new Date(item.dueDate).toLocaleDateString()}`
+          ? ` - due ${new Date(item.dueDate).toLocaleDateString()}`
           : "";
         return `<li>${checkbox} ${escapeHtml(item.title)}${owner}${due}</li>`;
       })

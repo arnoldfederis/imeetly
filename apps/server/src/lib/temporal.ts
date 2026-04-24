@@ -52,7 +52,7 @@ export async function startMeetingProcessing(
     return { workflowId, runId: data.runId ?? null };
   }
 
-  // Workflow already running — treat as idempotent success
+  // Workflow already running - treat as idempotent success
   if (response.status === 409) {
     console.log(`[temporal] Workflow already running: ${workflowId}`);
     return { workflowId, runId: null };

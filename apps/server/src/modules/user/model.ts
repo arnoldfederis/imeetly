@@ -1,3 +1,5 @@
+import { users } from "@repo/db/schemas/auth";
+import { createSelectSchema } from "drizzle-zod";
 import type { UnwrapSchema } from "elysia";
 import { z } from "zod";
 
@@ -7,6 +9,7 @@ export const userModel = {
   }),
   checkIfEmailExistsResponse: z.object({
     exists: z.boolean(),
+    user: createSelectSchema(users).optional(),
   }),
 };
 

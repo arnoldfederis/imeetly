@@ -11,7 +11,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@repo/env";
 
-// Cloudflare R2 — used for temporary file storage only: raw uploads are deleted after processing.
+// Cloudflare R2 - used for temporary file storage only: raw uploads are deleted after processing.
 // requestChecksumCalculation disabled: AWS SDK v3 adds x-amz-checksum-* headers/params
 // by default, which cause CORS preflight failures on browser direct uploads.
 export const s3 = new S3Client({
@@ -125,6 +125,6 @@ export async function abortR2MultipartUpload(
     });
     await s3.send(command);
   } catch {
-    // Best-effort cleanup — R2 auto-cleans incomplete uploads
+    // Best-effort cleanup - R2 auto-cleans incomplete uploads
   }
 }

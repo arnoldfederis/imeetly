@@ -5,9 +5,10 @@ export const dynamic = "force-dynamic";
 import { AvatarCard } from "@/components/settings/profile/avatar-card";
 import { ProfileForm } from "@/components/settings/profile/form";
 import { server } from "@/lib/orpc";
+import { requireAuth } from "@/lib/server-auth";
 
 export default async function Page() {
-  const user = await server.user.me();
+  const user = await requireAuth(() => server.user.me());
 
   if (!user) {
     return null;

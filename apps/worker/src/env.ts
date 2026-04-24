@@ -29,12 +29,12 @@ export const env = createEnv({
       minLength(1, "TEMPORAL_NAMESPACE is required"),
     ),
 
-    // AI provider keys — all optional so missing keys don't crash startup
+    // AI provider keys - all optional so missing keys don't crash startup
     OPENAI_API_KEY: optional(string()),
     ANTHROPIC_API_KEY: optional(string()),
     GROQ_API_KEY: optional(string()),
 
-    // AI provider selection — optional, defaults to "auto"
+    // AI provider selection - optional, defaults to "auto"
     AI_TRANSCRIPTION_PROVIDER: optional(string()),
     AI_EXTRACTION_PROVIDER: optional(string()),
     AI_TRANSCRIPTION_FALLBACK: optional(string()),

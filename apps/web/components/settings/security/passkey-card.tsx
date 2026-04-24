@@ -12,6 +12,17 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,18 +112,51 @@ export function PasskeysCard({ passkeys }: Props) {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    className="size-10"
-                    disabled={deleting === passkey.id}
-                    onClick={() => handleDeletePasskey(passkey.id)}
-                    variant="secondary"
-                  >
-                    {deleting === passkey.id ? (
-                      <LoaderCircleIcon className="animate-spin" />
-                    ) : (
-                      <Trash2Icon className="size-4" />
-                    )}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      render={
+                        <Button
+                          className="size-10"
+                          disabled={deleting === passkey.id}
+                          variant="secondary"
+                        >
+                          {deleting === passkey.id ? (
+                            <LoaderCircleIcon className="animate-spin" />
+                          ) : (
+                            <Trash2Icon className="size-4" />
+                          )}
+                        </Button>
+                      }
+                    />
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete passkey?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will remove &ldquo;
+                          {passkey.name || "this passkey"}&rdquo; from your
+                          account. Also delete this passkey from your device or
+                          password manager to keep things consistent. Any saved
+                          copy on your device will no longer work after removal.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting === passkey.id}>
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={deleting === passkey.id}
+                          onClick={() => handleDeletePasskey(passkey.id)}
+                        >
+                          {deleting === passkey.id ? (
+                            <LoaderCircleIcon className="animate-spin" />
+                          ) : (
+                            "Delete"
+                          )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ))}
             </div>

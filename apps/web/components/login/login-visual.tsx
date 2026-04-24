@@ -18,7 +18,7 @@ const ease = [0.21, 0.47, 0.32, 0.98] as const;
 export function LoginVisual() {
   return (
     <div className="relative flex h-full items-center justify-center overflow-hidden bg-[#f8f7ff] dark:bg-[#0c0a1a]">
-      {/* Animated gradient blobs — slow continuous drift */}
+      {/* Animated gradient blobs - slow continuous drift */}
       <div className="absolute inset-0">
         <motion.div
           animate={{ x: 40, y: -30 }}
@@ -95,7 +95,7 @@ export function LoginVisual() {
             {/* Meeting header */}
             <div className="flex items-center gap-2">
               <span className="font-semibold text-[13px] text-foreground/80 dark:text-white/80">
-                Q4 Planning — Product Sync
+                Q4 Planning - Product Sync
               </span>
               <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-[10px] text-emerald-600 dark:text-emerald-400">
                 Completed
@@ -116,7 +116,7 @@ export function LoginVisual() {
               </span>
             </div>
 
-            {/* Summary — full width */}
+            {/* Summary - full width */}
             <motion.div
               animate={{ opacity: 1, y: 0 }}
               className="mt-3 rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"
@@ -139,7 +139,7 @@ export function LoginVisual() {
               </p>
             </motion.div>
 
-            {/* Decisions + Blockers — side by side */}
+            {/* Decisions + Blockers - side by side */}
             <div className="mt-2 grid grid-cols-2 gap-2">
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
@@ -181,7 +181,7 @@ export function LoginVisual() {
               </motion.div>
             </div>
 
-            {/* Follow-ups — full width */}
+            {/* Follow-ups - full width */}
             <motion.div
               animate={{ opacity: 1, y: 0 }}
               className="mt-2 rounded-lg border border-violet-500/20 bg-violet-50/40 p-2.5 dark:bg-violet-950/20"
@@ -201,7 +201,7 @@ export function LoginVisual() {
               </p>
             </motion.div>
 
-            {/* Action Items — full width */}
+            {/* Action Items - full width */}
             <motion.div
               animate={{ opacity: 1, y: 0 }}
               className="mt-2 rounded-lg border border-border/30 bg-muted/50 p-2.5 dark:border-white/5 dark:bg-white/3"

@@ -117,7 +117,7 @@ export abstract class BillingService {
 
   /**
    * Syncs a Polar subscription event to the local subscriptions table.
-   * Idempotent — repeated calls with same data produce same result.
+   * Idempotent - repeated calls with same data produce same result.
    */
   static async syncSubscription(
     payload: BillingModel["syncSubscriptionPayload"],

@@ -6,13 +6,16 @@ import { AccountOverview } from "@/components/settings/account/account-overview"
 import { DeleteAccountSection } from "@/components/settings/account/delete-account-section";
 import { Separator } from "@/components/ui/separator";
 import { server } from "@/lib/orpc";
+import { requireAuth } from "@/lib/server-auth";
 
 export default async function Page() {
-  const [user, planData, impact] = await Promise.all([
-    server.user.me(),
-    server.billing.getPlan(),
-    server.account.getDeletionImpact(),
-  ]);
+  const [user, planData, impact] = await requireAuth(() =>
+    Promise.all([
+      server.user.me(),
+      server.billing.getPlan(),
+      server.account.getDeletionImpact(),
+    ]),
+  );
 
   if (!user) {
     return null;

@@ -17,7 +17,7 @@ export const accountController = base.router({
    * Permanently deletes the authenticated user's account and all data.
    *
    * Requires the user to confirm by typing their email address.
-   * Server validates the confirmation matches — never trust frontend alone.
+   * Server validates the confirmation matches - never trust frontend alone.
    */
   deleteAccount: privateProcedure
     .input(
@@ -58,7 +58,7 @@ export const accountController = base.router({
           body: { token: session.token },
         });
       } catch {
-        // Session may already be gone from cascade — that's fine
+        // Session may already be gone from cascade - that's fine
       }
 
       return { deleted: true };

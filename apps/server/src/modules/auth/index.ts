@@ -9,4 +9,10 @@ export const authController = base.router({
     .handler(async ({ input, context }) =>
       AuthService.signInSimple(input, context.headers),
     ),
+  checkIfPasskeyExists: publicProcedure
+    .input(authModel.checkIfPasskeyExistsRequest)
+    .output(authModel.checkIfPasskeyExistsResponse)
+    .handler(async ({ input }) =>
+      AuthService.checkIfPasskeyExists(input.email),
+    ),
 });

@@ -24,6 +24,7 @@ export interface MeetingInput {
   transcriptText?: string | null;
   storageKey?: string | null;
   bucketName?: string | null;
+  language?: string | null;
 }
 
 export interface ProcessingResult {
@@ -77,6 +78,7 @@ export async function loadMeetingInput(
     transcriptText: meeting.transcriptText,
     storageKey: file?.storageKey ?? null,
     bucketName: file?.bucketName ?? null,
+    language: meeting.language ?? null,
   };
 }
 
@@ -85,7 +87,7 @@ export async function loadMeetingInput(
 export async function extractAudioFromVideo(
   storageKey: string,
 ): Promise<string> {
-  // For MVP, pass video directly — Whisper handles common video formats
+  // For MVP, pass video directly - Whisper handles common video formats
   console.log(
     `[extractAudio] Passing video through for transcription: ${storageKey}`,
   );
@@ -94,8 +96,9 @@ export async function extractAudioFromVideo(
 
 export async function transcribeAudio(
   audioKey: string,
+  language?: string | null,
 ): Promise<TranscriptionResult> {
-  return transcribeMeeting(audioKey);
+  return transcribeMeeting(audioKey, language ?? undefined);
 }
 
 export async function generateExtractionResult(
@@ -104,7 +107,7 @@ export async function generateExtractionResult(
   return extractMeetingData(transcript);
 }
 
-// Cloudflare R2 — worker downloads raw files for processing, then deletes them.
+// Cloudflare R2 - worker downloads raw files for processing, then deletes them.
 const s3 = new S3Client({
   endpoint: env.S3_ENDPOINT,
   region: env.S3_REGION,

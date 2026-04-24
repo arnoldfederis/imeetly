@@ -12,6 +12,7 @@ import {
   completeR2MultipartUpload,
   createPresignedPartUrl,
   createPresignedUploadUrl,
+  deleteObject,
   initiateMultipartUpload,
 } from "@repo/server/lib/s3";
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
@@ -49,6 +50,7 @@ export abstract class MeetingService {
       participantsText?: string;
       sourceType: string;
       transcriptText?: string;
+      language?: string;
     },
   ) {
     await MeetingService.checkUsageLimit(userId);
@@ -62,6 +64,7 @@ export abstract class MeetingService {
         participantsText: input.participantsText,
         sourceType: input.sourceType,
         transcriptText: input.transcriptText,
+        language: input.language || null,
         status:
           input.sourceType === "text" && input.transcriptText
             ? "pending"
@@ -180,6 +183,22 @@ export abstract class MeetingService {
   }
 
   static async remove(userId: string, meetingId: string) {
+    const files = await db.query.meetingFiles.findMany({
+      where: eq(meetingFiles.meetingId, meetingId),
+    });
+
+    for (const file of files) {
+      if (file.retentionStatus === "deleted") continue;
+      try {
+        await deleteObject(file.storageKey);
+      } catch (err) {
+        console.warn(
+          `[meeting.remove] S3 delete failed for ${file.storageKey}:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+
     const [deleted] = await db
       .delete(meetings)
       .where(and(eq(meetings.id, meetingId), eq(meetings.userId, userId)))

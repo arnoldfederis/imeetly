@@ -5,7 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { RootProvider } from "@/components/providers";
 
-const title = "Your meetings, summarized in seconds. Start free — imeetly";
+const title = "Your meetings, summarized in seconds. Start free - imeetly";
 const description =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 

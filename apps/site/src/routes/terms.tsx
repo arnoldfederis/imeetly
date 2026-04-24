@@ -59,8 +59,8 @@ function TermsPage() {
                 availability may change over time.
               </p>
               <p className="mt-3">
-                To improve the Service, we collect aggregated usage data — such
-                as which features are used and how users navigate the product —
+                To improve the Service, we collect aggregated usage data - such
+                as which features are used and how users navigate the product -
                 using PostHog analytics. This data is used solely to understand
                 usage patterns and improve the product. It is not sold, shared
                 for advertising, or used for any purpose unrelated to operating
@@ -142,7 +142,7 @@ function TermsPage() {
                   If you upload recordings of meetings or conversations, you
                   have obtained all legally required consents from all
                   participants. Recording consent requirements vary
-                  significantly by jurisdiction — some require all-party
+                  significantly by jurisdiction - some require all-party
                   consent. You are solely responsible for complying with
                   applicable recording and wiretapping laws in your location and
                   the locations of all participants.
@@ -233,7 +233,7 @@ function TermsPage() {
                 By subscribing to a paid plan, you authorize us to charge your
                 payment method on a recurring basis until you cancel.
                 Cancellation takes effect at the end of the current billing
-                period — you retain access to paid features until then. We do
+                period - you retain access to paid features until then. We do
                 not provide partial refunds for unused time within a billing
                 cycle.
               </p>
@@ -262,8 +262,8 @@ function TermsPage() {
             <section>
               <h2>10. Intellectual Property</h2>
               <p className="mt-3">
-                The Service — including its design, features, code, and branding
-                — is owned by imeetly and protected by applicable intellectual
+                The Service - including its design, features, code, and branding
+                - is owned by imeetly and protected by applicable intellectual
                 property laws. These Terms do not grant you any rights to our
                 trademarks, logos, or other proprietary materials.
               </p>
@@ -312,8 +312,8 @@ function TermsPage() {
                 To the maximum extent permitted by applicable law, imeetly and
                 its officers, employees, and affiliates shall not be liable for
                 any indirect, incidental, special, consequential, or punitive
-                damages — including but not limited to loss of profits, data, or
-                goodwill — arising out of or related to your use of or inability
+                damages - including but not limited to loss of profits, data, or
+                goodwill - arising out of or related to your use of or inability
                 to use the Service.
               </p>
               <p className="mt-3">

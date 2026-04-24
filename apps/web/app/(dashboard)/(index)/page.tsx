@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DashboardContainer } from "@/components/dashboard/container";
 import { server } from "@/lib/orpc";
+import { requireAuth } from "@/lib/server-auth";
 
 export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [data, actionItemsData, planData] = await Promise.all([
-    server.meeting.dashboard(),
-    server.actionItem.list({ status: "open", limit: 3 }),
-    server.billing.getPlan(),
-  ]);
+  const [data, actionItemsData, planData] = await requireAuth(() =>
+    Promise.all([
+      server.meeting.dashboard(),
+      server.actionItem.list({ status: "open", limit: 3 }),
+      server.billing.getPlan(),
+    ]),
+  );
 
   const isNewUser =
     (data.stats?.meetingsThisMonth ?? 0) === 0 &&

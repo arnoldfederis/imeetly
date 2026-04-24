@@ -44,7 +44,7 @@ export function HeroSection() {
 
           <FadeIn delay={0.3}>
             <p className="max-w-lg text-muted-foreground text-sm">
-              Get clear summaries, action items, and decisions — powered by AI.
+              Get clear summaries, action items, and decisions - powered by AI.
               Upload a recording or transcript and let imeetly do the rest.
             </p>
           </FadeIn>
@@ -85,7 +85,7 @@ export function HeroSection() {
                 {/* Meeting header */}
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-base tracking-tight">
-                    Q4 Planning — Product Sync
+                    Q4 Planning - Product Sync
                   </h2>
                   <span className="inline-flex h-5 items-center rounded-full bg-emerald-500/10 px-2 font-medium text-emerald-600 text-xs dark:text-emerald-400">
                     Completed
@@ -106,7 +106,7 @@ export function HeroSection() {
                   </span>
                 </div>
 
-                {/* Summary — full width */}
+                {/* Summary - full width */}
                 <div className="mt-4 rounded-lg border p-3">
                   <div className="mb-1.5 flex items-center gap-1.5">
                     <div className="flex size-5 items-center justify-center rounded bg-primary/10">
@@ -150,7 +150,7 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                {/* Follow-ups — full width */}
+                {/* Follow-ups - full width */}
                 <div className="mt-2.5 rounded-lg border border-violet-500/20 bg-violet-50/50 p-3 dark:bg-violet-950/20">
                   <div className="mb-1.5 flex items-center gap-1.5">
                     <div className="flex size-5 items-center justify-center rounded bg-violet-500/10">

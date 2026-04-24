@@ -3,6 +3,7 @@ import { env } from "@repo/env";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import { VerificationCodeEmail } from "./emails/verification-code";
+import { WelcomeEmail } from "./emails/welcome";
 
 const mailerClient = nodemailer.createTransport({
   host: env.SMTP_HOST || "localhost",
@@ -79,6 +80,24 @@ async function sendMail(payload: EmailPayload) {
 
 const emailService = {
   sendMail,
+
+  async sendWelcomeEmail(email: string, name: string) {
+    const appUrl = env.APP_BASE_URL;
+    const url = new URL(appUrl);
+    const parts = url.hostname.split(".");
+    url.hostname = parts.slice(-2).join(".");
+    const siteUrl = url.origin;
+    const html = await render(
+      WelcomeEmail({ name: name || "there", appUrl, siteUrl }),
+    );
+
+    await sendMail({
+      from: "hello",
+      subject: "Welcome to imeetly",
+      email,
+      html,
+    });
+  },
 
   async sendVerificationCode(email: string, code: string) {
     // Derive site URL from APP_BASE_URL by stripping the app subdomain

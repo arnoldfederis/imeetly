@@ -14,7 +14,7 @@ export function CTASection() {
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground">
             Join teams that spend less time on notes and more time on what
-            matters. Start with 5 free meetings — no credit card needed.
+            matters. Start with 5 free meetings - no credit card needed.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a

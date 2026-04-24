@@ -1,12 +1,20 @@
+import type { GenericEndpointContext } from "@better-auth/core";
 import { ORPCError } from "@orpc/server";
+import { db } from "@repo/db";
+import { passkeys, users } from "@repo/db/schemas/auth";
 import { auth } from "@repo/server/lib/auth";
 import { emailService } from "@repo/server/lib/mailer";
 import type { AuthModel } from "@repo/server/modules/auth/model";
 import { UserService } from "@repo/server/modules/user/service";
 import type { EmailOTPOptions, MagicLinkOptions } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
 type SendMagicLink = Parameters<MagicLinkOptions["sendMagicLink"]>;
 type SendVerificationOTP = Parameters<EmailOTPOptions["sendVerificationOTP"]>;
+type ResolvePasskeyUser = {
+  ctx: GenericEndpointContext;
+  context?: string | null;
+};
 
 export abstract class AuthService {
   static async signInSimple(
@@ -66,5 +74,38 @@ export abstract class AuthService {
     console.log(`[auth] Verification code requested for email=${email}`);
     await emailService.sendVerificationCode(email, otp);
     console.log(`[auth] Verification code sent for email=${email}`);
+  }
+
+  static async resolvePasskeyUser({
+    context,
+  }: ResolvePasskeyUser): Promise<{ id: string; name: string }> {
+    const email = context as string;
+    const { user } = await UserService.checkIfEmailExists({ email });
+
+    if (user) {
+      return { id: user.id, name: email };
+    }
+
+    const created = await auth.api.createUser({
+      body: { email, name: email.split("@")[0] },
+    });
+
+    return { id: created.user.id, name: email };
+  }
+
+  static async checkIfPasskeyExists(email: string) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (!user) {
+      return { exists: false };
+    }
+
+    const passkey = await db.query.passkeys.findFirst({
+      where: eq(passkeys.userId, user.id),
+    });
+
+    return { exists: !!passkey };
   }
 }

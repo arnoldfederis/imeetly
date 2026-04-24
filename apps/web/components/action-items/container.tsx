@@ -308,7 +308,7 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     });
   };
 
-  // Update status in-place across all cached pages — no refetch, no reorder
+  // Update status in-place across all cached pages - no refetch, no reorder
   const updateStatusInCache = (id: string, status: string) => {
     type Page = { items: ActionItem[]; total: number };
     type CacheData = { pages: Page[]; pageParams: unknown[] };

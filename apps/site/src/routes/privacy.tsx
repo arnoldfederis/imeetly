@@ -177,45 +177,45 @@ function PrivacyPage() {
               </p>
               <ul className="mt-3">
                 <li>
-                  <strong>Polar</strong> — payment processing and subscription
+                  <strong>Polar</strong> - payment processing and subscription
                   management. Polar handles billing and stores payment card
                   details.
                 </li>
                 <li>
-                  <strong>Resend</strong> — transactional email delivery
+                  <strong>Resend</strong> - transactional email delivery
                   (verification codes, account notices).
                 </li>
                 <li>
-                  <strong>Cloudflare R2</strong> — object storage for
+                  <strong>Cloudflare R2</strong> - object storage for
                   temporarily holding uploaded files during processing.
                 </li>
                 <li>
-                  <strong>Deepgram</strong> — speech-to-text transcription of
+                  <strong>Deepgram</strong> - speech-to-text transcription of
                   audio and video files.
                 </li>
                 <li>
-                  <strong>Groq</strong> — AI language model used for meeting
+                  <strong>Groq</strong> - AI language model used for meeting
                   summary and action item extraction.
                 </li>
                 <li>
-                  <strong>OpenAI</strong> — AI language model used as a fallback
+                  <strong>OpenAI</strong> - AI language model used as a fallback
                   for extraction when the primary provider is unavailable.
                 </li>
                 <li>
-                  <strong>Google</strong> — OAuth 2.0 sign-in. If you use
+                  <strong>Google</strong> - OAuth 2.0 sign-in. If you use
                   &quot;Sign in with Google,&quot; Google shares basic profile
                   information with us.
                 </li>
                 <li>
-                  <strong>PostHog</strong> — product analytics. PostHog
-                  collects usage events and interactions to help us understand
-                  how the product is used and where to improve it. Data is not
-                  used for advertising. See{" "}
+                  <strong>PostHog</strong> - product analytics. PostHog collects
+                  usage events and interactions to help us understand how the
+                  product is used and where to improve it. Data is not used for
+                  advertising. See{" "}
                   <a
                     className="text-primary underline underline-offset-4 hover:text-primary/80"
                     href="https://posthog.com/privacy"
-                    target="_blank"
                     rel="noopener noreferrer"
+                    target="_blank"
                   >
                     PostHog&apos;s Privacy Policy
                   </a>
@@ -299,7 +299,7 @@ function PrivacyPage() {
                 imeetly is operated from the Philippines, and our infrastructure
                 and third-party providers are primarily based in the United
                 States. If you access the service from outside the United
-                States, your information — including uploaded meeting content —
+                States, your information - including uploaded meeting content -
                 will be transferred to and processed in the United States and
                 potentially other countries where our providers operate.
               </p>

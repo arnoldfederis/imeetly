@@ -8,7 +8,7 @@ export function createOpenAITranscription(
 
   return {
     name: "openai",
-    async transcribe(fileBytes, fileName, mimeType) {
+    async transcribe(fileBytes, fileName, mimeType, language) {
       const file = new File([new Uint8Array(fileBytes)], fileName, {
         type: mimeType,
       });
@@ -16,6 +16,7 @@ export function createOpenAITranscription(
         model: "whisper-1",
         file,
         response_format: "text",
+        ...(language ? { language } : {}),
       });
     },
   };

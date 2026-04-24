@@ -22,7 +22,7 @@ export function BillingFaq() {
           />
           <Separator />
           <FaqItem
-            answer="Yearly plans save you 20% compared to monthly. Usage limits remain the same — they reset every month regardless of billing cycle."
+            answer="Yearly plans save you 20% compared to monthly. Usage limits remain the same - they reset every month regardless of billing cycle."
             question="What's the difference between monthly and yearly?"
           />
           <Separator />

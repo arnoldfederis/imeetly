@@ -1,10 +1,15 @@
+import {
+  BrainCircuitIcon,
+  ClipboardListIcon,
+  PlusIcon,
+  UploadIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
-export const metadata: Metadata = { title: "Get Started" };
-export const dynamic = "force-dynamic";
-
-import { BrainCircuitIcon, ClipboardListIcon, UploadIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = { title: "Get Started" };
+export const dynamic = "force-dynamic";
 
 export default function Page() {
   return (
@@ -18,8 +23,9 @@ export default function Page() {
           Turn your meetings into clear, actionable notes
         </h1>
         <p className="mt-3 text-lg text-muted-foreground">
-          Upload a recording or paste a transcript — imeetly will generate
-          summaries, decisions, blockers, and action items automatically.
+          Upload a recording or paste a transcript - imeetly will generate a
+          summary, decisions, blockers, follow-ups and action items
+          automatically.
         </p>
 
         <Button
@@ -28,8 +34,8 @@ export default function Page() {
           render={<Link href="/meetings/new" />}
           size="lg"
         >
-          <UploadIcon data-icon="inline-start" />
-          Upload your first meeting
+          <PlusIcon data-icon="inline-start" />
+          Create your first meeting
         </Button>
 
         <p className="mt-3 text-muted-foreground text-xs">
@@ -45,7 +51,7 @@ export default function Page() {
           title="Upload recording or transcript"
         />
         <StepCard
-          description="Our AI analyzes the full conversation and extracts summaries, decisions, blockers, and action items."
+          description="Our AI analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups and action items."
           icon={<BrainCircuitIcon className="size-5 text-primary" />}
           step="02"
           title="AI processes your meeting"

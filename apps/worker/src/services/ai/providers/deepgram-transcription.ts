@@ -8,12 +8,13 @@ export function createDeepgramTranscription(
 
   return {
     name: "deepgram",
-    async transcribe(fileBytes, _fileName, _mimeType) {
+    async transcribe(fileBytes, _fileName, _mimeType, language) {
       const response = await client.listen.v1.media.transcribeFile(
         Buffer.from(fileBytes),
         {
           model: "nova-3",
           smart_format: true,
+          ...(language ? { language } : {}),
         },
       );
 

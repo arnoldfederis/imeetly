@@ -11,6 +11,7 @@ import {
   CalendarIcon,
   FileAudioIcon,
   FileVideoIcon,
+  InfoIcon,
   SparklesIcon,
   UploadCloudIcon,
   XIcon,
@@ -42,8 +43,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMultipartUpload } from "@/hooks/use-multipart-upload";
 import { client } from "@/lib/orpc";
 
@@ -79,6 +93,7 @@ export function NewMeetingForm({
       participantsText: "",
       transcriptText: "",
       sourceType: "text",
+      language: "",
     },
     resolver: zodResolver(meetingModel.createRequest),
   });
@@ -146,7 +161,9 @@ export function NewMeetingForm({
     e.preventDefault();
     setDragging(false);
     const dropped = e.dataTransfer.files[0];
-    if (dropped && ACCEPTED_TYPES.split(",").includes(dropped.type)) {
+    const isAudioOrVideo =
+      dropped?.type.startsWith("audio/") || dropped?.type.startsWith("video/");
+    if (dropped && isAudioOrVideo) {
       setFile(dropped);
     } else if (dropped) {
       toast.error("Unsupported file type. Please upload audio or video.");
@@ -175,6 +192,7 @@ export function NewMeetingForm({
       ...data,
       sourceType: file ? (sourceType as "audio" | "video") : "text",
       transcriptText: !file ? data.transcriptText : undefined,
+      language: file && data.language ? data.language : undefined,
     });
   }
 
@@ -345,15 +363,15 @@ export function NewMeetingForm({
                   </div>
                   {uploadState === "idle" && (
                     <Button
+                      className="size-8"
                       disabled={isPending}
                       onClick={() => {
                         setFile(null);
                         if (fileInputRef.current)
                           fileInputRef.current.value = "";
                       }}
-                      size="sm"
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                     >
                       <XIcon data-icon />
                     </Button>
@@ -398,6 +416,66 @@ export function NewMeetingForm({
                     </p>
                   </div>
                 </button>
+              )}
+              {file && (
+                <Controller
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <Field className="mt-3">
+                      <FieldLabel className="flex items-center gap-1.5">
+                        Audio Language{" "}
+                        <span className="font-normal text-muted-foreground">
+                          (optional)
+                        </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger
+                              className="cursor-default"
+                              type="button"
+                            >
+                              <InfoIcon className="size-3.5 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-64 text-xs">
+                              Selecting a language helps the AI transcribe your
+                              audio more accurately. The transcript will be in
+                              the same language as your recording - this does
+                              not translate the audio.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FieldLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Auto-detect" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                          <SelectItem value="pt">Portuguese</SelectItem>
+                          <SelectItem value="it">Italian</SelectItem>
+                          <SelectItem value="nl">Dutch</SelectItem>
+                          <SelectItem value="ru">Russian</SelectItem>
+                          <SelectItem value="zh">Chinese</SelectItem>
+                          <SelectItem value="ja">Japanese</SelectItem>
+                          <SelectItem value="ko">Korean</SelectItem>
+                          <SelectItem value="ar">Arabic</SelectItem>
+                          <SelectItem value="hi">Hindi</SelectItem>
+                          <SelectItem value="id">Indonesian</SelectItem>
+                          <SelectItem value="tr">Turkish</SelectItem>
+                          <SelectItem value="pl">Polish</SelectItem>
+                          <SelectItem value="vi">Vietnamese</SelectItem>
+                          <SelectItem value="th">Thai</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                />
               )}
             </div>
           )}

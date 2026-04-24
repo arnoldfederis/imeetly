@@ -1,8 +1,11 @@
 import { db, schema } from "@repo/db";
+import { sessions, users } from "@repo/db/schemas/auth";
 import { env } from "@repo/env";
 import { authPlugins } from "@repo/server/lib/auth-plugins";
+import { emailService } from "@repo/server/lib/mailer";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
+import { count, eq } from "drizzle-orm";
 
 function resolveAuthBaseUrl() {
   const candidates = [
@@ -76,4 +79,31 @@ export const auth = betterAuth({
   secret: resolveAuthSecret(),
   socialProviders: resolveGoogleProvider(),
   trustedOrigins: [env.CORS_ORIGIN],
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          const [row] = await db
+            .select({ total: count() })
+            .from(sessions)
+            .where(eq(sessions.userId, session.userId));
+
+          if ((row?.total ?? 0) !== 1) return;
+
+          const user = await db.query.users.findFirst({
+            where: eq(users.id, session.userId),
+          });
+
+          if (!user) return;
+
+          emailService.sendWelcomeEmail(user.email, user.name).catch((err) => {
+            console.error(
+              "[auth] Welcome email failed:",
+              err instanceof Error ? err.message : err,
+            );
+          });
+        },
+      },
+    },
+  },
 });

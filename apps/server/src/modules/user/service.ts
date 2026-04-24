@@ -12,7 +12,7 @@ export abstract class UserService {
       where: eq(users.email, input.email),
     });
 
-    return { exists: !!user };
+    return { exists: !!user, user };
   }
 
   static async updateUser(

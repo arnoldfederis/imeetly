@@ -13,7 +13,7 @@ export const faqs = [
   },
   {
     q: "How does AI meeting summarization work?",
-    a: "Upload a recording or paste a transcript. Our AI analyzes the full conversation using meeting transcription AI to extract key points, decisions, and action items — then delivers structured meeting notes you can share with your team.",
+    a: "Upload a recording or paste a transcript. Our AI analyzes the full conversation using meeting transcription AI to extract key points, decisions, and action items - then delivers structured meeting notes you can share with your team.",
   },
   {
     q: "What file types can I upload?",
@@ -29,7 +29,7 @@ export const faqs = [
   },
   {
     q: "What happens on the free plan?",
-    a: "The free plan includes 5 meetings per month with full AI processing — summaries, action items, decisions, and blockers. Your meeting history is always available. Upgrade anytime for higher limits.",
+    a: "The free plan includes 5 meetings per month with full AI processing - summaries, action items, decisions, and blockers. Your meeting history is always available. Upgrade anytime for higher limits.",
   },
   {
     q: "Can I edit the generated notes?",
@@ -37,11 +37,11 @@ export const faqs = [
   },
   {
     q: "Do you store my recordings?",
-    a: "No. Uploaded files are processed and then deleted from our servers. We only store the generated notes and transcripts — never the original recordings. You can delete your data at any time.",
+    a: "No. Uploaded files are processed and then deleted from our servers. We only store the generated notes and transcripts - never the original recordings. You can delete your data at any time.",
   },
   {
     q: "Who is imeetly for?",
-    a: "imeetly is for anyone who runs meetings — product teams, startups, agencies, founders, and recruiters. If you spend time in meetings and need clear notes without the busywork, imeetly is for you.",
+    a: "imeetly is for anyone who runs meetings - product teams, startups, agencies, founders, and recruiters. If you spend time in meetings and need clear notes without the busywork, imeetly is for you.",
   },
 ];
 

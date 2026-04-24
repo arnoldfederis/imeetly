@@ -1,6 +1,6 @@
 /**
  * Central cost configuration for internal analytics.
- * All costs in USD. Adjust values here — they propagate everywhere.
+ * All costs in USD. Adjust values here - they propagate everywhere.
  */
 export const costConfig = {
   /** Cost per minute of transcription (e.g. Whisper / Groq) */

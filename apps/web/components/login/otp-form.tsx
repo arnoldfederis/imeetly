@@ -27,8 +27,8 @@ export function OtpForm() {
   useEffect(() => {
     const prev = document.title;
     document.title = isVerifying
-      ? "Verifying... — imeetly"
-      : "Verify — imeetly";
+      ? "Verifying... - imeetly"
+      : "Verify - imeetly";
     return () => {
       document.title = prev;
     };

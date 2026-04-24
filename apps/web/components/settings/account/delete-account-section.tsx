@@ -101,7 +101,7 @@ function DeleteAccountDialog({ email }: { email: string }) {
       posthog.reset();
       toast.success("Your account has been deleted.");
 
-      // Redirect to login — session is already invalidated
+      // Redirect to login - session is already invalidated
       window.location.href = "/login";
     } catch (err) {
       const message =

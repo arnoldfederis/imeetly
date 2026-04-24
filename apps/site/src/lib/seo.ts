@@ -11,13 +11,13 @@
 const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
 const DEFAULT_TITLE =
-  "Your meetings, summarized in seconds. Start free — imeetly";
+  "Your meetings, summarized in seconds. Start free - imeetly";
 const DEFAULT_DESCRIPTION =
   "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SeoOptions {
-  /** Page title. Appended with " — imeetly" unless it already contains it. */
+  /** Page title. Appended with " - imeetly" unless it already contains it. */
   title?: string;
   /** Meta description. Falls back to site-wide default. */
   description?: string;
@@ -44,7 +44,7 @@ export function seo(options: SeoOptions = {}) {
   const title = rawTitle
     ? rawTitle.includes(SITE_NAME)
       ? rawTitle
-      : `${rawTitle} — ${SITE_NAME}`
+      : `${rawTitle} - ${SITE_NAME}`
     : DEFAULT_TITLE;
 
   const canonicalUrl = `${SITE_URL}${path === "/" ? "" : path}`;
@@ -133,21 +133,21 @@ export function softwareAppJsonLd() {
         price: "150",
         priceCurrency: "USD",
         name: "Pro (Yearly)",
-        description: "50 meetings per month — save $30/year",
+        description: "50 meetings per month - save $30/year",
       },
       {
         "@type": "Offer",
         price: "39",
         priceCurrency: "USD",
         name: "Team (Monthly)",
-        description: "150 meetings per month — coming soon",
+        description: "150 meetings per month - coming soon",
       },
       {
         "@type": "Offer",
         price: "390",
         priceCurrency: "USD",
         name: "Team (Yearly)",
-        description: "150 meetings per month — coming soon",
+        description: "150 meetings per month - coming soon",
       },
     ],
   };

@@ -8,7 +8,7 @@ export function createGroqTranscription(
 
   return {
     name: "groq",
-    async transcribe(fileBytes, fileName, mimeType) {
+    async transcribe(fileBytes, fileName, mimeType, language) {
       const file = new File([new Uint8Array(fileBytes)], fileName, {
         type: mimeType,
       });
@@ -16,6 +16,7 @@ export function createGroqTranscription(
         model: "whisper-large-v3-turbo",
         file,
         response_format: "text",
+        ...(language ? { language } : {}),
       });
 
       return result.text;

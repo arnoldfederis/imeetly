@@ -131,7 +131,7 @@ export function useMultipartUpload() {
 
         xhr.addEventListener("error", () => {
           xhrsRef.current = xhrsRef.current.filter((x) => x !== xhr);
-          reject(new Error("Upload failed — check your connection"));
+          reject(new Error("Upload failed - check your connection"));
         });
 
         xhr.addEventListener("abort", () => {

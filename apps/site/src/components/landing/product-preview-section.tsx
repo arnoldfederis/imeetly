@@ -91,7 +91,7 @@ export function ProductPreviewSection() {
                       <MeetingRow
                         date="Today, 2:30 PM"
                         status="completed"
-                        title="Q4 Planning — Product Sync"
+                        title="Q4 Planning - Product Sync"
                         type="audio"
                       />
                       <MeetingRow

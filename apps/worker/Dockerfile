@@ -14,7 +14,7 @@ RUN bun install --frozen-lockfile
 FROM deps AS build
 COPY . .
 
-# Bundle worker with bun instead of tsc — resolves @repo/* paths at build time,
+# Bundle worker with bun instead of tsc - resolves @repo/* paths at build time,
 # avoids TS 6 rootDir restrictions, and eliminates tsconfig-paths at runtime.
 # Temporal and pg have native modules that can't be bundled.
 RUN cd apps/worker && bun build \

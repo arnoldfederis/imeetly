@@ -6,13 +6,13 @@ import { deleteObject } from "@repo/server/lib/s3";
 import { and, eq, ne, sql } from "drizzle-orm";
 
 /**
- * Account lifecycle operations — deletion, data cleanup, and impact summary.
+ * Account lifecycle operations - deletion, data cleanup, and impact summary.
  *
  * Deletion strategy:
  * - Delete Polar customer (cancels subscriptions + revokes benefits)
  * - Delete remaining raw files from object storage (R2)
  * - Delete auth verifications by email (not FK-linked to users)
- * - Delete user row — all other data cascades via FK onDelete: "cascade":
+ * - Delete user row - all other data cascades via FK onDelete: "cascade":
  *   sessions, accounts, passkeys, members, teamMembers, invitations,
  *   meetings (→ meetingFiles, meetingSummaries), actionItems,
  *   subscriptions, usageTracking
@@ -82,7 +82,7 @@ export abstract class AccountService {
       .where(eq(verifications.identifier, userEmail));
     console.log(`[account] Deleted verifications for email ${userEmail}`);
 
-    // 4. Delete user row — cascades all relational data
+    // 4. Delete user row - cascades all relational data
     const result = await db.delete(users).where(eq(users.id, userId));
 
     if (result.rowCount === 0) {
@@ -106,7 +106,7 @@ export abstract class AccountService {
       });
       console.log(`[account] Deleted Polar customer for user ${userId}`);
     } catch (err) {
-      // Log but don't block deletion — customer may not exist in Polar
+      // Log but don't block deletion - customer may not exist in Polar
       // (e.g. free user who never checked out).
       console.error(
         `[account] Failed to delete Polar customer for user ${userId}:`,

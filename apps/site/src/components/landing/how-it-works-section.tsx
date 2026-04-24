@@ -14,7 +14,7 @@ const steps = [
     icon: BrainCircuitIcon,
     title: "AI processes your meeting",
     description:
-      "Our AI analyzes the full conversation and extracts summaries, decisions, blockers, and action items.",
+      "Our AI analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups and action items.",
   },
   {
     step: "03",

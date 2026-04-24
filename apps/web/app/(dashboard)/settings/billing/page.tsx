@@ -15,9 +15,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { server } from "@/lib/orpc";
+import { requireAuth } from "@/lib/server-auth";
 
 export default async function Page() {
-  const planData = await server.billing.getPlan();
+  const planData = await requireAuth(() => server.billing.getPlan());
   const currentPlan = planData?.plan ?? "free";
   const isPaid = currentPlan !== "free";
 

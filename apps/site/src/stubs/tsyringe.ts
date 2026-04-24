@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noExplicitAny: stub file — types are intentionally loose
+// biome-ignore-all lint/suspicious/noExplicitAny: stub file - types are intentionally loose
 // Stub for tsyringe - only used as a transitive dependency by @peculiar/x509.
 // The actual DI functionality is not needed in this app.
 

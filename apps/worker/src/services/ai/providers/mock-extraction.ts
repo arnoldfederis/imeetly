@@ -18,7 +18,7 @@ export function createMockExtraction(): ExtractionProviderImpl {
         ].join("\n"),
         blockers: [
           "- Bob needs staging environment access (assigned to Alice)",
-          "- OAuth provider has been flaky — may need fallback strategy",
+          "- OAuth provider has been flaky - may need fallback strategy",
         ].join("\n"),
         followups: [
           "- Alice to set up staging access for Bob",

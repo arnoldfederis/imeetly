@@ -45,6 +45,7 @@ export interface TranscriptionProviderImpl {
     fileBytes: Uint8Array,
     fileName: string,
     mimeType: string,
+    language?: string,
   ): Promise<string>;
 }
 

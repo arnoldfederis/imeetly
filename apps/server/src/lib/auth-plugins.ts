@@ -90,6 +90,10 @@ export const authPlugins = [
           },
           rpID: passkeyRpId,
           origin: appBaseUrl,
+          registration: {
+            requireSession: false,
+            resolveUser: AuthService.resolvePasskeyUser,
+          },
         }),
       ]
     : []),

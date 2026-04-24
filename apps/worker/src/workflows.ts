@@ -42,7 +42,7 @@ export async function processMeeting(meetingId: string): Promise<void> {
       input.storageKey
     ) {
       await updateMeetingStatus(meetingId, "processing", "transcribing", null);
-      const result = await transcribeAudio(input.storageKey);
+      const result = await transcribeAudio(input.storageKey, input.language);
       transcript = result.text;
       transcriptionProvider = result.provider;
     }
@@ -87,7 +87,7 @@ export async function processMeeting(meetingId: string): Promise<void> {
     try {
       await deleteSourceFile(meetingId);
     } catch (cleanupErr) {
-      // Do not fail the meeting if cleanup fails — log only
+      // Do not fail the meeting if cleanup fails - log only
       console.warn(
         `[${meetingId}] Source file cleanup failed:`,
         cleanupErr instanceof Error ? cleanupErr.message : cleanupErr,

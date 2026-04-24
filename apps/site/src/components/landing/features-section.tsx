@@ -1,6 +1,8 @@
 import {
   BrainCircuitIcon,
+  CalendarCheckIcon,
   ClipboardListIcon,
+  GlobeIcon,
   HistoryIcon,
   ShieldAlertIcon,
   UploadCloudIcon,
@@ -13,7 +15,7 @@ const features = [
     icon: BrainCircuitIcon,
     title: "AI meeting summaries",
     description:
-      "Get a concise, accurate summary of every meeting. No fluff — just the key points your team needs.",
+      "Get a concise, accurate summary of every meeting. No fluff - just the key points your team needs.",
   },
   {
     icon: ClipboardListIcon,
@@ -25,7 +27,13 @@ const features = [
     icon: ShieldAlertIcon,
     title: "Decisions & blockers",
     description:
-      "See exactly what was decided and what's blocking progress — all in one place.",
+      "See exactly what was decided and what's blocking progress - all in one place.",
+  },
+  {
+    icon: CalendarCheckIcon,
+    title: "Follow-ups",
+    description:
+      "AI-generated follow-up items so every commitment made in the meeting has a clear next step.",
   },
   {
     icon: HistoryIcon,
@@ -38,6 +46,12 @@ const features = [
     title: "Meeting transcription AI",
     description:
       "Drag and drop audio, video, or paste text. Our AI transcribes and processes your meeting immediately.",
+  },
+  {
+    icon: GlobeIcon,
+    title: "Multi-language support",
+    description:
+      "Upload recordings in 19 languages including English, Spanish, French, Japanese, and more. Select your audio language for the most accurate transcript.",
   },
   {
     icon: UsersIcon,

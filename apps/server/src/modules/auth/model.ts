@@ -18,6 +18,12 @@ export const authModel = {
     email: z.email().min(1, "Email is required."),
     otp: z.string().min(6, "Otp is required."),
   }),
+  checkIfPasskeyExistsRequest: z.object({
+    email: z.email().min(1, "Email is required."),
+  }),
+  checkIfPasskeyExistsResponse: z.object({
+    exists: z.boolean(),
+  }),
 } as const;
 
 export type AuthModel = {

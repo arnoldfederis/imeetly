@@ -7,9 +7,11 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN ?? "", {
   capture_exceptions: true,
   debug: process.env.NODE_ENV === "development",
   before_send: (event) => {
-    // Filter out Chrome extension noise (password managers, autofill)
-    const msg = event?.properties?.$exception_message ?? "";
-    if (typeof msg === "string" && msg.includes("Object Not Found Matching Id:")) {
+    // Filter Chrome extension noise - non-Error rejections from password managers / autofill
+    const combined = Object.values(event?.properties ?? {})
+      .filter((v) => typeof v === "string")
+      .join(" ");
+    if (combined.includes("Object Not Found Matching Id")) {
       return null;
     }
     return event;
