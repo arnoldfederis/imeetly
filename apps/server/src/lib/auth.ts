@@ -1,11 +1,11 @@
 import { db, schema } from "@repo/db";
-import { sessions, users } from "@repo/db/schemas/auth";
+import { users } from "@repo/db/schemas/auth";
 import { env } from "@repo/env";
 import { authPlugins } from "@repo/server/lib/auth-plugins";
 import { emailService } from "@repo/server/lib/mailer";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
-import { count, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 function resolveAuthBaseUrl() {
   const candidates = [
@@ -80,28 +80,25 @@ export const auth = betterAuth({
   socialProviders: resolveGoogleProvider(),
   trustedOrigins: [env.CORS_ORIGIN],
   databaseHooks: {
-    session: {
+    user: {
       create: {
-        after: async (session) => {
-          const [row] = await db
-            .select({ total: count() })
-            .from(sessions)
-            .where(eq(sessions.userId, session.userId));
-
-          if ((row?.total ?? 0) !== 1) return;
-
-          const user = await db.query.users.findFirst({
-            where: eq(users.id, session.userId),
+        after: async (user) => {
+          const createdUser = await db.query.users.findFirst({
+            where: eq(users.id, user.id),
           });
 
-          if (!user) return;
+          if (!createdUser) {
+            return;
+          }
 
-          emailService.sendWelcomeEmail(user.email, user.name).catch((err) => {
-            console.error(
-              "[auth] Welcome email failed:",
-              err instanceof Error ? err.message : err,
-            );
-          });
+          emailService
+            .sendWelcomeEmail(createdUser.email, createdUser.name)
+            .catch((err) => {
+              console.error(
+                "[auth] Welcome email failed:",
+                err instanceof Error ? err.message : err,
+              );
+            });
         },
       },
     },

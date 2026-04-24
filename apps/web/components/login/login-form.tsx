@@ -59,7 +59,7 @@ export function LoginForm() {
   }
 
   async function handlePasskeyAuth() {
-    const email = form.watch("email");
+    const email = form.getValues("email").trim();
     posthog.capture("login_passkey_clicked");
     setLoginAtom((prevState) => ({
       ...prevState,
@@ -72,7 +72,7 @@ export function LoginForm() {
 
       if (!exists) {
         const addPasskey = await authClient.passkey.addPasskey({
-          name: `imeetly - ${email}`,
+          name: email,
           context: email,
         });
 
