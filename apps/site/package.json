@@ -35,6 +35,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@rsbuild/core": "^2.0.0",
     "@types/bun": "catalog:dev",
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
