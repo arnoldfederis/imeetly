@@ -4,7 +4,7 @@ import { createRouterClient } from "@orpc/server";
 import { appRouter } from "@repo/server/router";
 import { headers } from "next/headers";
 
-const serverClient = createRouterClient(appRouter, {
+globalThis.$server = createRouterClient(appRouter, {
   /**
    * Provide initial context if needed.
    *
@@ -16,9 +16,3 @@ const serverClient = createRouterClient(appRouter, {
     headers: await headers(),
   }),
 });
-
-const globalServer = globalThis as typeof globalThis & {
-  $server?: typeof serverClient;
-};
-
-globalServer.$server = serverClient;

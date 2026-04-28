@@ -1,3 +1,4 @@
+import "../lib/orpc.server";
 import { env } from "@repo/env";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";

@@ -4,6 +4,10 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { env } from "@repo/env";
 import type { AppRouterClient } from "@repo/server/types";
 
+declare global {
+  var $server: AppRouterClient | undefined;
+}
+
 function getRpcUrl() {
   if (typeof window !== "undefined") {
     return `${env.NEXT_PUBLIC_APP_SERVER_URL}/rpc`;
