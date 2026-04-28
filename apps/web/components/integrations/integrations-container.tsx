@@ -15,13 +15,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
-import { detectMeetingProvider, getMeetingProviderMeta, } from "@/components/meetings/provider-icon";
+import {
+  detectMeetingProvider,
+  getMeetingProviderMeta,
+} from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import { client } from "@/lib/orpc";
 
@@ -54,7 +62,8 @@ const PROVIDER_META: Record<
 > = {
   google: {
     name: "Google Meet",
-    description: "Sync Google Meet events from Calendar and access recordings in Drive",
+    description:
+      "Sync Google Meet events from Calendar and access recordings in Drive",
     icon: <GoogleMeetIcon className="size-6" />,
   },
   zoom: {

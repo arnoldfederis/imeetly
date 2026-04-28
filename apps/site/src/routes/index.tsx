@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CTASection } from "@/components/landing/cta-section";
-import { faqs, FAQSection } from "@/components/landing/faq-section";
+import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
