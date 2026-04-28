@@ -36,8 +36,13 @@ export abstract class BillingService {
       where: eq(subscriptions.userId, userId),
     });
 
+    const canceledButStillActive =
+      subscription?.status === "canceled" &&
+      subscription.currentPeriodEnd != null &&
+      new Date(subscription.currentPeriodEnd) > new Date();
+
     const plan: PlanName =
-      subscription?.status === "active"
+      subscription?.status === "active" || canceledButStillActive
         ? ((subscription.plan as PlanName) ?? "free")
         : "free";
 
