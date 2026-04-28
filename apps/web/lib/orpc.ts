@@ -27,5 +27,6 @@ const link = new RPCLink({
   },
 });
 
-export const server: AppRouterClient = createORPCClient(link);
+export const server: AppRouterClient =
+  globalThis.$server ?? createORPCClient(link);
 export const client = createTanstackQueryUtils(server);

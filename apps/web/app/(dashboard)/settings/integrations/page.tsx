@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
+import { IntegrationsContainer } from "@/components/settings/integrations/container";
+import { server } from "@/lib/orpc";
+import { requireAuth } from "@/lib/server-auth";
 
 export const metadata: Metadata = { title: "Integrations" };
 export const dynamic = "force-dynamic";
-
-import { IntegrationsContainer } from "@/components/integrations/integrations-container";
-import { server } from "@/lib/orpc";
-import { requireAuth } from "@/lib/server-auth";
 
 export default async function Page() {
   const integrations = await requireAuth(() => server.integration.list());
