@@ -8,20 +8,8 @@ declare global {
   var $server: AppRouterClient | undefined;
 }
 
-function getRpcUrl() {
-  if (typeof window !== "undefined") {
-    return `${env.NEXT_PUBLIC_APP_SERVER_URL}/rpc`;
-  }
-
-  if (env.APP_ENV === "development") {
-    return `http://127.0.0.1:${env.SERVER_PORT}/rpc`;
-  }
-
-  return `${env.NEXT_PUBLIC_APP_SERVER_URL}/rpc`;
-}
-
 const link = new RPCLink({
-  url: getRpcUrl(),
+  url: `${env.NEXT_PUBLIC_APP_SERVER_URL}/rpc`,
   headers: async () => {
     if (typeof window !== "undefined") {
       return {};
