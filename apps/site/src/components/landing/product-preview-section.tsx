@@ -9,6 +9,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
+import { Button } from "@/components/ui/button";
 
 export function ProductPreviewSection() {
   return (
@@ -25,10 +26,10 @@ export function ProductPreviewSection() {
 
         <FadeIn delay={0.2}>
           <div className="rounded-2xl border bg-card p-1 shadow-primary/5 shadow-xl">
-            <div className="min-w-0 rounded-xl border bg-background p-4 sm:p-6">
+            <div className="flex min-w-0 flex-col gap-6 rounded-xl border bg-background p-4 sm:p-6">
               {/* Dashboard header */}
-              <div className="mb-5 flex h-14 items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-col justify-between gap-1">
+              <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+                <div className="flex min-w-full flex-col justify-between gap-1 sm:min-w-0">
                   <p className="font-semibold text-2xl tracking-tight">
                     Dashboard
                   </p>
@@ -36,17 +37,21 @@ export function ProductPreviewSection() {
                     Your meetings, summarized in seconds
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground text-sm">
+                <Button
+                  className="w-full shrink-0 cursor-default hover:bg-primary sm:w-auto"
+                  disabled
+                  nativeButton={false}
+                >
                   <PlusIcon className="size-4" />
                   <span className="hidden sm:inline">New Meeting</span>
                   <span className="sm:hidden">New</span>
-                </div>
+                </Button>
               </div>
 
               {/* Usage card */}
-              <div className="mb-5 rounded-xl border p-4">
-                <div className="mb-2.5 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+              <div className="rounded-xl border p-4">
+                <div className="mb-2.5 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <div className="flex justify-between gap-2 sm:items-center">
                     <p className="font-semibold text-sm">
                       3 of 5 meetings used this month
                     </p>
@@ -59,11 +64,11 @@ export function ProductPreviewSection() {
                 <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                   <div className="h-full w-3/5 rounded-full bg-primary" />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
                   <p className="text-muted-foreground text-xs">
                     Upgrade for 50 meetings/month
                   </p>
-                  <div className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs">
+                  <div className="flex w-fit items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs">
                     <SparklesIcon className="size-3" />
                     Upgrade to Pro
                   </div>
@@ -207,7 +212,7 @@ function MeetingRow({
   return (
     <div className="flex min-w-0 items-center gap-3 py-3">
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <Icon className="size-4 text-muted-foreground" />
+        <Icon className="size-5 font-bold text-primary" />
       </div>
       <div className="min-w-0 flex-1 space-y-1.5">
         <p className="truncate font-medium text-sm">{title}</p>

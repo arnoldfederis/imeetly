@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CTASection } from "@/components/landing/cta-section";
-import { FAQSection, faqs } from "@/components/landing/faq-section";
+import { faqs, FAQSection } from "@/components/landing/faq-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { PricingSection } from "@/components/landing/pricing-section";
@@ -55,6 +56,7 @@ function LandingPage() {
         <ProblemSection />
         <HowItWorksSection />
         <FeaturesSection />
+        <IntegrationsSection />
         <ProductPreviewSection />
         <PricingSection />
         <FAQSection />

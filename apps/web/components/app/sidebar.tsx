@@ -84,6 +84,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const href = isNewUser ? "/onboarding" : "/";
 
+  function onToggleSidebar() {
+    if (sidebar.isMobile) {
+      sidebar.toggleSidebar();
+    }
+  }
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
@@ -105,6 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <Link
             className="flex items-center gap-2 rounded-md p-2 font-bold text-lg hover:bg-secondary"
             href={href}
+            onClick={onToggleSidebar}
           >
             <Image
               alt="imeetly"
@@ -130,12 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton
                       isActive={nav.rootPath === firstPath}
                       render={
-                        <Link
-                          href={nav.url}
-                          onClick={() =>
-                            sidebar.isMobile ? sidebar.toggleSidebar() : null
-                          }
-                        >
+                        <Link href={nav.url} onClick={onToggleSidebar}>
                           {nav.icon ? nav.icon : null}
                           <span>{nav.title}</span>
                         </Link>

@@ -25,7 +25,7 @@ function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 18, 2026
+            Last updated: April 28, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -49,10 +49,11 @@ function TermsPage() {
               <h2>2. Description of the Service</h2>
               <p className="mt-3">
                 imeetly is an AI-powered meeting notes service. You can upload
-                meeting recordings, video files, or text transcripts, and the
-                Service uses artificial intelligence to generate structured
-                outputs including transcripts, summaries, decisions, blockers,
-                and action items.
+                meeting recordings, video files, or text transcripts - or
+                connect your Google Meet, Zoom, or Microsoft Teams account to
+                import recordings automatically. The Service uses artificial
+                intelligence to generate structured outputs including
+                transcripts, summaries, decisions, blockers, and action items.
               </p>
               <p className="mt-3">
                 The Service is provided on a best-effort basis. Features and
@@ -149,14 +150,49 @@ function TermsPage() {
                 </li>
               </ul>
               <p className="mt-3">
-                Uploaded source files are processed and then deleted from our
-                systems. Generated outputs are stored in your account until you
-                delete them or your account is terminated.
+                If you connect a third-party integration (Google Meet, Zoom, or
+                Microsoft Teams), recordings retrieved via that integration are
+                subject to the same representations, warranties, and consent
+                obligations described above. You are responsible for ensuring
+                you have the right to import and process those recordings.
+              </p>
+              <p className="mt-3">
+                Uploaded or imported source files are processed and then deleted
+                from our systems. Generated outputs are stored in your account
+                until you delete them or your account is terminated.
               </p>
             </section>
 
             <section>
-              <h2>6. AI-Generated Outputs</h2>
+              <h2>6. Third-Party Integrations</h2>
+              <p className="mt-3">
+                The Service allows you to connect third-party meeting platforms
+                (currently Google Meet, Zoom, and Microsoft Teams) via OAuth. By
+                connecting an integration, you authorize imeetly to access your
+                calendar events and cloud recordings through that platform's API
+                on your behalf.
+              </p>
+              <ul className="mt-3">
+                <li>
+                  You may disconnect any integration at any time from{" "}
+                  <strong>Settings → Integrations</strong>. Disconnecting
+                  revokes our API access but does not delete meeting data
+                  already imported.
+                </li>
+                <li>
+                  We are not responsible for the availability, accuracy, or
+                  content of data provided by third-party platforms via their
+                  APIs.
+                </li>
+                <li>
+                  Your use of connected platforms remains subject to those
+                  platforms' own terms of service.
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h2>7. AI-Generated Outputs</h2>
               <p className="mt-3">
                 The Service uses artificial intelligence to produce transcripts,
                 summaries, and other structured outputs. You acknowledge and
@@ -184,7 +220,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>7. Acceptable Use</h2>
+              <h2>8. Acceptable Use</h2>
               <p className="mt-3">You may not use the Service to:</p>
               <ul className="mt-3">
                 <li>
@@ -222,7 +258,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>8. Billing and Subscriptions</h2>
+              <h2>9. Billing and Subscriptions</h2>
               <p className="mt-3">
                 The Service offers free and paid plans. Paid plans are billed on
                 a recurring basis (monthly or annually) as specified at the time
@@ -245,7 +281,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>9. Plan Limits and Fair Use</h2>
+              <h2>10. Plan Limits and Fair Use</h2>
               <p className="mt-3">
                 Each plan includes usage limits such as the number of meetings
                 you can process per month (e.g., 5 meetings/month on the Free
@@ -260,7 +296,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>10. Intellectual Property</h2>
+              <h2>11. Intellectual Property</h2>
               <p className="mt-3">
                 The Service - including its design, features, code, and branding
                 - is owned by imeetly and protected by applicable intellectual
@@ -275,7 +311,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>11. Service Availability and Changes</h2>
+              <h2>12. Service Availability and Changes</h2>
               <p className="mt-3">
                 We aim to keep the Service available and reliable, but we do not
                 guarantee uninterrupted or error-free operation. The Service may
@@ -290,7 +326,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>12. Disclaimers</h2>
+              <h2>13. Disclaimers</h2>
               <p className="mt-3">
                 The Service is provided &quot;as is&quot; and &quot;as
                 available&quot; without warranties of any kind, whether express
@@ -307,7 +343,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>13. Limitation of Liability</h2>
+              <h2>14. Limitation of Liability</h2>
               <p className="mt-3">
                 To the maximum extent permitted by applicable law, imeetly and
                 its officers, employees, and affiliates shall not be liable for
@@ -325,7 +361,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>14. Termination</h2>
+              <h2>15. Termination</h2>
               <p className="mt-3">
                 You may close your account at any time through your account
                 settings or by contacting{" "}
@@ -352,7 +388,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>15. Governing Law and Disputes</h2>
+              <h2>16. Governing Law and Disputes</h2>
               <p className="mt-3">
                 These Terms are governed by and construed in accordance with
                 applicable law. Any disputes arising from these Terms or your
@@ -370,7 +406,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>16. Changes to These Terms</h2>
+              <h2>17. Changes to These Terms</h2>
               <p className="mt-3">
                 We may revise these Terms from time to time. When we do, we will
                 update the &quot;Last updated&quot; date at the top of this
@@ -386,7 +422,7 @@ function TermsPage() {
             </section>
 
             <section>
-              <h2>17. Contact</h2>
+              <h2>18. Contact</h2>
               <p className="mt-3">
                 Questions about these Terms? Contact us at:
               </p>

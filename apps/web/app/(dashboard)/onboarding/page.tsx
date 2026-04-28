@@ -1,9 +1,4 @@
-import {
-  BrainCircuitIcon,
-  ClipboardListIcon,
-  PlusIcon,
-  UploadIcon,
-} from "lucide-react";
+import { BrainCircuitIcon, ClipboardListIcon, PlusIcon, UploadIcon, } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,35 +15,42 @@ export default function Page() {
         </div>
 
         <h1 className="mt-6 font-bold text-3xl tracking-tight">
-          Turn your meetings into clear, actionable notes
+          Your meetings, summarized in seconds
         </h1>
         <p className="mt-3 text-lg text-muted-foreground">
-          Upload a recording or paste a transcript - imeetly will generate a
-          summary, decisions, blockers, follow-ups and action items
-          automatically.
+          Connect your tools once. imeetly handles the rest.
         </p>
 
-        <Button
-          className="mt-8"
-          nativeButton={false}
-          render={<Link href="/meetings/new" />}
-          size="lg"
-        >
-          <PlusIcon data-icon="inline-start" />
-          Create your first meeting
-        </Button>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Button
+            nativeButton={false}
+            render={<Link href="/meetings/new" />}
+            size="lg"
+          >
+            <PlusIcon data-icon="inline-start" />
+            Create your first meeting
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href="/settings/integrations" />}
+            size="lg"
+            variant="secondary"
+          >
+            Connect your tools
+          </Button>
+        </div>
 
         <p className="mt-3 text-muted-foreground text-xs">
           5 meetings per month on the free plan. No credit card required.
         </p>
       </div>
 
-      <div className="mx-auto mt-16 grid w-full gap-8 lg:grid-cols-3">
+      <div className="mx-auto mt-16 grid w-full gap-4 lg:grid-cols-3">
         <StepCard
-          description="Drop in an audio file, video recording, or paste your transcript. We support all major formats."
+          description="Drop in an audio file, video recording, or paste your transcript - or connect Zoom to import recordings automatically. Google Meet and Teams support coming soon."
           icon={<UploadIcon className="size-5 text-primary" />}
           step="01"
-          title="Upload recording or transcript"
+          title="Upload or connect your meeting tool"
         />
         <StepCard
           description="Our AI analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups and action items."
@@ -86,7 +88,7 @@ function StepCard({
         </div>
         <span className="font-bold text-primary text-sm">{step}</span>
       </div>
-      <h3 className="mb-2 font-semibold text-lg">{title}</h3>
+      <h3 className="mb-2 font-semibold">{title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed">
         {description}
       </p>

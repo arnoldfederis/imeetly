@@ -77,7 +77,7 @@ export function PasskeysCard({ passkeys }: Props) {
               </CardDescription>
             </div>
             <Button
-              className="shrink-0 self-start"
+              className="shrink-0 self-start max-sm:w-full"
               onClick={() => setDialogOpen(true)}
               size="sm"
             >
@@ -239,10 +239,14 @@ function AddPasskeyDialog({
             />
           </div>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>
+            <DialogClose render={<Button variant="secondary" />}>
               Cancel
             </DialogClose>
-            <Button disabled={saving || !name.trim()} type="submit">
+            <Button
+              className="max-sm:w-full"
+              disabled={saving || !name.trim()}
+              type="submit"
+            >
               {saving ? (
                 <LoaderCircleIcon className="animate-spin" />
               ) : (

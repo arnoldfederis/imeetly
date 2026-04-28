@@ -11,7 +11,10 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN ?? "", {
     const combined = Object.values(event?.properties ?? {})
       .filter((v) => typeof v === "string")
       .join(" ");
-    if (combined.includes("Object Not Found Matching Id")) {
+    if (
+      combined.includes("Object Not Found Matching Id") ||
+      combined.includes("Non-Error promise rejection captured")
+    ) {
       return null;
     }
     return event;

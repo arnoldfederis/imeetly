@@ -68,7 +68,9 @@ export function MeetingDetailsContainer(props: Props) {
   const meetingId = props.meetingId;
   const search = useSearchParams();
   const sourceLink = search.get("sourceLink")
-    ? `/${search.get("sourceLink")}`
+    ? search.get("sourceLink") === "/"
+      ? "/"
+      : `/${search.get("sourceLink")}`
     : "/meetings";
   const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
 

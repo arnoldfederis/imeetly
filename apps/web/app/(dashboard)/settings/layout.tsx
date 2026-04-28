@@ -13,7 +13,7 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full flex-col gap-4 md:flex-row">
+    <div className="flex w-full flex-col gap-4 lg:flex-row">
       <SettingsMobileNav />
       <SettingsSidebar />
       <div className="w-full">{children}</div>

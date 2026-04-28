@@ -6,14 +6,14 @@ export default function Loading() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       {/* Header */}
-      <div className="flex h-14 items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-col justify-between gap-1">
+      <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <div className="flex min-w-full flex-col justify-between gap-1 sm:min-w-0">
           <h1 className="font-semibold text-2xl tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Your meetings, summarized in seconds
           </p>
         </div>
-        <Button className="shrink-0" disabled>
+        <Button className="w-full shrink-0 sm:w-auto" disabled>
           <PlusIcon data-icon="inline-start" />
           <span className="hidden sm:inline">New Meeting</span>
           <span className="sm:hidden">New</span>
@@ -22,15 +22,15 @@ export default function Loading() {
 
       {/* Usage Overview */}
       <div className="rounded-xl border p-4">
-        <div className="mb-2.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+        <div className="mb-2.5 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+          <div className="flex justify-between gap-2 sm:items-center">
             <Skeleton className="h-5 w-48 rounded-lg" />
             <Skeleton className="h-5 w-10 rounded-full" />
           </div>
           <Skeleton className="h-4 w-10 rounded-lg" />
         </div>
         <Skeleton className="mb-3 h-1.5 w-full rounded-full" />
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
           <Skeleton className="h-4 w-44 rounded-lg" />
           <Skeleton className="h-6 w-24 rounded-md" />
         </div>

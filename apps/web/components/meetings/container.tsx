@@ -1,36 +1,15 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import {
-  FileAudioIcon,
-  FileTextIcon,
-  FileVideoIcon,
-  LoaderIcon,
-  PlusIcon,
-  SearchIcon,
-} from "lucide-react";
+import { LoaderIcon, PlusIcon, ProjectorIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FormattedDate } from "@/components/common/formatted-date";
+import { MeetingListRow } from "@/components/meetings/list-row";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupInput, } from "@/components/ui/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
@@ -114,7 +93,7 @@ export function MeetingsContainer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex h-14 items-center justify-between gap-3">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-col justify-between gap-1">
           <h1 className="font-semibold text-2xl tracking-tight">Meetings</h1>
           {isLoading ? (
@@ -131,8 +110,7 @@ export function MeetingsContainer() {
           render={<Link href="/meetings/new" />}
         >
           <PlusIcon data-icon="inline-start" />
-          <span className="hidden sm:inline">New Meeting</span>
-          <span className="sm:hidden">New</span>
+          <span>New Meeting</span>
         </Button>
       </div>
 
@@ -183,51 +161,55 @@ export function MeetingsContainer() {
       ) : meetings.length === 0 ? (
         <Empty className="border">
           <EmptyHeader>
+            <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
+              <ProjectorIcon className="size-5 text-muted-foreground" />
+            </div>
             <EmptyTitle>No meetings found</EmptyTitle>
             <EmptyDescription>
               {search || statusFilter !== "all"
                 ? "Try adjusting your search or filters."
-                : "Upload a recording or paste a transcript to get started."}
+                : "Upload a recording, paste a transcript, or connect Zoom to import recordings automatically. Google Meet and Teams support coming soon."}
             </EmptyDescription>
           </EmptyHeader>
           {!search && statusFilter === "all" && (
-            <Button
-              nativeButton={false}
-              render={<Link href="/meetings/new" />}
-              size="sm"
-              variant="outline"
-            >
-              <PlusIcon data-icon="inline-start" />
-              Create your first meeting
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button
+                nativeButton={false}
+                render={<Link href="/meetings/new" />}
+                size="sm"
+                variant="secondary"
+              >
+                <PlusIcon data-icon="inline-start" />
+                Create your first meeting
+              </Button>
+              <Button
+                nativeButton={false}
+                render={<Link href="/settings/integrations" />}
+                size="sm"
+                variant="secondary"
+              >
+                Connect your tools
+              </Button>
+            </div>
           )}
         </Empty>
       ) : (
         <div className="flex flex-col gap-2">
           {meetings.map((m) => (
-            <Link
-              className="group flex items-center gap-3 rounded-xl border p-4 transition-colors hover:opacity-80"
+            <MeetingListRow
               href={`/meetings/${m.id}`}
               key={m.id}
-            >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-muted/70">
-                {m.sourceType === "video" ? (
-                  <FileVideoIcon className="size-4 text-muted-foreground" />
-                ) : m.sourceType === "audio" ? (
-                  <FileAudioIcon className="size-4 text-muted-foreground" />
-                ) : (
-                  <FileTextIcon className="size-4 text-muted-foreground" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-sm">{m.title}</p>
-                <p className="text-muted-foreground text-xs">
+              provider={m.provider}
+              sourceType={m.sourceType}
+              subtitle={
+                <>
                   <FormattedDate date={m.meetingDate} />
                   {m.participantsText && ` · ${m.participantsText}`}
-                </p>
-              </div>
-              <MeetingStatusBadge status={m.status} />
-            </Link>
+                </>
+              }
+              title={m.title}
+              trailing={<MeetingStatusBadge status={m.status} />}
+            />
           ))}
 
           {/* Sentinel + loading indicator */}

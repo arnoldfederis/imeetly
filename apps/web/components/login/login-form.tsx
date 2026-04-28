@@ -50,16 +50,16 @@ export function LoginForm() {
     }),
   );
 
-  const isDisabled =
-    login.isPending || isPasskeySigningIn || !form.formState.isValid;
+  const isDisabled = login.isPending || isPasskeySigningIn;
 
   function handleSubmit(data: AuthModel["signInSimpleRequest"]) {
     posthog.capture("login_email_submitted", { email: data.email });
     login.mutate(data);
   }
 
-  async function handlePasskeyAuth() {
-    const email = form.getValues("email").trim();
+  async function handlePasskeyAuth(data: AuthModel["signInSimpleRequest"]) {
+    const email = data.email;
+
     posthog.capture("login_passkey_clicked");
     setLoginAtom((prevState) => ({
       ...prevState,
@@ -142,7 +142,8 @@ export function LoginForm() {
               ) : null}
 
               <Button
-                disabled={!form.formState.isValid || isDisabled}
+                disabled={isDisabled}
+                suppressHydrationWarning
                 type="submit"
               >
                 {login.isPending ? (
@@ -159,7 +160,8 @@ export function LoginForm() {
         <Field>
           <Button
             disabled={isDisabled}
-            onClick={handlePasskeyAuth}
+            onClick={form.handleSubmit(handlePasskeyAuth)}
+            suppressHydrationWarning
             type="button"
             variant="secondary"
           >

@@ -163,7 +163,7 @@ function DeleteAccountDialog({ email }: { email: string }) {
           <Button
             disabled={deleting}
             onClick={() => setOpen(false)}
-            variant="outline"
+            variant="secondary"
           >
             Cancel
           </Button>

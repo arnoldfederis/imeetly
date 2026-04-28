@@ -47,7 +47,7 @@ export function WelcomeEmail({
           <Text style={paragraph}>Hi {name},</Text>
           <Text style={paragraph}>
             Thanks for joining imeetly. Upload a recording or paste a transcript
-            - imeetly will generate a summary, decisions, blockers, follow-ups
+            - imeetly will generate a summary, decisions, blockers, follow-ups,
             and action items automatically.
           </Text>
 
@@ -56,6 +56,20 @@ export function WelcomeEmail({
               Create your first meeting
             </Button>
           </Section>
+
+          <Hr style={divider} />
+
+          <Text style={tipHeading}>Connect your meeting tools</Text>
+          <Text style={paragraph}>
+            Skip manual uploads entirely. Connect Google Meet, Zoom, or
+            Microsoft Teams and imeetly will pull in your recordings
+            automatically.
+          </Text>
+          <Text style={tipLink}>
+            <a href={`${appUrl}/settings/integrations`} style={link}>
+              Set up integrations →
+            </a>
+          </Text>
 
           <Hr style={divider} />
 
@@ -135,6 +149,23 @@ const button: React.CSSProperties = {
   fontWeight: 600,
   padding: "12px 24px",
   textDecoration: "none",
+};
+
+const tipHeading: React.CSSProperties = {
+  color: "#111827",
+  fontSize: "14px",
+  fontWeight: 600,
+  margin: "0 0 6px",
+};
+
+const tipLink: React.CSSProperties = {
+  margin: "8px 0 0",
+};
+
+const link: React.CSSProperties = {
+  color: "#111827",
+  fontWeight: 600,
+  textDecoration: "underline",
 };
 
 const footer: React.CSSProperties = {

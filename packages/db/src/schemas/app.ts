@@ -2,6 +2,7 @@ import {
   bigint,
   index,
   integer,
+  jsonb,
   numeric,
   pgSchema,
   text,
@@ -26,6 +27,7 @@ export const meetings = schema.table(
     title: text("title").notNull(),
     meetingDate: timestamp("meeting_date", { withTimezone: true }).notNull(),
     participantsText: text("participants_text"),
+    provider: text("provider"), // google | zoom | microsoft
     sourceType: text("source_type").notNull().default("text"), // text | audio | video
     transcriptText: text("transcript_text"),
     status: text("status").notNull().default("draft"), // draft | pending | processing | completed | failed
@@ -213,6 +215,147 @@ export const usageTracking = schema.table(
   ],
 );
 
+// --- integrations ---
+
+export const integrations = schema.table(
+  "integrations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(), // google | zoom | microsoft
+    providerAccountId: text("provider_account_id").notNull(),
+    accessTokenEncrypted: text("access_token_encrypted").notNull(),
+    refreshTokenEncrypted: text("refresh_token_encrypted"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    scopes: text("scopes").array().notNull().default([]),
+    status: text("status").notNull().default("active"), // active | disconnected | expired | error
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$defaultFn(() => ({})),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("integrations_user_id_idx").on(table.userId),
+    uniqueIndex("integrations_user_provider_account_idx").on(
+      table.userId,
+      table.provider,
+      table.providerAccountId,
+    ),
+  ],
+);
+
+// --- external_meetings ---
+
+export const externalMeetings = schema.table(
+  "external_meetings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    integrationId: text("integration_id")
+      .notNull()
+      .references(() => integrations.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(), // google | zoom | microsoft
+    externalMeetingId: text("external_meeting_id").notNull(),
+    title: text("title").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    joinUrl: text("join_url"),
+    recordingUrl: text("recording_url"),
+    status: text("status").notNull().default("imported"), // imported | recording_available | processing | completed | failed | no_recording
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$defaultFn(() => ({})),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("external_meetings_user_id_idx").on(table.userId),
+    index("external_meetings_integration_id_idx").on(table.integrationId),
+    uniqueIndex("external_meetings_provider_external_id_idx").on(
+      table.integrationId,
+      table.provider,
+      table.externalMeetingId,
+    ),
+  ],
+);
+
+// --- external_participants ---
+
+export const externalParticipants = schema.table(
+  "external_participants",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    externalMeetingId: text("external_meeting_id")
+      .notNull()
+      .references(() => externalMeetings.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    email: text("email"),
+    role: text("role"),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$defaultFn(() => ({})),
+  },
+  (table) => [
+    index("external_participants_meeting_id_idx").on(table.externalMeetingId),
+  ],
+);
+
+// --- integration_webhook_events ---
+
+export const integrationWebhookEvents = schema.table(
+  "integration_webhook_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    provider: text("provider").notNull(), // google | zoom | microsoft
+    eventType: text("event_type").notNull(),
+    externalEventId: text("external_event_id"),
+    payload: jsonb("payload")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$defaultFn(() => ({})),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    status: text("status").notNull().default("pending"), // pending | processed | failed
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("webhook_events_provider_idx").on(table.provider),
+    index("webhook_events_status_idx").on(table.status),
+    uniqueIndex("webhook_events_provider_external_id_idx").on(
+      table.provider,
+      table.externalEventId,
+    ),
+  ],
+);
+
 export const appSchema = {
   meetings,
   meetingFiles,
@@ -220,4 +363,8 @@ export const appSchema = {
   actionItems,
   subscriptions,
   usageTracking,
+  integrations,
+  externalMeetings,
+  externalParticipants,
+  integrationWebhookEvents,
 };

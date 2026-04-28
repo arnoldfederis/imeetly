@@ -1,5 +1,8 @@
 import {
   actionItems,
+  externalMeetings,
+  externalParticipants,
+  integrations,
   meetingFiles,
   meetingSummaries,
   meetings,
@@ -61,6 +64,42 @@ export const usageTrackingRelations = relations(usageTracking, ({ one }) => ({
   }),
 }));
 
+export const integrationRelations = relations(
+  integrations,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [integrations.userId],
+      references: [users.id],
+    }),
+    externalMeetings: many(externalMeetings),
+  }),
+);
+
+export const externalMeetingRelations = relations(
+  externalMeetings,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [externalMeetings.userId],
+      references: [users.id],
+    }),
+    integration: one(integrations, {
+      fields: [externalMeetings.integrationId],
+      references: [integrations.id],
+    }),
+    participants: many(externalParticipants),
+  }),
+);
+
+export const externalParticipantRelations = relations(
+  externalParticipants,
+  ({ one }) => ({
+    externalMeeting: one(externalMeetings, {
+      fields: [externalParticipants.externalMeetingId],
+      references: [externalMeetings.id],
+    }),
+  }),
+);
+
 export const appRelations = {
   meetingRelations,
   meetingFileRelations,
@@ -68,4 +107,7 @@ export const appRelations = {
   actionItemRelations,
   subscriptionRelations,
   usageTrackingRelations,
+  integrationRelations,
+  externalMeetingRelations,
+  externalParticipantRelations,
 };

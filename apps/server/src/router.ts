@@ -4,6 +4,7 @@ import { adminController } from "./modules/admin";
 import { authController } from "./modules/auth";
 import { billingController } from "./modules/billing";
 import { healthController } from "./modules/health";
+import { integrationController } from "./modules/integration";
 import { meetingController } from "./modules/meeting";
 import { userController } from "./modules/user";
 
@@ -14,6 +15,7 @@ export const appRouter = {
   auth: authController,
   billing: billingController,
   health: healthController,
+  integration: integrationController,
   meeting: meetingController,
   user: userController,
 };

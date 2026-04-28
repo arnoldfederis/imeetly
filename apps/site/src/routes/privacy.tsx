@@ -23,7 +23,7 @@ function PrivacyPage() {
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 18, 2026
+            Last updated: April 28, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -83,6 +83,15 @@ function PrivacyPage() {
                   payment provider (Polar) and are never stored on our servers.
                 </li>
                 <li>
+                  <strong>Integration data:</strong> if you connect a
+                  third-party meeting platform (Google Meet, Zoom, or Microsoft
+                  Teams), we store OAuth access and refresh tokens - encrypted
+                  at rest - to fetch your calendar events and cloud recordings
+                  on your behalf. We also store basic metadata about meetings
+                  retrieved via those integrations (title, date, participants,
+                  join URL).
+                </li>
+                <li>
                   <strong>Session and authentication data:</strong> session
                   tokens, device identifiers, and passkey credentials used to
                   keep you securely signed in.
@@ -104,8 +113,14 @@ function PrivacyPage() {
                   Authenticate your identity and keep your account secure.
                 </li>
                 <li>
-                  Process uploaded content and generate meeting notes,
-                  summaries, and action items using AI.
+                  Process uploaded content - and recordings retrieved via
+                  connected integrations - to generate meeting notes, summaries,
+                  and action items using AI.
+                </li>
+                <li>
+                  Access your calendar and cloud recordings through connected
+                  integrations, solely to import the meetings you choose to
+                  process.
                 </li>
                 <li>Manage your subscription and process billing.</li>
                 <li>
@@ -169,7 +184,43 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>5. Third-Party Service Providers</h2>
+              <h2>5. Third-Party Integration Connections</h2>
+              <p className="mt-3">
+                imeetly allows you to connect your Google Meet, Zoom, or
+                Microsoft Teams account via OAuth. When you do:
+              </p>
+              <ul className="mt-3">
+                <li>
+                  We store encrypted OAuth tokens (access token and refresh
+                  token) to authenticate API calls on your behalf.
+                </li>
+                <li>
+                  We access only the data scopes you explicitly authorize during
+                  the OAuth flow. We do not request broader permissions than
+                  necessary to import your meeting recordings.
+                </li>
+                <li>
+                  Meeting metadata (title, date, join URL) and recordings
+                  fetched via integrations are subject to the same data handling
+                  practices as content you upload directly.
+                </li>
+                <li>
+                  You can disconnect any integration at any time from{" "}
+                  <strong>Settings → Integrations</strong>. Disconnecting
+                  revokes our access and deletes the stored OAuth tokens. It
+                  does not delete meeting data already imported into your
+                  account.
+                </li>
+              </ul>
+              <p className="mt-3">
+                Recording downloads via integrations are processed
+                server-to-server and are subject to the same temporary storage
+                and deletion practices described in Section 4.
+              </p>
+            </section>
+
+            <section>
+              <h2>6. Third-Party Service Providers</h2>
               <p className="mt-3">
                 We work with the following third-party providers to operate the
                 service. Each receives only the data necessary to perform their
@@ -202,9 +253,20 @@ function PrivacyPage() {
                   for extraction when the primary provider is unavailable.
                 </li>
                 <li>
-                  <strong>Google</strong> - OAuth 2.0 sign-in. If you use
-                  &quot;Sign in with Google,&quot; Google shares basic profile
-                  information with us.
+                  <strong>Google</strong> - OAuth 2.0 sign-in and, if you
+                  connect the Google Meet integration, Google Calendar and
+                  Google Drive APIs to retrieve calendar events and meeting
+                  recordings. We request only the minimum scopes required.
+                </li>
+                <li>
+                  <strong>Zoom</strong> - if you connect the Zoom integration,
+                  we use Zoom's OAuth API to access your cloud recordings. We
+                  request only recording-related scopes.
+                </li>
+                <li>
+                  <strong>Microsoft</strong> - if you connect the Microsoft
+                  Teams integration, we use Microsoft Graph API to access your
+                  Outlook calendar and Teams meeting recordings via OAuth.
                 </li>
                 <li>
                   <strong>PostHog</strong> - product analytics. PostHog collects
@@ -230,7 +292,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>6. Cookies and Session Tokens</h2>
+              <h2>7. Cookies and Session Tokens</h2>
               <p className="mt-3">
                 We use session cookies and authentication tokens to keep you
                 signed in. These are essential for the service to function and
@@ -257,7 +319,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>7. Data Security</h2>
+              <h2>8. Data Security</h2>
               <p className="mt-3">
                 We apply reasonable technical and organizational safeguards to
                 protect your information, including encryption in transit
@@ -274,7 +336,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>8. Data Retention</h2>
+              <h2>9. Data Retention</h2>
               <p className="mt-3">
                 We retain your account data and generated meeting outputs for as
                 long as your account is active. Uploaded source files are
@@ -294,7 +356,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>9. International Data Transfers</h2>
+              <h2>10. International Data Transfers</h2>
               <p className="mt-3">
                 imeetly is operated from the Philippines, and our infrastructure
                 and third-party providers are primarily based in the United
@@ -311,7 +373,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>10. Your Rights and Choices</h2>
+              <h2>11. Your Rights and Choices</h2>
               <p className="mt-3">
                 You have the following rights regarding your personal data:
               </p>
@@ -345,7 +407,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>11. Children&apos;s Privacy</h2>
+              <h2>12. Children&apos;s Privacy</h2>
               <p className="mt-3">
                 imeetly is not intended for use by anyone under the age of 16.
                 We do not knowingly collect personal information from children.
@@ -355,7 +417,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>12. Changes to This Policy</h2>
+              <h2>13. Changes to This Policy</h2>
               <p className="mt-3">
                 We may update this Privacy Policy from time to time. When we do,
                 we will update the &quot;Last updated&quot; date at the top of
@@ -367,7 +429,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-              <h2>13. Contact</h2>
+              <h2>14. Contact</h2>
               <p className="mt-3">
                 If you have questions or concerns about this Privacy Policy or
                 our data practices, please contact us at:

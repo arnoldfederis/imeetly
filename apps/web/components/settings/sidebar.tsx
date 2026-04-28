@@ -2,13 +2,23 @@
 
 import {
   CreditCardIcon,
+  LinkIcon,
   LockIcon,
+  PanelLeftIcon,
   UserCircleIcon,
   UserRoundIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Sidebar,
   SidebarContent,
@@ -40,26 +50,62 @@ const settings = [
     icon: UserCircleIcon,
     url: "/settings/account",
   },
+  {
+    name: "Integrations",
+    icon: LinkIcon,
+    url: "/settings/integrations",
+  },
 ];
 
 export function SettingsMobileNav() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex gap-2 overflow-x-auto md:hidden">
-      {settings.map((setting) => (
-        <Button
-          className="shrink-0"
-          key={setting.name}
-          nativeButton={false}
-          render={<Link href={setting.url} />}
-          size="sm"
-          variant={pathname === setting.url ? "secondary" : "ghost"}
+    <div className="lg:hidden">
+      <Sheet onOpenChange={setOpen} open={open}>
+        <SheetTrigger
+          render={
+            <Button type="button" variant="secondary">
+              <PanelLeftIcon className="size-4" />
+              Settings
+            </Button>
+          }
+        />
+        <SheetContent
+          className="top-2! bottom-2! left-2! h-[calc(100dvh-1rem)]! w-[calc(var(--sidebar-width)-0.5rem)]! gap-0 overflow-hidden rounded-2xl! bg-sidebar p-0 text-sidebar-foreground shadow-sm ring-1 ring-sidebar-border [&>button]:hidden"
+          side="left"
+          style={
+            {
+              "--sidebar-width": "18rem",
+            } as React.CSSProperties
+          }
         >
-          <setting.icon className="size-4" />
-          {setting.name}
-        </Button>
-      ))}
+          <SheetHeader className="border-b p-4">
+            <SheetTitle>Settings</SheetTitle>
+          </SheetHeader>
+          <SidebarContent>
+            <SidebarGroup className="pt-0">
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {settings.map((setting) => (
+                    <SidebarMenuItem key={setting.name}>
+                      <SidebarMenuButton
+                        isActive={pathname === setting.url}
+                        onClick={() => setOpen(false)}
+                        render={<Link href={setting.url} />}
+                      >
+                        <setting.icon />
+                        <span>{setting.name}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -68,7 +114,7 @@ export function SettingsSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar className="hidden bg-transparent md:block" collapsible="none">
+    <Sidebar className="hidden bg-transparent lg:block" collapsible="none">
       <SidebarContent>
         <SidebarGroup className="pt-0">
           <SidebarGroupContent>

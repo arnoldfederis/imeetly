@@ -72,8 +72,9 @@ export function ProfileForm({ user }: Props) {
             </p>
           </div>
           <Separator />
-          <div className="flex justify-end">
+          <div className="flex justify-end max-sm:w-full">
             <Button
+              className="max-sm:w-full"
               disabled={saving || name.trim() === user.name}
               type="submit"
             >

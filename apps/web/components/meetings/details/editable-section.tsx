@@ -129,7 +129,7 @@ export function EditableSection({
                   setValue(content ?? "");
                 }}
                 size="sm"
-                variant="ghost"
+                variant="secondary"
               >
                 Cancel
               </Button>

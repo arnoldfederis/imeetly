@@ -1,9 +1,10 @@
 import {
   BrainCircuitIcon,
   CalendarCheckIcon,
-  ClipboardListIcon,
   GlobeIcon,
   HistoryIcon,
+  LinkIcon,
+  ListChecksIcon,
   ShieldAlertIcon,
   UploadCloudIcon,
   UsersIcon,
@@ -18,7 +19,7 @@ const features = [
       "Get a concise, accurate summary of every meeting. No fluff - just the key points your team needs.",
   },
   {
-    icon: ClipboardListIcon,
+    icon: ListChecksIcon,
     title: "Action items",
     description:
       "Automatically extracted action items with owners so nothing falls through the cracks.",
@@ -52,6 +53,12 @@ const features = [
     title: "Multi-language support",
     description:
       "Upload recordings in 19 languages including English, Spanish, French, Japanese, and more. Select your audio language for the most accurate transcript.",
+  },
+  {
+    icon: LinkIcon,
+    title: "Meeting integrations",
+    description:
+      "Connect Zoom to import recordings automatically - no uploads needed. Google Meet and Teams support coming soon.",
   },
   {
     icon: UsersIcon,

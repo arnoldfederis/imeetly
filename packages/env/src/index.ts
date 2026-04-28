@@ -80,6 +80,12 @@ export const env = createEnv({
     SMTP_PORT: optional(string()),
     SMTP_USER: optional(string()),
     SMTP_PASS: optional(string()),
+    INTEGRATION_ENCRYPTION_KEY: optional(string()),
+    ZOOM_CLIENT_ID: optional(string()),
+    ZOOM_CLIENT_SECRET: optional(string()),
+    ZOOM_WEBHOOK_SECRET_TOKEN: optional(string()),
+    MICROSOFT_CLIENT_ID: optional(string()),
+    MICROSOFT_CLIENT_SECRET: optional(string()),
   },
   client: {
     NEXT_PUBLIC_APP_BASE_URL: string().check(

@@ -58,6 +58,7 @@
     "./modules/auth/*": "./src/modules/auth/*",
     "./modules/billing/*": "./src/modules/billing/*",
     "./modules/health/*": "./src/modules/health/*",
+    "./modules/integration/*": "./src/modules/integration/*",
     "./modules/meeting/*": "./src/modules/meeting/*",
     "./modules/user/*": "./src/modules/user/*",
     "./lib/temporal": "./src/lib/temporal.ts",

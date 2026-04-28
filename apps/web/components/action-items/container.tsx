@@ -1,16 +1,12 @@
 "use client";
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient, } from "@tanstack/react-query";
 import {
   CheckIcon,
   CheckSquareIcon,
   ChevronDownIcon,
   ClockIcon,
-  FileTextIcon,
+  ListChecksIcon,
   LoaderIcon,
   SearchIcon,
   TrashIcon,
@@ -20,29 +16,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupInput, } from "@/components/ui/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
@@ -213,7 +190,7 @@ export function ActionItemsContainer() {
                 <div className="overflow-hidden rounded-xl border">
                   <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:opacity-80">
                     <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <FileTextIcon className="size-3.5 text-muted-foreground" />
+                      <ListChecksIcon className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="truncate font-medium text-sm">
