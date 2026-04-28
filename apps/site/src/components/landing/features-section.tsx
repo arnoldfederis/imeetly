@@ -58,7 +58,7 @@ const features = [
     icon: LinkIcon,
     title: "Meeting integrations",
     description:
-      "Connect Zoom to import recordings automatically - no uploads needed. Google Meet and Teams support coming soon.",
+      "Connect Zoom, Google Meet, or Microsoft Teams to import recordings automatically - no uploads needed.",
   },
   {
     icon: UsersIcon,

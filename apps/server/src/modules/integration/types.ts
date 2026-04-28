@@ -46,6 +46,7 @@ export interface ExternalMeeting {
 export interface ExternalRecording {
   externalMeetingId: string;
   downloadUrl: string;
+  downloadHeaders?: Record<string, string>;
   mimeType: string;
   sizeBytes: number | null;
   durationSeconds: number | null;

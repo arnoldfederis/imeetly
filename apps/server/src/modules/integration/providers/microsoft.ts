@@ -20,6 +20,7 @@ const MS_SCOPES = [
   "User.Read",
   "Calendars.Read",
   "OnlineMeetings.Read",
+  "OnlineMeetingRecording.Read.All",
 ].join(" ");
 
 export class MicrosoftIntegrationProvider
@@ -168,15 +169,58 @@ export class MicrosoftIntegrationProvider
   }
 
   async getRecording(
-    _accessToken: string,
-    _externalMeetingId: string,
+    accessToken: string,
+    externalMeetingId: string,
   ): Promise<ExternalRecording | null> {
-    // TODO: GET /me/onlineMeetings/{id}/recordings via Graph beta API.
-    // Requires Teams Premium or specific licensing, and OnlineMeetingRecording.Read.All scope.
-    console.log(
-      "[microsoft] Recording discovery via Graph API not yet implemented",
+    // Get the calendar event to find the joinUrl
+    const eventRes = await fetch(
+      `${MS_GRAPH_URL}/me/events/${encodeURIComponent(externalMeetingId)}?$select=onlineMeeting`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
     );
-    return null;
+    if (!eventRes.ok) return null;
+    const event = (await eventRes.json()) as {
+      onlineMeeting?: { joinUrl?: string };
+    };
+    const joinUrl = event.onlineMeeting?.joinUrl;
+    if (!joinUrl) return null;
+
+    // Resolve calendar event → online meeting ID
+    const meetingFilter = new URLSearchParams({
+      $filter: `joinWebUrl eq '${joinUrl}'`,
+      $select: "id",
+    });
+    const meetingRes = await fetch(
+      `${MS_GRAPH_URL}/me/onlineMeetings?${meetingFilter}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!meetingRes.ok) return null;
+    const meetingData = (await meetingRes.json()) as {
+      value?: Array<{ id: string }>;
+    };
+    const onlineMeetingId = meetingData.value?.[0]?.id;
+    if (!onlineMeetingId) return null;
+
+    // Fetch recordings via Graph beta
+    const recordingsRes = await fetch(
+      `https://graph.microsoft.com/beta/me/onlineMeetings/${encodeURIComponent(onlineMeetingId)}/recordings`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!recordingsRes.ok) return null;
+    const recordingsData = (await recordingsRes.json()) as {
+      value?: MsRecording[];
+    };
+    const recording = recordingsData.value?.[0];
+    if (!recording?.contentUrl) return null;
+
+    return {
+      externalMeetingId,
+      downloadUrl: recording.contentUrl,
+      downloadHeaders: { Authorization: `Bearer ${accessToken}` },
+      mimeType: "video/mp4",
+      sizeBytes: null,
+      durationSeconds: null,
+      expiresAt: null,
+    };
   }
 
   async listParticipants(
@@ -237,6 +281,11 @@ interface MsTokenResponse {
   refresh_token?: string;
   expires_in: number;
   scope: string;
+}
+
+interface MsRecording {
+  id: string;
+  contentUrl?: string;
 }
 
 interface MsCalendarEvent {

@@ -183,7 +183,7 @@ export function MeetingsContainer() {
             <EmptyDescription>
               {search || statusFilter !== "all"
                 ? "Try adjusting your search or filters."
-                : "Upload a recording, paste a transcript, or connect Zoom to import recordings automatically. Google Meet and Teams support coming soon."}
+                : "Upload a recording, paste a transcript, or connect Zoom, Google Meet, or Microsoft Teams to import recordings automatically."}
             </EmptyDescription>
           </EmptyHeader>
           {!search && statusFilter === "all" && (

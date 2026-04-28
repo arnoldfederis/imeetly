@@ -154,16 +154,53 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
   }
 
   async getRecording(
-    _accessToken: string,
+    accessToken: string,
     externalMeetingId: string,
   ): Promise<ExternalRecording | null> {
-    // TODO: Search Google Drive for Meet recordings by meeting title.
-    // Recordings land in Drive under "Meet Recordings/" folder.
-    // Requires: GET /drive/v3/files?q=name contains 'Meet Recording' and parents in '{folderId}'
-    console.log(
-      `[google] Recording discovery not yet implemented for ${externalMeetingId}`,
+    const meeting = await this.getMeeting(accessToken, externalMeetingId);
+    if (!meeting) return null;
+
+    const startTime =
+      meeting.startsAt ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const searchStart = new Date(startTime.getTime() - 30 * 60 * 1000);
+    const searchEnd = new Date(startTime.getTime() + 4 * 60 * 60 * 1000);
+
+    // Meet recordings land in Drive as mp4 files named "Meet Recording ..."
+    const query = [
+      "mimeType = 'video/mp4'",
+      `createdTime > '${searchStart.toISOString()}'`,
+      `createdTime < '${searchEnd.toISOString()}'`,
+      "name contains 'Meet Recording'",
+    ].join(" and ");
+
+    const params = new URLSearchParams({
+      q: query,
+      fields: "files(id,name,size,videoMediaMetadata)",
+      orderBy: "createdTime desc",
+      pageSize: "5",
+    });
+
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files?${params}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
     );
-    return null;
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as { files?: DriveFile[] };
+    const file = data.files?.[0];
+    if (!file) return null;
+
+    return {
+      externalMeetingId,
+      downloadUrl: `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+      downloadHeaders: { Authorization: `Bearer ${accessToken}` },
+      mimeType: "video/mp4",
+      sizeBytes: file.size ? Number(file.size) : null,
+      durationSeconds: file.videoMediaMetadata?.durationMillis
+        ? Math.round(Number(file.videoMediaMetadata.durationMillis) / 1000)
+        : null,
+      expiresAt: null,
+    };
   }
 
   async listParticipants(
@@ -252,6 +289,13 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
       },
     };
   }
+}
+
+interface DriveFile {
+  id: string;
+  name: string;
+  size?: string;
+  videoMediaMetadata?: { durationMillis?: string };
 }
 
 interface GoogleTokenResponse {

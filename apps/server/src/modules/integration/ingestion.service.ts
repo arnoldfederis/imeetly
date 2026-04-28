@@ -52,7 +52,9 @@ export class MeetingRecordingIngestionService {
       .where(eq(externalMeetings.id, externalMeetingDbId));
 
     // Download recording server-to-server
-    const downloadRes = await fetch(recording.downloadUrl);
+    const downloadRes = await fetch(recording.downloadUrl, {
+      headers: recording.downloadHeaders,
+    });
     if (!downloadRes.ok) {
       throw new Error(`Failed to download recording: ${downloadRes.status}`);
     }

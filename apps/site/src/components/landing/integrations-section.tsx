@@ -16,20 +16,20 @@ const integrations = [
   },
   {
     name: "Google Meet",
-    description: "Connect your Google account. Recording import coming soon.",
+    description: "Sync Google Meet recordings automatically from your Drive.",
     icon: <GoogleMeetIcon className="size-6" />,
     accent: "group-hover:border-green-500/40",
     dot: "bg-green-500",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     name: "Microsoft Teams",
     description:
-      "Connect your Microsoft account. Recording import coming soon.",
+      "Pull Teams meeting recordings directly via Microsoft Graph.",
     icon: <MicrosoftTeamsIcon className="size-6" />,
     accent: "group-hover:border-indigo-500/40",
     dot: "bg-indigo-500",
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
 
@@ -45,8 +45,9 @@ export function IntegrationsSection() {
             Works with your favorite meeting tools
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect Zoom and let imeetly automatically pull in recordings. No
-            copy-pasting, no manual uploads. More platforms coming soon.
+            Connect Zoom, Google Meet, or Microsoft Teams and let imeetly
+            automatically pull in recordings. No copy-pasting, no manual
+            uploads.
           </p>
         </FadeIn>
 
