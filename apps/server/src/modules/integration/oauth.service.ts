@@ -8,6 +8,10 @@ import type { IntegrationProviderType, OAuthTokens } from "./types";
 
 export class OAuthService {
   static getRedirectUri(provider: IntegrationProviderType): string {
+    if (provider === "zoom") {
+      return `${env.APP_BASE_URL}/integrations/${provider}/callback`;
+    }
+
     return `${env.SERVER_URL}/integrations/${provider}/callback`;
   }
 
