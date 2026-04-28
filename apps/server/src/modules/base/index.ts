@@ -99,7 +99,7 @@ export const baseController = new Elysia()
           set.status = 401;
           return { error: result.message };
         }
-        return { ok: true };
+        return result.responseBody ?? { ok: true };
       } catch (err) {
         console.error(
           `[integration] Webhook handler error (${provider}):`,

@@ -1,8 +1,7 @@
+import { createHmac } from "node:crypto";
+import { env } from "@repo/env";
 import { db } from "@repo/db";
-import {
-  externalMeetings,
-  integrationWebhookEvents,
-} from "@repo/db/schemas/app";
+import { externalMeetings, integrationWebhookEvents, } from "@repo/db/schemas/app";
 import { and, eq } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { getProvider } from "./resolver";
@@ -12,11 +11,47 @@ export async function handleWebhook(
   provider: IntegrationProviderType,
   rawBody: string,
   headers: Record<string, string>,
-): Promise<{ ok: boolean; message?: string }> {
+): Promise<{ ok: boolean; message?: string; responseBody?: unknown }> {
   const providerImpl = getProvider(provider);
 
   if (!providerImpl.verifyWebhook(rawBody, headers)) {
     return { ok: false, message: "Invalid webhook signature" };
+  }
+
+  let parsedBody: Record<string, unknown>;
+  try {
+    parsedBody = JSON.parse(rawBody) as Record<string, unknown>;
+  } catch {
+    return { ok: false, message: "Failed to parse webhook payload" };
+  }
+
+  if (provider === "zoom" && parsedBody.event === "endpoint.url_validation") {
+    const secret = env.ZOOM_WEBHOOK_SECRET_TOKEN;
+    if (!secret) {
+      return { ok: false, message: "Zoom webhook secret is not configured" };
+    }
+
+    const plainToken =
+      typeof parsedBody.payload === "object" &&
+      parsedBody.payload !== null &&
+      typeof (parsedBody.payload as Record<string, unknown>).plainToken ===
+        "string"
+        ? ((parsedBody.payload as Record<string, unknown>).plainToken as string)
+        : null;
+
+    if (!plainToken) {
+      return { ok: false, message: "Missing Zoom plainToken" };
+    }
+
+    return {
+      ok: true,
+      responseBody: {
+        plainToken,
+        encryptedToken: createHmac("sha256", secret)
+          .update(plainToken)
+          .digest("hex"),
+      },
+    };
   }
 
   let parsed: {
@@ -25,9 +60,9 @@ export async function handleWebhook(
     data: Record<string, unknown>;
   };
   try {
-    parsed = await providerImpl.handleWebhook(JSON.parse(rawBody), headers);
+    parsed = await providerImpl.handleWebhook(parsedBody, headers);
   } catch {
-    return { ok: false, message: "Failed to parse webhook payload" };
+    return { ok: false, message: "Failed to handle webhook payload" };
   }
 
   // Idempotency check
@@ -43,7 +78,9 @@ export async function handleWebhook(
       )
       .limit(1);
 
-    if (existing) return { ok: true, message: "Duplicate event ignored" };
+    if (existing) {
+      return { ok: true, message: "Duplicate event ignored" };
+    }
   }
 
   const [event] = await db
@@ -57,7 +94,9 @@ export async function handleWebhook(
     })
     .returning({ id: integrationWebhookEvents.id });
 
-  if (!event) return { ok: false, message: "Failed to store event" };
+  if (!event) {
+    return { ok: false, message: "Failed to store event" };
+  }
 
   try {
     await processEvent(provider, parsed.eventType, parsed.data);
@@ -120,8 +159,9 @@ async function handleZoomRecordingCompleted(
     return;
   }
 
-  if (extMeeting.status === "processing" || extMeeting.status === "completed")
+  if (extMeeting.status === "processing" || extMeeting.status === "completed") {
     return;
+  }
 
   await MeetingRecordingIngestionService.ingest({
     userId: extMeeting.userId,
