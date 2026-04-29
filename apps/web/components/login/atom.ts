@@ -6,4 +6,6 @@ export const loginAtom = atom({
   isSocialSigningIn: false,
   isVerifying: false,
   isVerify: false,
+  isPasskeyAdding: false,
+  isSigningIn: false,
 });

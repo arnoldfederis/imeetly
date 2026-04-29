@@ -10,9 +10,11 @@ export const authModel = {
       .refine((email) => MailChecker.isValid(email), {
         error: "Invalid email",
       }),
+    signInMethod: z.string().optional(),
   }),
   signInSimpleResponse: z.object({
     success: z.boolean(),
+    signInMethod: z.string().optional(),
   }),
   verifyEmailRequest: z.object({
     email: z.email().min(1, "Email is required."),

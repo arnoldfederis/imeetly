@@ -18,7 +18,7 @@ type ResolvePasskeyUser = {
 
 export abstract class AuthService {
   static async signInSimple(
-    { email }: AuthModel["signInSimpleRequest"],
+    { email, signInMethod }: AuthModel["signInSimpleRequest"],
     headers: Headers,
   ): Promise<AuthModel["signInSimpleResponse"]> {
     const { exists } = await UserService.checkIfEmailExists({ email });
@@ -51,7 +51,7 @@ export abstract class AuthService {
       });
     }
 
-    return { success: true };
+    return { success: true, signInMethod };
   }
 
   static async sendMagicLink({ email, token }: SendMagicLink[0]) {

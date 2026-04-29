@@ -12,19 +12,13 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator, } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { client } from "@/lib/orpc";
 
 export function LoginForm() {
   const router = useRouter();
-  const { isPasskeySigningIn } = useAtomValue(loginAtom);
+  const { isPasskeySigningIn, isSigningIn } = useAtomValue(loginAtom);
   const setLoginAtom = useSetAtom(loginAtom);
 
   const form = useForm({
@@ -37,11 +31,12 @@ export function LoginForm() {
 
   const login = useMutation(
     client.auth.signInSimple.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (res) => {
         setLoginAtom((prevState) => ({
           ...prevState,
           email: form.getValues("email"),
           isVerify: true,
+          isPasskeyAdding: res.signInMethod === "passkey",
         }));
 
         form.reset();
@@ -50,10 +45,15 @@ export function LoginForm() {
     }),
   );
 
-  const isDisabled = login.isPending || isPasskeySigningIn;
+  const isDisabled = login.isPending || isPasskeySigningIn || isSigningIn;
 
   function handleSubmit(data: AuthModel["signInSimpleRequest"]) {
     posthog.capture("login_email_submitted", { email: data.email });
+    setLoginAtom((prevState) => ({
+      ...prevState,
+      isSigningIn: true,
+    }));
+
     login.mutate(data);
   }
 
@@ -71,25 +71,7 @@ export function LoginForm() {
       const { exists } = await server.auth.checkIfPasskeyExists({ email });
 
       if (!exists) {
-        const addPasskey = await authClient.passkey.addPasskey({
-          name: email,
-          context: email,
-        });
-
-        if (addPasskey.error) {
-          toast.error(`Failed to add passkey. ${addPasskey.error.message}`);
-          return;
-        }
-
-        // login after adding passkey
-        const { error } = await authClient.signIn.passkey();
-
-        if (error) {
-          toast.error(`Failed to login using passkey. ${error.message}`);
-          return;
-        }
-
-        router.replace("/");
+        login.mutate({ email, signInMethod: "passkey" });
       } else {
         const { error } = await authClient.signIn.passkey();
 
@@ -102,11 +84,6 @@ export function LoginForm() {
       }
     } catch {
       toast.error("Failed to login using passkey.");
-    } finally {
-      setLoginAtom((prevState) => ({
-        ...prevState,
-        isPasskeySigningIn: false,
-      }));
     }
   }
 
@@ -146,7 +123,7 @@ export function LoginForm() {
                 suppressHydrationWarning
                 type="submit"
               >
-                {login.isPending ? (
+                {isSigningIn ? (
                   <LoaderCircleIcon className="animate-spin" />
                 ) : (
                   "Continue"

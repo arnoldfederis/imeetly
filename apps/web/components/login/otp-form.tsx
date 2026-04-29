@@ -13,15 +13,10 @@ import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, } from "@/components/ui/input-otp";
 
 export function OtpForm() {
-  const { email, isVerifying } = useAtomValue(loginAtom);
+  const { email, isVerifying, isPasskeyAdding } = useAtomValue(loginAtom);
   const setLoginAtom = useSetAtom(loginAtom);
 
   useEffect(() => {
@@ -79,7 +74,31 @@ export function OtpForm() {
     posthog.identify(email, { email });
     posthog.capture("login_otp_verified", { email, is_new_user: isNewUser });
 
-    window.location.href = isNewUser ? "/onboarding" : "/";
+    const href = isNewUser ? "/onboarding" : "/";
+
+    if (isPasskeyAdding) {
+      const addPasskey = await authClient.passkey.addPasskey({
+        name: email,
+        context: email,
+      });
+
+      if (addPasskey.error) {
+        toast.error(`Failed to add passkey. ${addPasskey.error.message}`);
+        setLoginAtom((prevState) => ({
+          ...prevState,
+          isVerifying: false,
+          isVerify: false,
+          isPasskeySigningIn: false,
+        }));
+
+        await authClient.signOut();
+        return;
+      }
+
+      window.location.href = href;
+    } else {
+      window.location.href = href;
+    }
   }
 
   return (
