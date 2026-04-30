@@ -60,50 +60,9 @@ jobs:
           TEMPORAL_ADDRESS: localhost:7233
           TEMPORAL_NAMESPACE: default
 
-  changes:
-    name: Detect Changed Apps
-    needs: ci
-    runs-on: ubuntu-latest
-    outputs:
-      site: ${{ steps.filter.outputs.site }}
-      web: ${{ steps.filter.outputs.web }}
-      server: ${{ steps.filter.outputs.server }}
-      worker: ${{ steps.filter.outputs.worker }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            site:
-              - 'apps/site/**'
-              - 'packages/**'
-              - 'package.json'
-              - 'bun.lock'
-              - 'turbo.json'
-            web:
-              - 'apps/web/**'
-              - 'packages/**'
-              - 'package.json'
-              - 'bun.lock'
-              - 'turbo.json'
-            server:
-              - 'apps/server/**'
-              - 'packages/**'
-              - 'package.json'
-              - 'bun.lock'
-              - 'turbo.json'
-            worker:
-              - 'apps/worker/**'
-              - 'packages/**'
-              - 'package.json'
-              - 'bun.lock'
-              - 'turbo.json'
-
   build-site:
     name: Build site
-    needs: [ci, changes]
-    if: needs.changes.outputs.site == 'true' || github.event_name == 'workflow_dispatch'
+    needs: ci
     runs-on: ubuntu-latest
     environment: staging
     permissions:
@@ -142,8 +101,7 @@ jobs:
 
   build-web:
     name: Build web
-    needs: [ci, changes]
-    if: needs.changes.outputs.web == 'true' || github.event_name == 'workflow_dispatch'
+    needs: ci
     runs-on: ubuntu-latest
     environment: staging
     permissions:
@@ -185,8 +143,7 @@ jobs:
 
   build-server:
     name: Build server
-    needs: [ci, changes]
-    if: needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
+    needs: ci
     runs-on: ubuntu-latest
     environment: staging
     permissions:
@@ -223,8 +180,7 @@ jobs:
 
   build-worker:
     name: Build worker
-    needs: [ci, changes]
-    if: needs.changes.outputs.worker == 'true' || github.event_name == 'workflow_dispatch'
+    needs: ci
     runs-on: ubuntu-latest
     environment: staging
     permissions:

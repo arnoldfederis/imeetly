@@ -268,7 +268,7 @@ export class ZoomIntegrationProvider implements IMeetingIntegrationProvider {
           : null,
       joinUrl: m.share_url ?? null,
       recordingUrl: hasRecording ? (m.share_url ?? null) : null,
-      status: hasRecording ? "recording_available" : "imported",
+      status: hasRecording ? "recording_available" : "no_recording",
       metadata: { meetingId: m.id, uuid: m.uuid, duration: m.duration },
     };
   }
