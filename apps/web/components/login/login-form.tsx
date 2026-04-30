@@ -12,7 +12,13 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator, } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { client } from "@/lib/orpc";
 

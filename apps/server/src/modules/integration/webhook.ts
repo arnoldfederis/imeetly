@@ -1,7 +1,10 @@
 import { createHmac } from "node:crypto";
-import { env } from "@repo/env";
 import { db } from "@repo/db";
-import { externalMeetings, integrationWebhookEvents, } from "@repo/db/schemas/app";
+import {
+  externalMeetings,
+  integrationWebhookEvents,
+} from "@repo/db/schemas/app";
+import { env } from "@repo/env";
 import { and, eq } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { getProvider } from "./resolver";

@@ -24,8 +24,7 @@ const integrations = [
   },
   {
     name: "Microsoft Teams",
-    description:
-      "Pull Teams meeting recordings directly via Microsoft Graph.",
+    description: "Pull Teams meeting recordings directly via Microsoft Graph.",
     icon: <MicrosoftTeamsIcon className="size-6" />,
     accent: "group-hover:border-indigo-500/40",
     dot: "bg-indigo-500",
