@@ -13,7 +13,12 @@ import { toast } from "sonner";
 import { loginAtom } from "@/components/login/atom";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export function OtpForm() {
   const { email, isVerifying, isPasskeyAdding } = useAtomValue(loginAtom);
@@ -168,6 +173,8 @@ export function OtpForm() {
                 ...prevState,
                 email: "",
                 isVerify: false,
+                isPasskeySigningIn: false,
+                isPasskeyAdding: false,
               }))
             }
             type="button"

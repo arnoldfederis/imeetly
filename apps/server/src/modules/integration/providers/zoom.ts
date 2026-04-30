@@ -126,7 +126,30 @@ export class ZoomIntegrationProvider implements IMeetingIntegrationProvider {
     });
 
     if (!res.ok) {
-      throw new Error(`Zoom API error: ${res.status}`);
+      const errorText = await res.text();
+      let message = `Zoom recordings API error: ${res.status}`;
+
+      try {
+        const error = JSON.parse(errorText) as {
+          code?: number;
+          message?: string;
+        };
+
+        if (error.message) {
+          message = `Zoom recordings API error: ${res.status} (${error.message})`;
+        }
+
+        if (error.message === "No permission.") {
+          message =
+            "Zoom recordings API error: 400 (No permission). The connected Zoom user must have cloud recording access, and the OAuth app must include recording read scopes.";
+        }
+      } catch {
+        if (errorText) {
+          message = `${message} (${errorText})`;
+        }
+      }
+
+      throw new Error(message);
     }
 
     const data = (await res.json()) as ZoomRecordingList;

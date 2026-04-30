@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@repo/server/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRightIcon,
@@ -11,28 +12,26 @@ import {
   UploadIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingProviderIcon } from "@/components/meetings/provider-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
-export function DashboardContainer() {
-  const router = useRouter();
+interface Props {
+  data: RouterOutputs["meeting"]["dashboard"];
+}
+
+export function DashboardContainer(props: Props) {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { data, isLoading: isDashboardLoading } = useQuery(
     client.meeting.dashboard.queryOptions({
       context: { cache: true },
+      initialData: props.data,
     }),
   );
   const { data: actionItemsData, isLoading: isActionItemsLoading } = useQuery(
@@ -47,18 +46,7 @@ export function DashboardContainer() {
   const isLoading =
     isDashboardLoading || isActionItemsLoading || isPlanLoading || !data;
 
-  const isNewUser =
-    (data?.stats?.meetingsThisMonth ?? 0) === 0 &&
-    (data?.stats?.completedMeetings ?? 0) === 0 &&
-    (data?.recent?.length ?? 0) === 0;
-
-  useEffect(() => {
-    if (!isLoading && isNewUser) {
-      router.replace("/onboarding");
-    }
-  }, [isLoading, isNewUser, router]);
-
-  if (isLoading || isNewUser) {
+  if (isLoading) {
     return <DashboardSkeleton />;
   }
 
