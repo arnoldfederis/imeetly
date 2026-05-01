@@ -15,13 +15,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
-import { detectMeetingProvider, getMeetingProviderMeta, } from "@/components/meetings/provider-icon";
+import {
+  detectMeetingProvider,
+  getMeetingProviderMeta,
+} from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";

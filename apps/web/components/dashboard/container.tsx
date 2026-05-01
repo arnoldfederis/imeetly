@@ -18,7 +18,12 @@ import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingProviderIcon } from "@/components/meetings/provider-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
