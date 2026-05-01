@@ -15,22 +15,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
-import {
-  detectMeetingProvider,
-  getMeetingProviderMeta,
-} from "@/components/meetings/provider-icon";
+import { detectMeetingProvider, getMeetingProviderMeta, } from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
 type Integration = {
@@ -215,7 +208,6 @@ export function IntegrationsContainer({
                       className="w-full xl:w-auto"
                       disabled={disconnectMutation.isPending}
                       onClick={() => {
-                        setSelectedIntegrationId(connected.id);
                         disconnectMutation.mutate({
                           integrationId: connected.id,
                         });
@@ -252,14 +244,23 @@ export function IntegrationsContainer({
       {selectedIntegrationId && (
         <>
           <Separator />
-          <ExternalMeetingsList integrationId={selectedIntegrationId} />
+          <ExternalMeetingsList
+            integrationId={selectedIntegrationId}
+            isSyncing={syncMutation.isPending}
+          />
         </>
       )}
     </div>
   );
 }
 
-function ExternalMeetingsList({ integrationId }: { integrationId: string }) {
+function ExternalMeetingsList({
+  integrationId,
+  isSyncing,
+}: {
+  integrationId: string;
+  isSyncing: boolean;
+}) {
   const importMutation = useMutation(
     client.integration.importRecording.mutationOptions({
       onSuccess: ({ meetingId }) => {
@@ -274,10 +275,31 @@ function ExternalMeetingsList({ integrationId }: { integrationId: string }) {
     }),
   );
 
-  if (isLoading) {
+  if (isLoading || isSyncing) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <LoaderIcon className="size-5 animate-spin text-muted-foreground" />
+      <div className="flex flex-col gap-3">
+        <Skeleton className="-mt-3 h-7 w-48 rounded-lg" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            className="flex items-center gap-3 rounded-xl border p-4"
+            key={i}
+          >
+            <div className="flex w-full flex-col gap-3">
+              <div className="flex w-full min-w-0 items-center justify-between gap-3">
+                <Skeleton className="size-9 shrink-0 rounded-lg" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <Skeleton className="h-5 w-2/5 rounded-md" />
+                  <Skeleton className="h-4 w-1/4 rounded-md" />
+                </div>
+                <Skeleton className="h-5 w-20 shrink-0 rounded-full" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-16 rounded-lg" />
+                <Skeleton className="h-8 w-24 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

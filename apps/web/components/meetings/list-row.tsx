@@ -44,7 +44,9 @@ function MeetingListRowContent({
             />
           </div>
 
-          <div className="min-w-0 flex-1">
+          <div
+            className={cn("min-w-0 flex-1", actionButtons ? "space-y-1.5" : "")}
+          >
             <p className="truncate font-medium text-sm">{title}</p>
             <p className="text-muted-foreground text-xs">{subtitle}</p>
           </div>
