@@ -1,4 +1,11 @@
-import { boolean, index, integer, pgSchema, text, timestamp, } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgSchema,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 const schema = pgSchema("auth");
 

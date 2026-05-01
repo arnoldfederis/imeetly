@@ -45,8 +45,10 @@ function resolveAppBaseUrl() {
 }
 
 function resolvePasskeyRpId() {
-  if (env.DOMAIN_NAME) {
-    return env.DOMAIN_NAME.replace(/^\./, "");
+  const normalizedDomainName = resolveDomainName();
+
+  if (normalizedDomainName) {
+    return normalizedDomainName;
   }
 
   try {
@@ -57,9 +59,13 @@ function resolvePasskeyRpId() {
   }
 }
 
+function resolveDomainName() {
+  return env.DOMAIN_NAME?.replace(/^\./, "") || undefined;
+}
+
 const appBaseUrl = resolveAppBaseUrl();
 const passkeyRpId = resolvePasskeyRpId();
-const domainName = env.DOMAIN_NAME.replace(".", "");
+const domainName = resolveDomainName();
 
 export const authPlugins = [
   admin(),
