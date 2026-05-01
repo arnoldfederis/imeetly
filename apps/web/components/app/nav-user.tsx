@@ -26,6 +26,8 @@ interface Props {
     emailVerified: boolean;
     name: string;
     image?: string | null | undefined;
+  } & {
+    isAnonymous?: boolean;
   };
 }
 
@@ -36,6 +38,10 @@ export function NavUser({ user }: Props) {
   async function handleLogout(e: MouseEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
+
+    if (user.isAnonymous) {
+      await authClient.deleteAnonymousUser();
+    }
 
     await authClient.signOut({
       fetchOptions: {

@@ -15,6 +15,7 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 import { nextCookies } from "better-auth/next-js";
 import {
   admin,
+  anonymous,
   bearer,
   emailOTP,
   magicLink,
@@ -58,9 +59,13 @@ function resolvePasskeyRpId() {
 
 const appBaseUrl = resolveAppBaseUrl();
 const passkeyRpId = resolvePasskeyRpId();
+const domainName = env.DOMAIN_NAME.replace(".", "");
 
 export const authPlugins = [
   admin(),
+  anonymous({
+    emailDomainName: domainName,
+  }),
   bearer(),
   ...(env.APP_ENV === "development" ? [] : [emailHarmony()]),
   emailOTP({

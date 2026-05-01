@@ -136,18 +136,16 @@ export function IntegrationsContainer({
 
   const syncMutation = useMutation(
     client.integration.syncMeetings.mutationOptions({
-      onSuccess: async () => {
-        if (selectedIntegrationId) {
-          await queryClient.invalidateQueries(
-            client.integration.listExternalMeetings.queryOptions({
-              input: {
-                integrationId: selectedIntegrationId,
-                limit: 20,
-                offset: 0,
-              },
-            }),
-          );
-        }
+      onSuccess: async (_data, variables) => {
+        await queryClient.invalidateQueries(
+          client.integration.listExternalMeetings.queryOptions({
+            input: {
+              integrationId: variables.integrationId,
+              limit: 20,
+              offset: 0,
+            },
+          }),
+        );
       },
     }),
   );

@@ -4,6 +4,7 @@ import { env } from "@repo/env";
 import type { auth } from "@repo/server/lib/auth";
 import {
   adminClient,
+  anonymousClient,
   emailOTPClient,
   inferAdditionalFields,
   magicLinkClient,
@@ -16,6 +17,7 @@ export const authClient = createAuthClient({
   baseURL: env.NEXT_PUBLIC_APP_SERVER_URL,
   plugins: [
     adminClient(),
+    anonymousClient(),
     emailOTPClient(),
     inferAdditionalFields<typeof auth>(),
     magicLinkClient(),

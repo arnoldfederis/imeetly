@@ -1,11 +1,4 @@
-import {
-  boolean,
-  index,
-  integer,
-  pgSchema,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgSchema, text, timestamp, } from "drizzle-orm/pg-core";
 
 const schema = pgSchema("auth");
 
@@ -28,6 +21,7 @@ export const users = schema.table(
     banned: boolean("banned").default(false),
     banReason: text("ban_reason"),
     banExpires: timestamp("ban_expires"),
+    isAnonymous: boolean("is_anonymous").default(false),
     normalizedEmail: text("normalized_email").unique(),
     username: text("username").unique(),
     displayUsername: text("display_username"),

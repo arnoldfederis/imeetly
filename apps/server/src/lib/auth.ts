@@ -91,6 +91,10 @@ export const auth = betterAuth({
             return;
           }
 
+          if (createdUser.isAnonymous) {
+            return;
+          }
+
           emailService
             .sendWelcomeEmail(createdUser.email, createdUser.name)
             .catch((err) => {
