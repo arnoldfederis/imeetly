@@ -138,6 +138,8 @@ jobs:
             NEXT_PUBLIC_APP_SERVER_URL=${{ vars.NEXT_PUBLIC_APP_SERVER_URL }}
             NEXT_PUBLIC_POSTHOG_TOKEN=${{ secrets.NEXT_PUBLIC_POSTHOG_TOKEN }}
             NEXT_PUBLIC_POSTHOG_HOST=${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+            NEXT_PUBLIC_GOOGLE_PICKER_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY }}
+            NEXT_PUBLIC_GOOGLE_PICKER_APP_ID=${{ vars.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID }}
           cache-from: type=gha,scope=imeetly-web-staging
           cache-to: type=gha,mode=max,scope=imeetly-web-staging
 

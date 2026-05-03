@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, type UseMutationResult, useQuery, useQueryClient, } from "@tanstack/react-query";
+import {
+  type UseMutationResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   CheckCircleIcon,
   ExternalLinkIcon,
@@ -19,7 +24,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
-import { detectMeetingProvider, getMeetingProviderMeta, } from "@/components/meetings/provider-icon";
+import {
+  detectMeetingProvider,
+  getMeetingProviderMeta,
+} from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
@@ -34,7 +42,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
