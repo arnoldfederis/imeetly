@@ -35,16 +35,24 @@ export const baseController = new Elysia()
     "/integrations/:provider/callback",
     async ({ params, query, redirect }) => {
       const { provider } = params as { provider: string };
-      const { code, state, error } = query as {
+      const { code, state, error, error_subcode } = query as {
         code?: string;
         state?: string;
         error?: string;
+        error_subcode?: string;
       };
       const frontendUrl = env.APP_BASE_URL;
 
       if (error || !code || !state) {
+        const isMsAdminConsent =
+          provider === "microsoft" &&
+          error === "access_denied" &&
+          error_subcode === "consent_required";
+        const errorCode = isMsAdminConsent
+          ? "ms_admin_required"
+          : (error ?? "missing_params");
         return redirect(
-          `${frontendUrl}/settings/integrations?error=${error ?? "missing_params"}`,
+          `${frontendUrl}/settings/integrations?error=${errorCode}`,
         );
       }
 

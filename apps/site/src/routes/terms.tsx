@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingHeader } from "@/components/landing/landing-header";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/terms")({
@@ -18,7 +17,6 @@ export const Route = createFileRoute("/terms")({
 function TermsPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <LandingHeader />
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">

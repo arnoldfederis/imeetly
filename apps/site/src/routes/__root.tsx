@@ -1,5 +1,6 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { NotFound } from "@/components/common/not-found";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { ThemeProvider } from "@/components/providers/theme";
 import appCss from "../styles.css?url";
 
@@ -61,7 +62,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <LandingHeader />
+          {children}
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>

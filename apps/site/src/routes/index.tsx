@@ -6,7 +6,6 @@ import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingHeader } from "@/components/landing/landing-header";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
@@ -16,17 +15,19 @@ import {
   organizationJsonLd,
   seo,
   softwareAppJsonLd,
+  webPageJsonLd,
 } from "@/lib/seo";
 
 const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
+const HOME_DESCRIPTION =
+  "imeetly turns meeting recordings and transcripts into AI summaries, decisions, blockers, action items, and searchable meeting history for fast-moving teams.";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     ...seo({
-      title: "Your meetings, summarized in seconds. Start free",
-      description:
-        "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.",
+      title: "AI Meeting Notes and Summaries for Teams",
+      description: HOME_DESCRIPTION,
       path: "/",
     }),
     scripts: [
@@ -40,6 +41,16 @@ export const Route = createFileRoute("/")({
       },
       {
         type: "application/ld+json",
+        children: JSON.stringify(
+          webPageJsonLd({
+            path: "/",
+            name: "imeetly AI Meeting Notes",
+            description: HOME_DESCRIPTION,
+          }),
+        ),
+      },
+      {
+        type: "application/ld+json",
         children: JSON.stringify(faqJsonLd(FAQ_ITEMS)),
       },
     ],
@@ -49,7 +60,6 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <LandingHeader />
       <main className="flex-1">
         <HeroSection />
         <TrustBar />

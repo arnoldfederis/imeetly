@@ -153,6 +153,33 @@ export function softwareAppJsonLd() {
   };
 }
 
+export function webPageJsonLd({
+  path,
+  name,
+  description,
+  type = "WebPage",
+}: {
+  path: string;
+  name: string;
+  description: string;
+  type?: "WebPage" | "AboutPage" | "ContactPage";
+}) {
+  const url = `${SITE_URL}${path === "/" ? "" : path}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    name,
+    url,
+    description,
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
+}
+
 export function faqJsonLd(items: { question: string; answer: string }[]) {
   return {
     "@context": "https://schema.org",

@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
 import {
@@ -105,14 +106,31 @@ export function IntegrationsContainer({
       .map((i) => [i.provider, i]),
   );
 
-  // Show success/error toast based on query params after OAuth callback
   useEffect(() => {
     const connected = searchParams.get("connected");
     const error = searchParams.get("error");
     if (connected || error) {
       queryClient
         .invalidateQueries(client.integration.list.queryOptions())
-        .then(() => router.replace("/settings/integrations"));
+        .then(() => {
+          if (connected) {
+            const name =
+              PROVIDER_META[connected as Provider]?.name ?? connected;
+            toast.success(`${name} connected successfully`);
+          } else if (error === "ms_admin_required") {
+            toast.error("Admin approval required", {
+              description:
+                "Your organization requires an IT admin to approve this app. Contact your admin or reach out to us for enterprise setup.",
+              duration: 10000,
+            });
+          } else if (error) {
+            toast.error("Failed to connect integration", {
+              description:
+                "Please try again or contact support if the issue persists.",
+            });
+          }
+          router.replace("/settings/integrations");
+        });
     }
   }, [searchParams, queryClient, router]);
 
@@ -179,6 +197,19 @@ export function IntegrationsContainer({
                   <p className="text-muted-foreground text-xs">
                     {meta.description}
                   </p>
+                  {provider === "microsoft" && !connected && (
+                    <p className="mt-0.5 text-muted-foreground text-xs">
+                      Enterprise accounts may require{" "}
+                      <a
+                        className="underline underline-offset-2 hover:text-foreground"
+                        href="mailto:support@imeetly.app?subject=MS%20Teams%20enterprise%20setup"
+                        rel="noopener noreferrer"
+                      >
+                        admin approval
+                      </a>
+                      .
+                    </p>
+                  )}
                 </div>
               </div>
 

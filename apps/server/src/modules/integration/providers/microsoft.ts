@@ -143,11 +143,7 @@ export class MicrosoftIntegrationProvider
     };
 
     const meetings = (data.value ?? [])
-      .filter(
-        (e) =>
-          e.isOnlineMeeting &&
-          e.onlineMeeting?.joinUrl?.includes("teams.microsoft.com"),
-      )
+      .filter((e) => e.isOnlineMeeting)
       .map((e) => this._mapCalendarEvent(e));
 
     return {

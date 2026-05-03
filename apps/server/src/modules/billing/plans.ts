@@ -1,4 +1,4 @@
-export type PlanName = "free" | "pro" | "team";
+export type PlanName = "free" | "pro" | "team" | "enterprise";
 
 export interface PlanLimits {
   meetingsPerMonth: number;
@@ -21,6 +21,11 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
   team: {
     meetingsPerMonth: 150,
     maxFileSizeMb: 1000,
+    priorityProcessing: true,
+  },
+  enterprise: {
+    meetingsPerMonth: -1,
+    maxFileSizeMb: 5000,
     priorityProcessing: true,
   },
 };

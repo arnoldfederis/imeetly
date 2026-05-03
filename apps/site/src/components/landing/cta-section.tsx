@@ -27,7 +27,7 @@ export function CTASection() {
             </a>
             <a
               className={buttonVariants({ variant: "secondary", size: "lg" })}
-              href="/#how-it-works"
+              href="/how-it-works"
             >
               See how it works
             </a>

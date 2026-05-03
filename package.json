@@ -7,7 +7,7 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "format:file": "turbo format:file",
-    "pre:push": "turbo pre:push",
+    "pre:push": "turbo pre:push && turbo check-types",
     "auth:generate": "turbo auth:generate",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",

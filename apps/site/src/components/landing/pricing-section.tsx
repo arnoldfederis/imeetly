@@ -1,4 +1,4 @@
-import { CheckIcon, SparklesIcon } from "lucide-react";
+import { ArrowRightIcon, CheckIcon, SparklesIcon } from "lucide-react";
 import { useState } from "react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { buttonVariants } from "@/components/ui/button";
@@ -189,6 +189,52 @@ export function PricingSection() {
             );
           })}
         </Stagger>
+
+        <FadeIn className="mt-8">
+          <div className="rounded-2xl border bg-muted/30 p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="font-semibold text-lg">Enterprise</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+                    Custom pricing
+                  </span>
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  For organizations with advanced needs custom limits, MS Teams
+                  admin setup, SSO, and dedicated support.
+                </p>
+                <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {[
+                    "Unlimited meetings",
+                    "MS Teams enterprise setup",
+                    "Data deletion on request",
+                    "SLA & dedicated support",
+                    "Volume discounts",
+                    "Custom integrations on request",
+                  ].map((f) => (
+                    <li className="flex items-center gap-2 text-sm" key={f}>
+                      <CheckIcon className="size-4 shrink-0 text-primary" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="shrink-0">
+                <a
+                  className={buttonVariants({
+                    variant: "default",
+                    className: "gap-1.5",
+                  })}
+                  href="/contact"
+                >
+                  Contact us
+                  <ArrowRightIcon className="size-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
