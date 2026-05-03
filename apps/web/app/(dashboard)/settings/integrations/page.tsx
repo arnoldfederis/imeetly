@@ -17,7 +17,8 @@ export default async function Page() {
             Integrations
           </h1>
           <p className="text-muted-foreground text-sm">
-            Connect your meeting platforms to automatically import recordings
+            Connect your meeting platforms to sync meetings and import
+            recordings
           </p>
         </div>
       </div>

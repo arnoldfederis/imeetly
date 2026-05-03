@@ -185,6 +185,95 @@ export class IntegrationService {
       externalMeetingId: extMeeting.externalMeetingId,
       title: extMeeting.title,
       startsAt: extMeeting.startsAt,
+      externalMeetingMetadata: asMetadata(extMeeting.metadata),
     });
   }
+
+  static async getGoogleAccessToken(
+    userId: string,
+    integrationId: string,
+  ): Promise<{ accessToken: string }> {
+    const [integration] = await db
+      .select({
+        id: integrations.id,
+        provider: integrations.provider,
+        status: integrations.status,
+      })
+      .from(integrations)
+      .where(
+        and(
+          eq(integrations.id, integrationId),
+          eq(integrations.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (!integration || integration.provider !== "google") {
+      throw new ORPCError("NOT_FOUND", {
+        message: "Google integration not found",
+      });
+    }
+    if (integration.status !== "active") {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Integration is not active",
+      });
+    }
+
+    const accessToken = await OAuthService.getAccessToken(integrationId);
+    return { accessToken };
+  }
+
+  static async importDriveFile(
+    userId: string,
+    externalMeetingDbId: string,
+    driveFileId: string,
+  ): Promise<{ meetingId: string }> {
+    const [extMeeting] = await db
+      .select()
+      .from(externalMeetings)
+      .where(
+        and(
+          eq(externalMeetings.id, externalMeetingDbId),
+          eq(externalMeetings.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (!extMeeting) {
+      throw new ORPCError("NOT_FOUND", {
+        message: "External meeting not found",
+      });
+    }
+    if (extMeeting.provider !== "google") {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Drive import is only supported for Google Meet",
+      });
+    }
+
+    if (
+      extMeeting.status === "processing" ||
+      extMeeting.status === "completed"
+    ) {
+      const meta = extMeeting.metadata as Record<string, unknown>;
+      if (typeof meta.imeetlyMeetingId === "string") {
+        return { meetingId: meta.imeetlyMeetingId };
+      }
+    }
+
+    return MeetingRecordingIngestionService.ingestFromDriveFile({
+      userId,
+      integrationId: extMeeting.integrationId,
+      externalMeetingDbId,
+      driveFileId,
+      title: extMeeting.title,
+      startsAt: extMeeting.startsAt,
+      externalMeetingMetadata: asMetadata(extMeeting.metadata),
+    });
+  }
+}
+
+function asMetadata(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

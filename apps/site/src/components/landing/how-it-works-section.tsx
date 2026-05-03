@@ -7,7 +7,7 @@ const steps = [
     icon: UploadIcon,
     title: "Upload or connect your meeting tool",
     description:
-      "Drop in an audio file, video recording, or paste your transcript - or connect Zoom, Google Meet, or Microsoft Teams to import recordings automatically.",
+      "Upload an audio file, video recording, or paste your transcript. Connect Zoom or Microsoft Teams to import recordings automatically, or connect Google Meet to sync calendar events.",
   },
   {
     step: "02",

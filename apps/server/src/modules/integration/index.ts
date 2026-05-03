@@ -50,4 +50,23 @@ export const integrationController = base.router({
         input.externalMeetingId,
       ),
     ),
+
+  getGoogleAccessToken: privateProcedure
+    .input(integrationModel.getAccessToken)
+    .handler(async ({ input, context }) =>
+      IntegrationService.getGoogleAccessToken(
+        context.user.id,
+        input.integrationId,
+      ),
+    ),
+
+  importDriveFile: privateProcedure
+    .input(integrationModel.importDriveFile)
+    .handler(async ({ input, context }) =>
+      IntegrationService.importDriveFile(
+        context.user.id,
+        input.externalMeetingId,
+        input.driveFileId,
+      ),
+    ),
 });

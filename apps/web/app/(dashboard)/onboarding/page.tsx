@@ -52,7 +52,7 @@ export default function Page() {
 
       <div className="mx-auto mt-16 grid w-full gap-4 lg:grid-cols-3">
         <StepCard
-          description="Drop in an audio file, video recording, or paste your transcript - or connect Zoom, Google Meet, or Microsoft Teams to import recordings automatically."
+          description="Upload an audio file, video recording, or paste your transcript or connect Zoom or Microsoft Teams to import recordings automatically."
           icon={<UploadIcon className="size-5 text-primary" />}
           step="01"
           title="Upload or connect your meeting tool"

@@ -16,7 +16,8 @@ const integrations = [
   },
   {
     name: "Google Meet",
-    description: "Sync Google Meet recordings automatically from your Drive.",
+    description:
+      "Sync Google Meet calendar events and select a Drive recording to import.",
     icon: <GoogleMeetIcon className="size-6" />,
     accent: "group-hover:border-green-500/40",
     dot: "bg-green-500",
@@ -44,9 +45,9 @@ export function IntegrationsSection() {
             Works with your favorite meeting tools
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect Zoom, Google Meet, or Microsoft Teams and let imeetly
-            automatically pull in recordings. No copy-pasting, no manual
-            uploads.
+            Connect Zoom or Microsoft Teams for automatic recording import.
+            Connect Google Meet to sync calendar events then select a Drive
+            recording to process.
           </p>
         </FadeIn>
 

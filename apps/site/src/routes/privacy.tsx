@@ -252,9 +252,11 @@ function PrivacyPage() {
                 </li>
                 <li>
                   <strong>Google</strong> - OAuth 2.0 sign-in and, if you
-                  connect the Google Meet integration, Google Calendar and
-                  Google Drive APIs to retrieve calendar events and meeting
-                  recordings. We request only the minimum scopes required.
+                  connect the Google Meet integration, Google Calendar API to
+                  retrieve calendar events and Google Drive API (
+                  <code>drive.file</code> scope only) to access recording files
+                  you explicitly select. We do not access your full Google
+                  Drive.
                 </li>
                 <li>
                   <strong>Zoom</strong> - if you connect the Zoom integration,

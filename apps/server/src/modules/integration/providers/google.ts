@@ -14,12 +14,12 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 const GOOGLE_CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
-// calendar.readonly — list events; drive.readonly — future recording discovery
+// drive.file — access only files user explicitly selects or app creates (not full Drive)
 const GOOGLE_SCOPES = [
   "openid",
   "email",
   "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/drive.file",
 ].join(" ");
 
 export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
@@ -154,53 +154,14 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
   }
 
   async getRecording(
-    accessToken: string,
-    externalMeetingId: string,
+    _accessToken: string,
+    _externalMeetingId: string,
   ): Promise<ExternalRecording | null> {
-    const meeting = await this.getMeeting(accessToken, externalMeetingId);
-    if (!meeting) return null;
-
-    const startTime =
-      meeting.startsAt ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const searchStart = new Date(startTime.getTime() - 30 * 60 * 1000);
-    const searchEnd = new Date(startTime.getTime() + 4 * 60 * 60 * 1000);
-
-    // Meet recordings land in Drive as mp4 files named "Meet Recording ..."
-    const query = [
-      "mimeType = 'video/mp4'",
-      `createdTime > '${searchStart.toISOString()}'`,
-      `createdTime < '${searchEnd.toISOString()}'`,
-      "name contains 'Meet Recording'",
-    ].join(" and ");
-
-    const params = new URLSearchParams({
-      q: query,
-      fields: "files(id,name,size,videoMediaMetadata)",
-      orderBy: "createdTime desc",
-      pageSize: "5",
-    });
-
-    const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files?${params}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
-    );
-    if (!res.ok) return null;
-
-    const data = (await res.json()) as { files?: DriveFile[] };
-    const file = data.files?.[0];
-    if (!file) return null;
-
-    return {
-      externalMeetingId,
-      downloadUrl: `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-      downloadHeaders: { Authorization: `Bearer ${accessToken}` },
-      mimeType: "video/mp4",
-      sizeBytes: file.size ? Number(file.size) : null,
-      durationSeconds: file.videoMediaMetadata?.durationMillis
-        ? Math.round(Number(file.videoMediaMetadata.durationMillis) / 1000)
-        : null,
-      expiresAt: null,
-    };
+    // drive.file scope only grants access to files the user explicitly selects
+    // via Google Picker or files this app creates — it does not allow scanning
+    // Drive by query. Auto-discovery of Meet recordings is not supported.
+    // Recording import requires the user to select the file via the UI.
+    return null;
   }
 
   async listParticipants(
@@ -289,13 +250,6 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
       },
     };
   }
-}
-
-interface DriveFile {
-  id: string;
-  name: string;
-  size?: string;
-  videoMediaMetadata?: { durationMillis?: string };
 }
 
 interface GoogleTokenResponse {
