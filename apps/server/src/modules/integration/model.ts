@@ -13,6 +13,8 @@ export const integrationModel = {
   }),
   listExternalMeetings: z.object({
     integrationId: z.string().min(1),
+    search: z.string().optional(),
+    status: z.string().optional(),
     limit: z.number().min(1).max(100).default(20),
     offset: z.number().min(0).default(0),
   }),

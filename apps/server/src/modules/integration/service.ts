@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
 import { externalMeetings, integrations } from "@repo/db/schemas/app";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { OAuthService } from "./oauth.service";
 import { getProvider } from "./resolver";
@@ -54,7 +54,12 @@ export class IntegrationService {
   static async listExternalMeetings(
     userId: string,
     integrationId: string,
-    options?: { limit?: number; offset?: number },
+    options?: {
+      limit?: number;
+      offset?: number;
+      search?: string;
+      status?: string;
+    },
   ) {
     const [integration] = await db
       .select({ id: integrations.id })
@@ -71,13 +76,39 @@ export class IntegrationService {
       throw new ORPCError("NOT_FOUND", { message: "Integration not found" });
     }
 
-    return db
-      .select()
-      .from(externalMeetings)
-      .where(eq(externalMeetings.integrationId, integrationId))
-      .orderBy(desc(externalMeetings.startsAt))
-      .limit(options?.limit ?? 20)
-      .offset(options?.offset ?? 0);
+    const conditions = [eq(externalMeetings.integrationId, integrationId)];
+
+    if (options?.status) {
+      conditions.push(eq(externalMeetings.status, options.status));
+    }
+
+    if (options?.search) {
+      const pattern = `%${options.search}%`;
+      const searchCondition = or(
+        ilike(externalMeetings.title, pattern),
+        ilike(externalMeetings.externalMeetingId, pattern),
+        ilike(externalMeetings.joinUrl, pattern),
+      );
+      if (searchCondition) conditions.push(searchCondition);
+    }
+
+    const where = and(...conditions);
+
+    const [items, [{ count }]] = await Promise.all([
+      db
+        .select()
+        .from(externalMeetings)
+        .where(where)
+        .orderBy(desc(externalMeetings.startsAt))
+        .limit(options?.limit ?? 20)
+        .offset(options?.offset ?? 0),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(externalMeetings)
+        .where(where),
+    ]);
+
+    return { items, total: count };
   }
 
   static async syncMeetings(
