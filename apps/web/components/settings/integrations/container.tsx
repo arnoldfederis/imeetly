@@ -356,26 +356,30 @@ function GoogleDriveImportDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          {pickerError && (
+          {pickerError === "drive_scope_missing" ? (
             <Alert variant="destructive">
               <InfoIcon />
-              <AlertTitle>Google Picker could not open</AlertTitle>
+              <AlertTitle>Google Drive access required</AlertTitle>
+              <AlertDescription>
+                Your Google account needs Drive access to import recordings.
+                Please disconnect and reconnect your Google account on the{" "}
+                <Link className="underline" href="/settings/integrations">
+                  integrations page
+                </Link>
+                .
+              </AlertDescription>
+            </Alert>
+          ) : pickerError ? (
+            <Alert variant="destructive">
+              <InfoIcon />
+              <AlertTitle>Could not open Drive picker</AlertTitle>
               <AlertDescription>
                 {pickerError === "Google Picker is not configured"
                   ? "Missing NEXT_PUBLIC_GOOGLE_PICKER_API_KEY or NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
-                  : pickerError}
+                  : "Please try again."}
               </AlertDescription>
             </Alert>
-          )}
-
-          <Alert>
-            <InfoIcon />
-            <AlertTitle>Drive access</AlertTitle>
-            <AlertDescription>
-              Google Drive grants imeetly access only to the recording you pick
-              in the Google file chooser.
-            </AlertDescription>
-          </Alert>
+          ) : null}
 
           <div className="flex flex-col gap-3 rounded-2xl border p-4">
             <div className="flex items-start gap-3">
@@ -395,7 +399,11 @@ function GoogleDriveImportDialog({
             </div>
 
             <Button
-              disabled={isOpeningPicker || isImporting}
+              disabled={
+                isOpeningPicker ||
+                isImporting ||
+                pickerError === "drive_scope_missing"
+              }
               onClick={onChooseDriveFile}
               variant="secondary"
             >
@@ -462,6 +470,14 @@ export function ExternalMeetingsList({
     client.integration.getGoogleAccessToken.mutationOptions(),
   );
 
+  const reconnectGoogleMutation = useMutation(
+    client.integration.getConnectUrl.mutationOptions({
+      onSuccess: (url) => {
+        window.location.href = url;
+      },
+    }),
+  );
+
   const importDriveMutation = useMutation(
     client.integration.importDriveFile.mutationOptions({
       onSuccess: ({ meetingId }) => {
@@ -477,19 +493,30 @@ export function ExternalMeetingsList({
     try {
       setPickerError(null);
       setIsOpeningDrivePicker(true);
-      const { accessToken } = await getAccessTokenMutation.mutateAsync({
-        integrationId,
-      });
-      await openPicker(accessToken, (fileId, fileName) => {
+      const { accessToken, pickerClientId } =
+        await getAccessTokenMutation.mutateAsync({
+          integrationId,
+        });
+      if (!accessToken?.trim()) {
+        throw new Error("Google access token is missing");
+      }
+      await openPicker({ pickerClientId }, (fileId, fileName) => {
         setSelectedDriveFile({ id: fileId, name: fileName });
       });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to open Drive picker";
-      setPickerError(message);
+      const normalizedMessage = message.includes("drive_scope_missing")
+        ? "drive_scope_missing"
+        : message;
+      setPickerError(normalizedMessage);
+      if (normalizedMessage === "drive_scope_missing") {
+        reconnectGoogleMutation.mutate({ provider: "google" });
+        return;
+      }
       toast.error("Failed to open Drive picker", {
         description:
-          message === "Google Picker is not configured"
+          normalizedMessage === "Google Picker is not configured"
             ? "Set NEXT_PUBLIC_GOOGLE_PICKER_API_KEY and NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
             : "Please try again.",
       });
@@ -673,7 +700,9 @@ export function ExternalMeetingsList({
       <GoogleDriveImportDialog
         isImporting={importDriveMutation.isPending}
         isOpeningPicker={
-          isOpeningDrivePicker || getAccessTokenMutation.isPending
+          isOpeningDrivePicker ||
+          getAccessTokenMutation.isPending ||
+          reconnectGoogleMutation.isPending
         }
         meeting={driveImportMeeting}
         onChooseDriveFile={handleChooseDriveFile}

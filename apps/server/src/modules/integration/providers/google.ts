@@ -22,6 +22,10 @@ const GOOGLE_SCOPES = [
   "https://www.googleapis.com/auth/drive.file",
 ].join(" ");
 
+export const GOOGLE_DRIVE_PICKER_SCOPES = [
+  "https://www.googleapis.com/auth/drive.file",
+] as const;
+
 export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
   readonly type = "google" as const;
 
@@ -77,14 +81,17 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
         accessToken: data.access_token,
         refreshToken: data.refresh_token ?? null,
         expiresAt: new Date(Date.now() + data.expires_in * 1000),
-        scopes: data.scope.split(" "),
+        scopes: parseGoogleScopes(data.scope),
       },
       accountId: user.sub,
       accountEmail: user.email,
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<OAuthTokens> {
+  async refreshToken(
+    refreshToken: string,
+    options?: { previousScopes?: string[] },
+  ): Promise<OAuthTokens> {
     const res = await fetch(GOOGLE_TOKEN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -102,7 +109,7 @@ export class GoogleIntegrationProvider implements IMeetingIntegrationProvider {
       accessToken: data.access_token,
       refreshToken, // Google doesn't rotate refresh tokens
       expiresAt: new Date(Date.now() + data.expires_in * 1000),
-      scopes: data.scope.split(" "),
+      scopes: parseGoogleScopes(data.scope, options?.previousScopes),
     };
   }
 
@@ -256,7 +263,12 @@ interface GoogleTokenResponse {
   access_token: string;
   refresh_token?: string;
   expires_in: number;
-  scope: string;
+  scope?: string;
+}
+
+function parseGoogleScopes(scope: string | undefined, fallback: string[] = []) {
+  const parsed = scope?.split(" ").filter(Boolean) ?? [];
+  return parsed.length > 0 ? parsed : fallback;
 }
 
 interface GoogleCalendarList {

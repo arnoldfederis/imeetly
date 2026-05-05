@@ -76,7 +76,10 @@ export class ZoomIntegrationProvider implements IMeetingIntegrationProvider {
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<OAuthTokens> {
+  async refreshToken(
+    refreshToken: string,
+    _options?: { previousScopes?: string[] },
+  ): Promise<OAuthTokens> {
     const credentials = Buffer.from(
       `${env.ZOOM_CLIENT_ID}:${env.ZOOM_CLIENT_SECRET}`,
     ).toString("base64");

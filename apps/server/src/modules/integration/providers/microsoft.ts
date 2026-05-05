@@ -92,7 +92,10 @@ export class MicrosoftIntegrationProvider
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<OAuthTokens> {
+  async refreshToken(
+    refreshToken: string,
+    _options?: { previousScopes?: string[] },
+  ): Promise<OAuthTokens> {
     const res = await fetch(MS_TOKEN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },

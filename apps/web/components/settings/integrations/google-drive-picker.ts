@@ -9,18 +9,44 @@ declare global {
       load: (api: string, callback: () => void) => void;
     };
     google: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: GoogleTokenClientConfig) => GoogleTokenClient;
+        };
+      };
       picker: {
         PickerBuilder: new () => GooglePickerBuilder;
         DocsView: new () => GoogleDocsView;
+        DocsViewMode: { LIST: string };
         Action: { PICKED: string; CANCEL: string };
       };
     };
   }
 }
 
+const GOOGLE_PICKER_SCOPES =
+  "https://www.googleapis.com/auth/drive.file";
+
+interface GoogleTokenClientConfig {
+  client_id: string;
+  scope: string;
+  callback: (response: GoogleTokenResponse) => void;
+}
+
+interface GoogleTokenClient {
+  requestAccessToken: (options?: { prompt?: string }) => void;
+}
+
+interface GoogleTokenResponse {
+  access_token?: string;
+  error?: string;
+  error_description?: string;
+}
+
 interface GoogleDocsView {
   setMimeTypes(types: string): GoogleDocsView;
   setIncludeFolders(include: boolean): GoogleDocsView;
+  setMode(mode: string): GoogleDocsView;
 }
 
 interface GooglePickerBuilder {
@@ -41,6 +67,7 @@ interface GooglePickerResponse {
 
 export function useGoogleDrivePicker() {
   const loaded = useRef(false);
+  const pickerAccessToken = useRef<string | null>(null);
 
   const load = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -49,36 +76,94 @@ export function useGoogleDrivePicker() {
         return;
       }
 
-      if (!window.gapi) {
-        const existingScript = document.querySelector<HTMLScriptElement>(
-          'script[src="https://apis.google.com/js/api.js"]',
-        );
-        const script = existingScript ?? document.createElement("script");
-        script.src = "https://apis.google.com/js/api.js";
-        script.async = true;
-        script.onerror = () => reject(new Error("Google API script failed"));
-        script.onload = () => {
+      const loadScript = (src: string, label: string) =>
+        new Promise<void>((scriptResolve, scriptReject) => {
+          const existingScript = document.querySelector<HTMLScriptElement>(
+            `script[src="${src}"]`,
+          );
+          if (existingScript) {
+            if (existingScript.dataset.loaded === "true") {
+              scriptResolve();
+              return;
+            }
+            existingScript.addEventListener("load", () => scriptResolve(), {
+              once: true,
+            });
+            existingScript.addEventListener(
+              "error",
+              () => scriptReject(new Error(`${label} script failed`)),
+              { once: true },
+            );
+            return;
+          }
+
+          const script = document.createElement("script");
+          script.src = src;
+          script.async = true;
+          script.onerror = () =>
+            scriptReject(new Error(`${label} script failed`));
+          script.onload = () => {
+            script.dataset.loaded = "true";
+            scriptResolve();
+          };
+          document.head.appendChild(script);
+        });
+
+      Promise.all([
+        loadScript("https://apis.google.com/js/api.js", "Google API"),
+        loadScript("https://accounts.google.com/gsi/client", "Google Identity"),
+      ])
+        .then(() => {
           window.gapi.load("picker", () => {
             loaded.current = true;
             resolve();
           });
-        };
-        if (!existingScript) {
-          document.head.appendChild(script);
-        }
-        return;
-      }
-
-      window.gapi.load("picker", () => {
-        loaded.current = true;
-        resolve();
-      });
+        })
+        .catch(reject);
     });
   }, []);
 
+  const getPickerAccessToken = useCallback(
+    async (clientId: string): Promise<string> => {
+      if (pickerAccessToken.current) return pickerAccessToken.current;
+
+      await load();
+
+      const requestToken = (prompt: string) =>
+        new Promise<string>((resolve, reject) => {
+          const tokenClient = window.google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: GOOGLE_PICKER_SCOPES,
+            callback: (response) => {
+              if (response.access_token) {
+                pickerAccessToken.current = response.access_token;
+                resolve(response.access_token);
+                return;
+              }
+              reject(
+                new Error(
+                  response.error_description ??
+                    response.error ??
+                    "Google Drive authorization failed",
+                ),
+              );
+            },
+          });
+          tokenClient.requestAccessToken({ prompt });
+        });
+
+      try {
+        return await requestToken("");
+      } catch {
+        return requestToken("consent");
+      }
+    },
+    [load],
+  );
+
   const openPicker = useCallback(
     async (
-      accessToken: string,
+      input: { pickerClientId: string },
       onPicked: (fileId: string, fileName: string) => void,
     ) => {
       if (
@@ -99,12 +184,14 @@ export function useGoogleDrivePicker() {
       }
 
       await load();
+      const accessToken = await getPickerAccessToken(input.pickerClientId);
 
       const view = new window.google.picker.DocsView()
         .setMimeTypes(
           "video/mp4,video/webm,audio/mp4,audio/mpeg,audio/m4a,audio/x-m4a",
         )
-        .setIncludeFolders(true);
+        .setIncludeFolders(true)
+        .setMode(window.google.picker.DocsViewMode.LIST);
 
       const picker = new window.google.picker.PickerBuilder()
         .addView(view)
@@ -125,7 +212,7 @@ export function useGoogleDrivePicker() {
 
       picker.setVisible(true);
     },
-    [load],
+    [getPickerAccessToken, load],
   );
 
   return { openPicker };

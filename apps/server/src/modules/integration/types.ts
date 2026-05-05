@@ -85,7 +85,10 @@ export interface IMeetingIntegrationProvider {
     redirectUri: string,
   ): Promise<{ tokens: OAuthTokens; accountId: string; accountEmail: string }>;
 
-  refreshToken(refreshToken: string): Promise<OAuthTokens>;
+  refreshToken(
+    refreshToken: string,
+    options?: { previousScopes?: string[] },
+  ): Promise<OAuthTokens>;
 
   listMeetings(
     accessToken: string,
