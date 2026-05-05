@@ -97,6 +97,7 @@
       "dependencies": {
         "@base-ui/react": "^1.4.1",
         "@fontsource-variable/inter": "^5.2.8",
+        "@googleworkspace/drive-picker-react": "^0.2.0",
         "@hookform/resolvers": "catalog:",
         "@orpc/client": "catalog:",
         "@orpc/server": "catalog:",
@@ -585,6 +586,10 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
     "@fontsource-variable/inter": ["@fontsource-variable/inter@5.2.8", "", {}, "sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ=="],
+
+    "@googleworkspace/drive-picker-element": ["@googleworkspace/drive-picker-element@0.7.3", "", {}, "sha512-z1hZh1HsPAQ19lencw2x3FcUVoymWYexcWgq66iXum4mUfWWaQ37oGtQ6hGvM8dyrC81G79P26gq7HhRtbGb2Q=="],
+
+    "@googleworkspace/drive-picker-react": ["@googleworkspace/drive-picker-react@0.2.0", "", { "dependencies": { "@googleworkspace/drive-picker-element": "0.7.3" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-3CIEZ7U+HDKd8UoXG3l/fPSZFhxajC3MYNIqAZQSba2totuYKVTQMOJsgonO7OnnJq88YD35n7whCF4i5QUyvA=="],
 
     "@grpc/grpc-js": ["@grpc/grpc-js@1.14.3", "", { "dependencies": { "@grpc/proto-loader": "^0.8.0", "@js-sdsl/ordered-map": "^4.4.2" } }, "sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA=="],
 

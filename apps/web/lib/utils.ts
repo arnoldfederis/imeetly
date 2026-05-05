@@ -7,6 +7,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function getLandingPageUrl(appBaseUrl: string) {
+  try {
+    const url = new URL(appBaseUrl);
+    url.hostname = url.hostname.replace(/^app\./, "");
+    url.pathname = "";
+    url.search = "";
+    url.hash = "";
+    return url.origin;
+  } catch {
+    return appBaseUrl.replace("://app.", "://").replace(/\/+$/, "");
+  }
+}
+
 export function formatMeetingDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();

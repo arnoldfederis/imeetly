@@ -1,9 +1,11 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
 import { externalMeetings, integrations } from "@repo/db/schemas/app";
-import { and, desc, eq } from "drizzle-orm";
+import { env } from "@repo/env";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { OAuthService } from "./oauth.service";
+import { GOOGLE_DRIVE_PICKER_SCOPES } from "./providers/google";
 import { getProvider } from "./resolver";
 import type { IntegrationProviderType } from "./types";
 
@@ -54,7 +56,12 @@ export class IntegrationService {
   static async listExternalMeetings(
     userId: string,
     integrationId: string,
-    options?: { limit?: number; offset?: number },
+    options?: {
+      limit?: number;
+      offset?: number;
+      search?: string;
+      status?: string;
+    },
   ) {
     const [integration] = await db
       .select({ id: integrations.id })
@@ -71,13 +78,39 @@ export class IntegrationService {
       throw new ORPCError("NOT_FOUND", { message: "Integration not found" });
     }
 
-    return db
-      .select()
-      .from(externalMeetings)
-      .where(eq(externalMeetings.integrationId, integrationId))
-      .orderBy(desc(externalMeetings.startsAt))
-      .limit(options?.limit ?? 20)
-      .offset(options?.offset ?? 0);
+    const conditions = [eq(externalMeetings.integrationId, integrationId)];
+
+    if (options?.status) {
+      conditions.push(eq(externalMeetings.status, options.status));
+    }
+
+    if (options?.search) {
+      const pattern = `%${options.search}%`;
+      const searchCondition = or(
+        ilike(externalMeetings.title, pattern),
+        ilike(externalMeetings.externalMeetingId, pattern),
+        ilike(externalMeetings.joinUrl, pattern),
+      );
+      if (searchCondition) conditions.push(searchCondition);
+    }
+
+    const where = and(...conditions);
+
+    const [items, [{ count }]] = await Promise.all([
+      db
+        .select()
+        .from(externalMeetings)
+        .where(where)
+        .orderBy(desc(externalMeetings.startsAt))
+        .limit(options?.limit ?? 20)
+        .offset(options?.offset ?? 0),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(externalMeetings)
+        .where(where),
+    ]);
+
+    return { items, total: count };
   }
 
   static async syncMeetings(
@@ -192,7 +225,7 @@ export class IntegrationService {
   static async getGoogleAccessToken(
     userId: string,
     integrationId: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string; pickerClientId: string }> {
     const [integration] = await db
       .select({
         id: integrations.id,
@@ -219,8 +252,51 @@ export class IntegrationService {
       });
     }
 
-    const accessToken = await OAuthService.getAccessToken(integrationId);
-    return { accessToken };
+    const token = await OAuthService.getAccessTokenDetails(integrationId);
+    const missingDriveScopes = GOOGLE_DRIVE_PICKER_SCOPES.filter(
+      (scope) => !token.scopes.includes(scope),
+    );
+
+    console.info("[integration:google-drive-picker]", {
+      event: missingDriveScopes.length > 0 ? "scope_missing" : "token_ready",
+      expiresAt: token.expiresAt?.toISOString() ?? null,
+      hasAccessToken: Boolean(token.accessToken),
+      missingDriveScopes,
+      provider: token.provider,
+      scopes: token.scopes,
+      userId: token.userId,
+    });
+
+    if (missingDriveScopes.length > 0) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "drive_scope_missing",
+      });
+    }
+
+    const pickerClientId = env.GOOGLE_CLIENT_ID;
+    const pickerClientProjectNumber =
+      getGoogleOAuthClientProjectNumber(pickerClientId);
+
+    if (
+      pickerClientProjectNumber &&
+      env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID &&
+      pickerClientProjectNumber !== env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID
+    ) {
+      console.error("[integration:google-drive-picker]", {
+        event: "config_mismatch",
+        pickerAppId: env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID,
+        pickerClientProjectNumber,
+        provider: token.provider,
+        userId: token.userId,
+      });
+      throw new ORPCError("INTERNAL_SERVER_ERROR", {
+        message:
+          "Google Picker is misconfigured: OAuth client and Picker App ID must use the same Google Cloud project",
+      });
+    }
+
+    const accessToken = token.accessToken;
+    return { accessToken, pickerClientId };
   }
 
   static async importDriveFile(
@@ -276,4 +352,9 @@ function asMetadata(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function getGoogleOAuthClientProjectNumber(clientId: string) {
+  const [projectNumber] = clientId.split("-");
+  return /^\d+$/.test(projectNumber ?? "") ? projectNumber : null;
 }

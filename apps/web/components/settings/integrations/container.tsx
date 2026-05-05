@@ -1,7 +1,9 @@
 "use client";
 
+import { env } from "@repo/env";
 import {
   type UseMutationResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -15,19 +17,16 @@ import {
   LinkIcon,
   LoaderIcon,
   ProjectorIcon,
-  RefreshCwIcon,
+  SearchIcon,
   Unlink2Icon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
-import {
-  detectMeetingProvider,
-  getMeetingProviderMeta,
-} from "@/components/meetings/provider-icon";
+import { detectMeetingProvider } from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
@@ -48,9 +47,22 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
+import { getLandingPageUrl } from "@/lib/utils";
 import { useGoogleDrivePicker } from "./google-drive-picker";
 
 type Integration = {
@@ -104,6 +116,22 @@ const PROVIDER_META: Record<
 };
 
 const ALL_PROVIDERS: Provider[] = ["google", "zoom", "microsoft"];
+const CONTACT_URL = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/contact`;
+const PAGE_SIZE = 20;
+
+const EXTERNAL_STATUS_OPTIONS = [
+  { value: "all", label: "All Statuses" },
+  { value: "imported", label: "Calendar Synced" },
+  { value: "recording_available", label: "Recording Ready" },
+  { value: "processing", label: "Processing" },
+  { value: "completed", label: "Completed" },
+  { value: "failed", label: "Failed" },
+  { value: "no_recording", label: "No Recording" },
+] as const;
+
+function isProvider(value: string | null): value is Provider {
+  return value === "google" || value === "zoom" || value === "microsoft";
+}
 
 interface IntegrationsContainerProps {
   initialIntegrations: Integration[];
@@ -118,6 +146,8 @@ export function IntegrationsContainer({
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<
     string | null
   >(null);
+  const providerParam = searchParams.get("provider");
+  const selectedProvider = isProvider(providerParam) ? providerParam : null;
 
   const { data: integrations = initialIntegrations } = useQuery(
     client.integration.list.queryOptions(),
@@ -127,7 +157,7 @@ export function IntegrationsContainer({
     integrations
       .filter((i) => i.status === "active")
       .map((i) => [i.provider, i]),
-  );
+  ) as Partial<Record<Provider, Integration>>;
 
   useEffect(() => {
     const connected = searchParams.get("connected");
@@ -152,7 +182,9 @@ export function IntegrationsContainer({
                 "Please try again or contact support if the issue persists.",
             });
           }
-          router.replace("/settings/integrations");
+          router.replace(
+            connected ? `/integrations/${connected}` : "/settings/integrations",
+          );
         });
     }
   }, [searchParams, queryClient, router]);
@@ -176,21 +208,13 @@ export function IntegrationsContainer({
     }),
   );
 
-  const syncMutation = useMutation(
-    client.integration.syncMeetings.mutationOptions({
-      onSuccess: async (_data, variables) => {
-        await queryClient.invalidateQueries(
-          client.integration.listExternalMeetings.queryOptions({
-            input: {
-              integrationId: variables.integrationId,
-              limit: 20,
-              offset: 0,
-            },
-          }),
-        );
-      },
-    }),
-  );
+  useEffect(() => {
+    if (!selectedProvider) return;
+    const integration = integrations.find(
+      (i) => i.status === "active" && i.provider === selectedProvider,
+    );
+    setSelectedIntegrationId(integration?.id ?? null);
+  }, [integrations, selectedProvider]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -201,14 +225,14 @@ export function IntegrationsContainer({
 
           return (
             <div
-              className="flex flex-col gap-4 rounded-xl border p-4 xl:flex-row xl:items-center"
+              className="grid min-w-0 gap-4 rounded-xl border p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
               key={provider}
             >
-              <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex min-w-0 items-start gap-3 sm:items-center">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted">
                   {meta.icon}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-sm">{meta.name}</p>
                     {connected && (
@@ -217,49 +241,34 @@ export function IntegrationsContainer({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-muted-foreground text-xs">
+                  <p className="break-words text-muted-foreground text-xs">
                     {meta.description}
                   </p>
                   {provider === "microsoft" && !connected && (
-                    <p className="mt-0.5 text-muted-foreground text-xs">
-                      Enterprise accounts may require{" "}
+                    <p className="mt-0.5 break-words text-muted-foreground text-xs">
+                      Enterprise accounts may require admin approval.{" "}
                       <a
                         className="underline underline-offset-2 hover:text-foreground"
-                        href="mailto:support@imeetly.app?subject=MS%20Teams%20enterprise%20setup"
+                        href={CONTACT_URL}
                         rel="noopener noreferrer"
+                        target="_blank"
                       >
-                        admin approval
-                      </a>
-                      .
+                        Contact us
+                      </a>{" "}
+                      for help with setup.
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex w-full flex-col gap-2 xl:w-auto xl:flex-row xl:flex-wrap xl:items-center">
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap md:w-auto md:justify-end">
                 {connected ? (
                   <>
                     <Button
-                      className="w-full xl:w-auto"
-                      disabled={syncMutation.isPending}
+                      className="w-full sm:w-auto"
                       onClick={() => {
-                        setSelectedIntegrationId(connected.id);
-                        syncMutation.mutate({ integrationId: connected.id });
+                        router.replace(`/integrations/${provider}`);
                       }}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      {syncMutation.isPending &&
-                      selectedIntegrationId === connected.id ? (
-                        <LoaderIcon className="size-4 animate-spin" />
-                      ) : (
-                        <RefreshCwIcon className="size-4" />
-                      )}
-                      Sync meetings
-                    </Button>
-                    <Button
-                      className="w-full xl:w-auto"
-                      onClick={() => setSelectedIntegrationId(connected.id)}
                       size="sm"
                       variant="secondary"
                     >
@@ -267,7 +276,7 @@ export function IntegrationsContainer({
                       View meetings
                     </Button>
                     <Button
-                      className="w-full xl:w-auto"
+                      className="w-full sm:w-auto"
                       disabled={disconnectMutation.isPending}
                       onClick={() => {
                         disconnectMutation.mutate({
@@ -283,7 +292,7 @@ export function IntegrationsContainer({
                   </>
                 ) : (
                   <Button
-                    className="w-full xl:w-auto"
+                    className="w-full sm:w-auto"
                     disabled={connectMutation.isPending}
                     onClick={() => connectMutation.mutate({ provider })}
                     size="sm"
@@ -306,10 +315,7 @@ export function IntegrationsContainer({
       {selectedIntegrationId && (
         <>
           <Separator />
-          <ExternalMeetingsList
-            integrationId={selectedIntegrationId}
-            isSyncing={syncMutation.isPending}
-          />
+          <ExternalMeetingsList integrationId={selectedIntegrationId} />
         </>
       )}
     </div>
@@ -340,34 +346,40 @@ function GoogleDriveImportDialog({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Select Google Meet recording</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="pr-10">
+          <DialogTitle className="leading-6">
+            Select Google Meet recording
+          </DialogTitle>
+          <DialogDescription className="wrap-break-word line-clamp-2">
             {meeting?.title ?? "Choose a Drive recording for this meeting."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          {pickerError && (
+          {pickerError === "drive_scope_missing" ? (
             <Alert variant="destructive">
               <InfoIcon />
-              <AlertTitle>Google Picker could not open</AlertTitle>
+              <AlertTitle>Google Drive access required</AlertTitle>
+              <AlertDescription>
+                Your Google account needs Drive access to import recordings.
+                Please disconnect and reconnect your Google account on the{" "}
+                <Link className="underline" href="/settings/integrations">
+                  integrations page
+                </Link>
+                .
+              </AlertDescription>
+            </Alert>
+          ) : pickerError ? (
+            <Alert variant="destructive">
+              <InfoIcon />
+              <AlertTitle>Could not open Drive picker</AlertTitle>
               <AlertDescription>
                 {pickerError === "Google Picker is not configured"
                   ? "Missing NEXT_PUBLIC_GOOGLE_PICKER_API_KEY or NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
-                  : pickerError}
+                  : "Please try again."}
               </AlertDescription>
             </Alert>
-          )}
-
-          <Alert>
-            <InfoIcon />
-            <AlertTitle>Drive access</AlertTitle>
-            <AlertDescription>
-              Google Drive grants imeetly access only to the recording you pick
-              in the Google file chooser.
-            </AlertDescription>
-          </Alert>
+          ) : null}
 
           <div className="flex flex-col gap-3 rounded-2xl border p-4">
             <div className="flex items-start gap-3">
@@ -387,7 +399,11 @@ function GoogleDriveImportDialog({
             </div>
 
             <Button
-              disabled={isOpeningPicker || isImporting}
+              disabled={
+                isOpeningPicker ||
+                isImporting ||
+                pickerError === "drive_scope_missing"
+              }
               onClick={onChooseDriveFile}
               variant="secondary"
             >
@@ -419,14 +435,22 @@ function GoogleDriveImportDialog({
   );
 }
 
-function ExternalMeetingsList({
+export function ExternalMeetingsList({
   integrationId,
-  isSyncing,
+  showTitle = true,
+  onTotalChange,
 }: {
   integrationId: string;
-  isSyncing: boolean;
+  showTitle?: boolean;
+  onTotalChange?: (total: number | null) => void;
 }) {
   const { openPicker } = useGoogleDrivePicker();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const shouldRestoreFocusRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [driveImportMeeting, setDriveImportMeeting] =
     useState<ExternalMeeting | null>(null);
   const [selectedDriveFile, setSelectedDriveFile] =
@@ -446,6 +470,14 @@ function ExternalMeetingsList({
     client.integration.getGoogleAccessToken.mutationOptions(),
   );
 
+  const reconnectGoogleMutation = useMutation(
+    client.integration.getConnectUrl.mutationOptions({
+      onSuccess: (url) => {
+        window.location.href = url;
+      },
+    }),
+  );
+
   const importDriveMutation = useMutation(
     client.integration.importDriveFile.mutationOptions({
       onSuccess: ({ meetingId }) => {
@@ -461,19 +493,30 @@ function ExternalMeetingsList({
     try {
       setPickerError(null);
       setIsOpeningDrivePicker(true);
-      const { accessToken } = await getAccessTokenMutation.mutateAsync({
-        integrationId,
-      });
-      await openPicker(accessToken, (fileId, fileName) => {
+      const { accessToken, pickerClientId } =
+        await getAccessTokenMutation.mutateAsync({
+          integrationId,
+        });
+      if (!accessToken?.trim()) {
+        throw new Error("Google access token is missing");
+      }
+      await openPicker({ pickerClientId }, (fileId, fileName) => {
         setSelectedDriveFile({ id: fileId, name: fileName });
       });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to open Drive picker";
-      setPickerError(message);
+      const normalizedMessage = message.includes("drive_scope_missing")
+        ? "drive_scope_missing"
+        : message;
+      setPickerError(normalizedMessage);
+      if (normalizedMessage === "drive_scope_missing") {
+        reconnectGoogleMutation.mutate({ provider: "google" });
+        return;
+      }
       toast.error("Failed to open Drive picker", {
         description:
-          message === "Google Picker is not configured"
+          normalizedMessage === "Google Picker is not configured"
             ? "Set NEXT_PUBLIC_GOOGLE_PICKER_API_KEY and NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
             : "Please try again.",
       });
@@ -499,70 +542,167 @@ function ExternalMeetingsList({
     }
   };
 
-  const { data: meetings = [], isLoading } = useQuery(
-    client.integration.listExternalMeetings.queryOptions({
-      input: { integrationId, limit: 20, offset: 0 },
-    }),
-  );
+  useEffect(() => {
+    if (search.trim() === "") {
+      setDebouncedSearch("");
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
-  if (isLoading || isSyncing) {
-    return (
-      <div className="flex flex-col gap-3">
-        <Skeleton className="-mt-3 h-7 w-48 rounded-lg" />
-        <div className="flex items-center gap-3 rounded-xl border p-4">
-          <div className="flex w-full flex-col gap-3">
-            <div className="flex w-full min-w-0 items-center justify-between gap-3">
-              <Skeleton className="size-9 shrink-0 rounded-lg" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-5 w-2/5 rounded-md" />
-                <Skeleton className="h-4 w-1/4 rounded-md" />
-              </div>
-              <Skeleton className="h-5 w-20 shrink-0 rounded-full" />
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-8 w-16 rounded-lg" />
-              <Skeleton className="h-8 w-24 rounded-lg" />
-            </div>
-          </div>
-        </div>
-      </div>
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } =
+    useInfiniteQuery(
+      client.integration.listExternalMeetings.infiniteOptions({
+        input: (pageParam) => ({
+          integrationId,
+          search: debouncedSearch || undefined,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          limit: PAGE_SIZE,
+          offset: pageParam as number,
+        }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) => {
+          const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
+          return loaded < lastPage.total ? loaded : undefined;
+        },
+      }),
     );
-  }
+
+  useEffect(() => {
+    if (search !== debouncedSearch) {
+      shouldRestoreFocusRef.current =
+        document.activeElement === searchInputRef.current;
+      return;
+    }
+    if (!isFetching && shouldRestoreFocusRef.current) {
+      searchInputRef.current?.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  }, [debouncedSearch, isFetching, search]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetching) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetching, fetchNextPage]);
+
+  useEffect(() => {
+    if (!onTotalChange) return;
+    if (isLoading) {
+      onTotalChange(null);
+    } else {
+      onTotalChange(data?.pages[0]?.total ?? 0);
+    }
+  }, [isLoading, data, onTotalChange]);
+
+  const meetings = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="-mt-3 font-semibold text-lg">Synced meetings</h2>
-      {meetings.length === 0 ? (
-        <Empty className="border">
-          <EmptyHeader>
-            <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
-              <ProjectorIcon className="size-5 text-muted-foreground" />
-            </div>
-            <EmptyTitle>No meetings found</EmptyTitle>
-            <EmptyDescription>
-              Click &ldquo;Sync meetings&rdquo; to import from your calendar.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        meetings.map((meeting) => (
-          <MeetingRow
-            importDriveMutation={importDriveMutation}
-            importMutation={importMutation}
-            key={meeting.id}
-            meeting={meeting}
-            onSelectFromDrive={(selectedMeeting) => {
-              setDriveImportMeeting(selectedMeeting);
-              setSelectedDriveFile(null);
-              setPickerError(null);
+    <div className="flex min-w-0 max-w-full flex-col gap-6 overflow-hidden">
+      {showTitle ? (
+        <h2 className="-mt-3 font-semibold text-lg">Synced meetings</h2>
+      ) : null}
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+        <InputGroup className="min-w-0 flex-1">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            onChange={(e) => {
+              const nextValue = e.target.value;
+              setSearch(nextValue);
+              if (nextValue.trim() === "") {
+                setDebouncedSearch("");
+              }
             }}
+            placeholder="Search synced meetings..."
+            ref={searchInputRef}
+            value={search}
           />
-        ))
-      )}
+        </InputGroup>
+        <Select
+          onValueChange={(v) => setStatusFilter(v ?? "all")}
+          value={statusFilter}
+        >
+          <SelectTrigger className="w-full sm:w-50">
+            <SelectValue placeholder="All Statuses">
+              {
+                EXTERNAL_STATUS_OPTIONS.find((s) => s.value === statusFilter)
+                  ?.label
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {EXTERNAL_STATUS_OPTIONS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <p className="text-muted-foreground text-xs">
+        Search synced meeting titles, provider IDs, and join links.
+      </p>
+
+      <div className="flex min-w-0 flex-col gap-2 overflow-hidden">
+        {isLoading ? (
+          <ExternalMeetingListSkeleton />
+        ) : meetings.length === 0 ? (
+          <Empty className="border">
+            <EmptyHeader>
+              <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
+                <ProjectorIcon className="size-5 text-muted-foreground" />
+              </div>
+              <EmptyTitle>No meetings found</EmptyTitle>
+              <EmptyDescription>
+                {search || statusFilter !== "all"
+                  ? "Try adjusting your search or filters."
+                  : "Click “Sync meetings” to import from your calendar."}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          meetings.map((meeting) => (
+            <MeetingRow
+              importDriveMutation={importDriveMutation}
+              importMutation={importMutation}
+              key={meeting.id}
+              meeting={meeting}
+              onSelectFromDrive={(selectedMeeting) => {
+                setDriveImportMeeting(selectedMeeting);
+                setSelectedDriveFile(null);
+                setPickerError(null);
+              }}
+            />
+          ))
+        )}
+        <div ref={sentinelRef} />
+        {isFetching && !isLoading && (
+          <div className="flex justify-center py-4">
+            <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
       <GoogleDriveImportDialog
         isImporting={importDriveMutation.isPending}
         isOpeningPicker={
-          isOpeningDrivePicker || getAccessTokenMutation.isPending
+          isOpeningDrivePicker ||
+          getAccessTokenMutation.isPending ||
+          reconnectGoogleMutation.isPending
         }
         meeting={driveImportMeeting}
         onChooseDriveFile={handleChooseDriveFile}
@@ -572,6 +712,31 @@ function ExternalMeetingsList({
         pickerError={pickerError}
         selectedDriveFile={selectedDriveFile}
       />
+    </div>
+  );
+}
+
+function ExternalMeetingListSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div className="flex items-center gap-3 rounded-xl border p-4" key={i}>
+          <div className="flex w-full flex-col gap-3">
+            <div className="flex w-full min-w-0 items-center justify-between gap-3">
+              <Skeleton className="size-9 shrink-0 rounded-lg" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-5 w-2/5 rounded-md" />
+                <Skeleton className="h-4 w-1/4 rounded-md" />
+              </div>
+              <Skeleton className="h-5 w-[116.233px] shrink-0 rounded-3xl" />
+            </div>
+            <div className="flex w-full flex-col gap-2 lg:flex-row">
+              <Skeleton className="h-8 w-full rounded-4xl lg:w-[155.917px]" />
+              <Skeleton className="h-8 w-full rounded-4xl lg:w-[132.433px]" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -605,7 +770,6 @@ function MeetingRow({
     provider: meeting.provider,
     meetingUrl: meeting.joinUrl,
   });
-  const providerMeta = getMeetingProviderMeta(resolvedProvider);
 
   const statusColor: Record<string, string> = {
     imported: "secondary",
@@ -634,6 +798,7 @@ function MeetingRow({
               meeting.status === "no_recording" ||
               meeting.status === "failed") && (
               <Button
+                className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
                 disabled={isImportingDriveFile}
                 onClick={() => onSelectFromDrive(meeting)}
                 size="sm"
@@ -651,6 +816,7 @@ function MeetingRow({
             (meeting.status === "recording_available" ||
               meeting.status === "imported") && (
               <Button
+                className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
                 disabled={isImporting}
                 onClick={() =>
                   importMutation.mutate({ externalMeetingId: meeting.id })
@@ -669,6 +835,7 @@ function MeetingRow({
           {meeting.status === "completed" &&
             typeof meeting.metadata.imeetlyMeetingId === "string" && (
               <Button
+                className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
                 nativeButton={false}
                 render={
                   <Link
@@ -683,6 +850,7 @@ function MeetingRow({
             )}
           {meeting.joinUrl && (
             <Button
+              className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
               nativeButton={false}
               render={
                 <Link
@@ -709,14 +877,13 @@ function MeetingRow({
           ) : (
             "No start time"
           )}
-          {providerMeta?.label && ` · ${providerMeta.label}`}
         </>
       }
       title={meeting.title}
       trailing={
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:max-w-52 md:justify-end">
           <Badge
-            className="shrink-0"
+            className="max-w-full shrink truncate"
             variant={
               (statusColor[meeting.status] ?? "secondary") as
                 | "secondary"

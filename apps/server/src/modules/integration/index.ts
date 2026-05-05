@@ -32,6 +32,8 @@ export const integrationController = base.router({
         {
           limit: input.limit,
           offset: input.offset,
+          search: input.search,
+          status: input.status,
         },
       ),
     ),
