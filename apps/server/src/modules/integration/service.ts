@@ -258,8 +258,7 @@ export class IntegrationService {
     );
 
     console.info("[integration:google-drive-picker]", {
-      event:
-        missingDriveScopes.length > 0 ? "scope_missing" : "token_ready",
+      event: missingDriveScopes.length > 0 ? "scope_missing" : "token_ready",
       expiresAt: token.expiresAt?.toISOString() ?? null,
       hasAccessToken: Boolean(token.accessToken),
       missingDriveScopes,

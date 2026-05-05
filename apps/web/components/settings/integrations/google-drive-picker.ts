@@ -11,7 +11,9 @@ declare global {
     google: {
       accounts: {
         oauth2: {
-          initTokenClient: (config: GoogleTokenClientConfig) => GoogleTokenClient;
+          initTokenClient: (
+            config: GoogleTokenClientConfig,
+          ) => GoogleTokenClient;
         };
       };
       picker: {
@@ -24,8 +26,7 @@ declare global {
   }
 }
 
-const GOOGLE_PICKER_SCOPES =
-  "https://www.googleapis.com/auth/drive.file";
+const GOOGLE_PICKER_SCOPES = "https://www.googleapis.com/auth/drive.file";
 
 interface GoogleTokenClientConfig {
   client_id: string;
