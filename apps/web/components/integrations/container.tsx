@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { ExternalMeetingsList } from "@/components/settings/integrations/container";
+import { useGoogleDrivePicker } from "@/components/settings/integrations/google-drive-picker";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
@@ -151,6 +152,7 @@ function ConnectedProviderView({
   meta: { name: string };
 }) {
   const queryClient = useQueryClient();
+  const { openPicker } = useGoogleDrivePicker();
   const [meetingsTotal, setMeetingsTotal] = useState<number | null>(null);
 
   const syncMutation = useMutation(
@@ -181,6 +183,7 @@ function ConnectedProviderView({
       <ExternalMeetingsList
         integrationId={integrationId}
         onTotalChange={setMeetingsTotal}
+        openPicker={openPicker}
         showTitle={false}
       />
     </div>

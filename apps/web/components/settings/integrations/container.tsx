@@ -143,6 +143,7 @@ export function IntegrationsContainer({
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const { openPicker, clearCache } = useGoogleDrivePicker();
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<
     string | null
   >(null);
@@ -204,6 +205,7 @@ export function IntegrationsContainer({
           client.integration.list.queryOptions(),
         );
         setSelectedIntegrationId(null);
+        clearCache();
       },
     }),
   );
@@ -315,7 +317,10 @@ export function IntegrationsContainer({
       {selectedIntegrationId && (
         <>
           <Separator />
-          <ExternalMeetingsList integrationId={selectedIntegrationId} />
+          <ExternalMeetingsList
+            integrationId={selectedIntegrationId}
+            openPicker={openPicker}
+          />
         </>
       )}
     </div>
@@ -439,12 +444,13 @@ export function ExternalMeetingsList({
   integrationId,
   showTitle = true,
   onTotalChange,
+  openPicker,
 }: {
   integrationId: string;
   showTitle?: boolean;
   onTotalChange?: (total: number | null) => void;
+  openPicker: ReturnType<typeof useGoogleDrivePicker>["openPicker"];
 }) {
-  const { openPicker } = useGoogleDrivePicker();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shouldRestoreFocusRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -500,9 +506,12 @@ export function ExternalMeetingsList({
       if (!accessToken?.trim()) {
         throw new Error("Google access token is missing");
       }
-      await openPicker({ pickerClientId }, (fileId, fileName) => {
-        setSelectedDriveFile({ id: fileId, name: fileName });
-      });
+      await openPicker(
+        { pickerClientId, accessToken },
+        (fileId: string, fileName: string) => {
+          setSelectedDriveFile({ id: fileId, name: fileName });
+        },
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to open Drive picker";

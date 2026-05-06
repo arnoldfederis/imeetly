@@ -69,6 +69,9 @@ interface GooglePickerResponse {
 export function useGoogleDrivePicker() {
   const loaded = useRef(false);
   const pickerAccessToken = useRef<string | null>(null);
+  const clearCache = useCallback(() => {
+    pickerAccessToken.current = null;
+  }, []);
 
   const load = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -164,7 +167,7 @@ export function useGoogleDrivePicker() {
 
   const openPicker = useCallback(
     async (
-      input: { pickerClientId: string },
+      input: { pickerClientId: string; accessToken?: string },
       onPicked: (fileId: string, fileName: string) => void,
     ) => {
       if (
@@ -185,7 +188,8 @@ export function useGoogleDrivePicker() {
       }
 
       await load();
-      const accessToken = await getPickerAccessToken(input.pickerClientId);
+      const accessToken =
+        input.accessToken || (await getPickerAccessToken(input.pickerClientId));
 
       const view = new window.google.picker.DocsView()
         .setMimeTypes(
@@ -216,5 +220,5 @@ export function useGoogleDrivePicker() {
     [getPickerAccessToken, load],
   );
 
-  return { openPicker };
+  return { openPicker, clearCache };
 }
