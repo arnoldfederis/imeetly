@@ -53,10 +53,10 @@ export const integrationController = base.router({
       ),
     ),
 
-  getGoogleAccessToken: privateProcedure
-    .input(integrationModel.getAccessToken)
+  getGooglePickerConfig: privateProcedure
+    .input(integrationModel.getGooglePickerConfig)
     .handler(async ({ input, context }) =>
-      IntegrationService.getGoogleAccessToken(
+      IntegrationService.getGooglePickerConfig(
         context.user.id,
         input.integrationId,
       ),

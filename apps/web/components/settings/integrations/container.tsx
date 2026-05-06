@@ -472,8 +472,8 @@ export function ExternalMeetingsList({
     }),
   );
 
-  const getAccessTokenMutation = useMutation(
-    client.integration.getGoogleAccessToken.mutationOptions(),
+  const getPickerConfigMutation = useMutation(
+    client.integration.getGooglePickerConfig.mutationOptions(),
   );
 
   const reconnectGoogleMutation = useMutation(
@@ -499,15 +499,11 @@ export function ExternalMeetingsList({
     try {
       setPickerError(null);
       setIsOpeningDrivePicker(true);
-      const { accessToken, pickerClientId } =
-        await getAccessTokenMutation.mutateAsync({
-          integrationId,
-        });
-      if (!accessToken?.trim()) {
-        throw new Error("Google access token is missing");
-      }
+      const { pickerClientId } = await getPickerConfigMutation.mutateAsync({
+        integrationId,
+      });
       await openPicker(
-        { pickerClientId, accessToken },
+        { pickerClientId },
         (fileId: string, fileName: string) => {
           setSelectedDriveFile({ id: fileId, name: fileName });
         },
@@ -710,7 +706,7 @@ export function ExternalMeetingsList({
         isImporting={importDriveMutation.isPending}
         isOpeningPicker={
           isOpeningDrivePicker ||
-          getAccessTokenMutation.isPending ||
+          getPickerConfigMutation.isPending ||
           reconnectGoogleMutation.isPending
         }
         meeting={driveImportMeeting}

@@ -40,6 +40,7 @@ interface GoogleTokenClient {
 
 interface GoogleTokenResponse {
   access_token?: string;
+  expires_in?: number;
   error?: string;
   error_description?: string;
 }
@@ -69,8 +70,10 @@ interface GooglePickerResponse {
 export function useGoogleDrivePicker() {
   const loaded = useRef(false);
   const pickerAccessToken = useRef<string | null>(null);
+  const pickerAccessTokenExpiresAt = useRef<number>(0);
   const clearCache = useCallback(() => {
     pickerAccessToken.current = null;
+    pickerAccessTokenExpiresAt.current = 0;
   }, []);
 
   const load = useCallback((): Promise<void> => {
@@ -129,7 +132,12 @@ export function useGoogleDrivePicker() {
 
   const getPickerAccessToken = useCallback(
     async (clientId: string): Promise<string> => {
-      if (pickerAccessToken.current) return pickerAccessToken.current;
+      if (
+        pickerAccessToken.current &&
+        pickerAccessTokenExpiresAt.current - Date.now() > 60_000
+      ) {
+        return pickerAccessToken.current;
+      }
 
       await load();
 
@@ -141,6 +149,8 @@ export function useGoogleDrivePicker() {
             callback: (response) => {
               if (response.access_token) {
                 pickerAccessToken.current = response.access_token;
+                pickerAccessTokenExpiresAt.current =
+                  Date.now() + (response.expires_in ?? 3600) * 1000;
                 resolve(response.access_token);
                 return;
               }
@@ -157,9 +167,9 @@ export function useGoogleDrivePicker() {
         });
 
       try {
-        return await requestToken("");
+        return await requestToken("consent");
       } catch {
-        return requestToken("consent");
+        return requestToken("");
       }
     },
     [load],
@@ -167,7 +177,7 @@ export function useGoogleDrivePicker() {
 
   const openPicker = useCallback(
     async (
-      input: { pickerClientId: string; accessToken?: string },
+      input: { pickerClientId: string },
       onPicked: (fileId: string, fileName: string) => void,
     ) => {
       if (
@@ -188,8 +198,7 @@ export function useGoogleDrivePicker() {
       }
 
       await load();
-      const accessToken =
-        input.accessToken || (await getPickerAccessToken(input.pickerClientId));
+      const accessToken = await getPickerAccessToken(input.pickerClientId);
 
       const view = new window.google.picker.DocsView()
         .setMimeTypes(

@@ -222,10 +222,10 @@ export class IntegrationService {
     });
   }
 
-  static async getGoogleAccessToken(
+  static async getGooglePickerConfig(
     userId: string,
     integrationId: string,
-  ): Promise<{ accessToken: string; pickerClientId: string }> {
+  ): Promise<{ pickerClientId: string }> {
     const [integration] = await db
       .select({
         id: integrations.id,
@@ -295,8 +295,7 @@ export class IntegrationService {
       });
     }
 
-    const accessToken = token.accessToken;
-    return { accessToken, pickerClientId };
+    return { pickerClientId };
   }
 
   static async importDriveFile(
