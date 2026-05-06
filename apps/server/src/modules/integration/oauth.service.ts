@@ -63,7 +63,7 @@ export class OAuthService {
     return { userId, integrationId };
   }
 
-  static async getAccessToken(integrationId: string): Promise<string | null> {
+  static async getAccessToken(integrationId: string): Promise<string> {
     try {
       const details = await OAuthService.getAccessTokenDetails(integrationId);
       return details.accessToken;
@@ -72,7 +72,7 @@ export class OAuthService {
         integrationId,
         error: error instanceof Error ? error.message : String(error),
       });
-      return null;
+      return "";
     }
   }
 
@@ -100,12 +100,7 @@ export class OAuthService {
 
     // Refresh if within 5 minutes of expiry or already expired
     if (row.expiresAt && row.expiresAt.getTime() - Date.now() < 5 * 60 * 1000) {
-      try {
-        return await OAuthService._refreshAccessToken(row);
-      } catch (error) {
-        // If refresh fails, we already marked it as expired in _refreshAccessToken
-        throw error;
-      }
+      return await OAuthService._refreshAccessToken(row);
     }
 
     const accessToken = decrypt(row.accessTokenEncrypted);
