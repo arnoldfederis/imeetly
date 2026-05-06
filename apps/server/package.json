@@ -11,11 +11,13 @@
     "pre:push": "bun lint && bun format",
     "auth:generate": "dotenv -e ../../.env -- bunx @better-auth/cli generate --config=./src/lib/auth.ts -y",
     "check-types": "bunx tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf node_modules dist"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1039.0",
-    "@aws-sdk/s3-request-presigner": "^3.1039.0",
+    "@aws-sdk/client-s3": "^3.1044.0",
+    "@aws-sdk/s3-request-presigner": "^3.1044.0",
     "@better-auth/core": "^1.6.9",
     "@better-auth/passkey": "catalog:",
     "@bogeychan/elysia-logger": "latest",
@@ -35,9 +37,10 @@
     "mailchecker": "catalog:",
     "nodemailer": "8.0.7",
     "pino": "catalog:",
-    "react": "^19.2.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "reflect-metadata": "^0.2.2",
-    "resend": "6.12.2",
+    "resend": "6.12.3",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -45,7 +48,8 @@
     "@types/nodemailer": "latest",
     "@types/react": "^19.2.14",
     "dotenv-cli": "catalog:dev",
-    "pino-pretty": "catalog:dev"
+    "pino-pretty": "catalog:dev",
+    "vitest": "^4.1.5"
   },
   "exports": {
     ".": "./src/index.ts",

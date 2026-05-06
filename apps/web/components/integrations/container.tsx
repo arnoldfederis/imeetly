@@ -3,10 +3,11 @@
 import { env } from "@repo/env";
 import type { RouterOutputs } from "@repo/server/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LoaderIcon, RefreshCwIcon } from "lucide-react";
-import { useState } from "react";
+import { LoaderIcon, Unlink2Icon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ExternalMeetingsList } from "@/components/settings/integrations/container";
-import { useGoogleDrivePicker } from "@/components/settings/integrations/google-drive-picker";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
@@ -36,7 +37,7 @@ const PROVIDER_META: Record<
   google: {
     name: "Google Meet",
     description:
-      "Sync Google Meet calendar events, then select a Drive recording to import",
+      "Sync Google Calendar events, find Meet recording artifacts, and import available recordings automatically",
     icon: <GoogleMeetIcon className="size-5" />,
     connectLabel: "Connect Google Meet",
   },
@@ -48,7 +49,8 @@ const PROVIDER_META: Record<
   },
   microsoft: {
     name: "Microsoft Teams",
-    description: "Import Teams meetings from your Outlook calendar",
+    description:
+      "Sync Outlook calendar meetings and manually import Teams recordings",
     icon: <MicrosoftTeamsIcon className="size-5" />,
     connectLabel: "Connect Microsoft Teams",
   },
@@ -63,6 +65,23 @@ export function IntegrationProviderContainer({
   provider: Provider;
 }) {
   const meta = PROVIDER_META[provider];
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    if (error === "ms_admin_required") {
+      toast.error("Admin approval required", {
+        description:
+          "Your organization requires an IT admin to approve this app. Contact your admin or reach out to us for enterprise setup.",
+        duration: 10000,
+      });
+      return;
+    }
+    toast.error("Failed to connect integration", {
+      description: "Please try again or contact support if the issue persists.",
+    });
+  }, [searchParams]);
 
   const { data: integrations = [], isLoading: isIntegrationLoading } = useQuery(
     client.integration.list.queryOptions({
@@ -87,7 +106,7 @@ export function IntegrationProviderContainer({
     return (
       <div className="flex flex-col gap-6">
         <ProviderHeader
-          action={<SyncMeetingsButton disabled />}
+          action={<DisconnectButton disabled />}
           meetingCount={null}
           meta={meta}
         />
@@ -97,7 +116,13 @@ export function IntegrationProviderContainer({
   }
 
   if (integration) {
-    return <ConnectedProviderView integrationId={integration.id} meta={meta} />;
+    return (
+      <ConnectedProviderView
+        connected={searchParams.get("connected") === "true"}
+        integrationId={integration.id}
+        meta={meta}
+      />
+    );
   }
 
   return (
@@ -145,14 +170,16 @@ export function IntegrationProviderContainer({
 }
 
 function ConnectedProviderView({
+  connected,
   integrationId,
   meta,
 }: {
+  connected: boolean;
   integrationId: string;
   meta: { name: string };
 }) {
   const queryClient = useQueryClient();
-  const { openPicker } = useGoogleDrivePicker();
+  const didAutoSyncRef = useRef(false);
   const [meetingsTotal, setMeetingsTotal] = useState<number | null>(null);
 
   const syncMutation = useMutation(
@@ -165,16 +192,33 @@ function ConnectedProviderView({
     }),
   );
 
-  const isSyncDisabled = syncMutation.isPending;
+  const disconnectMutation = useMutation(
+    client.integration.disconnect.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(
+          client.integration.list.queryOptions(),
+        );
+      },
+    }),
+  );
+
+  useEffect(() => {
+    if (didAutoSyncRef.current) return;
+    didAutoSyncRef.current = true;
+    if (connected) {
+      toast.success(`${meta.name} connected successfully`);
+    }
+    syncMutation.mutate({ integrationId });
+  }, [connected, integrationId, meta.name, syncMutation]);
 
   return (
     <div className="flex flex-col gap-6">
       <ProviderHeader
         action={
-          <SyncMeetingsButton
-            disabled={isSyncDisabled}
-            onClick={() => syncMutation.mutate({ integrationId })}
-            syncing={syncMutation.isPending}
+          <DisconnectButton
+            disabled={disconnectMutation.isPending}
+            disconnecting={disconnectMutation.isPending}
+            onClick={() => disconnectMutation.mutate({ integrationId })}
           />
         }
         meetingCount={meetingsTotal}
@@ -183,20 +227,19 @@ function ConnectedProviderView({
       <ExternalMeetingsList
         integrationId={integrationId}
         onTotalChange={setMeetingsTotal}
-        openPicker={openPicker}
         showTitle={false}
       />
     </div>
   );
 }
 
-function SyncMeetingsButton({
+function DisconnectButton({
   disabled,
-  syncing = false,
+  disconnecting = false,
   onClick,
 }: {
   disabled: boolean;
-  syncing?: boolean;
+  disconnecting?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -205,14 +248,14 @@ function SyncMeetingsButton({
       disabled={disabled}
       onClick={onClick}
       suppressHydrationWarning
-      variant="secondary"
+      variant="destructive"
     >
-      {syncing ? (
+      {disconnecting ? (
         <LoaderIcon className="size-4 animate-spin" />
       ) : (
-        <RefreshCwIcon className="size-4" />
+        <Unlink2Icon className="size-4" />
       )}
-      Sync meetings
+      Disconnect
     </Button>
   );
 }

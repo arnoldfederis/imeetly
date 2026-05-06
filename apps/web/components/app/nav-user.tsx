@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@repo/server/lib/auth-client";
-import { LoaderCircleIcon, LogOut } from "lucide-react";
+import { LoaderCircleIcon, LogOut, MessageSquareIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { MouseEvent } from "react";
@@ -92,6 +92,16 @@ export function NavUser({ user }: Props) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem className="p-0 hover:rounded-md hover:bg-secondary">
+          <Link
+            className="flex w-full items-center gap-2 px-3 py-2"
+            href="/feedbacks"
+            onClick={() => setIsOpen(false)}
+          >
+            <MessageSquareIcon className="size-4" />
+            Feedbacks
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="hover:rounded-md hover:bg-secondary"
           closeOnClick={false}

@@ -356,7 +356,57 @@ export const integrationWebhookEvents = schema.table(
   ],
 );
 
+export const feedback = schema.table(
+  "feedbacks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull().default("feedback"), // feedback | bug | feature
+    message: text("message").notNull(),
+    rating: integer("rating"),
+    files:
+      jsonb("files").$type<
+        Array<{ key: string; name: string; mimeType: string; size: number }>
+      >(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("feedback_user_id_idx").on(table.userId),
+    index("feedback_created_at_idx").on(table.createdAt),
+  ],
+);
+
+export const integrationWatchChannels = schema.table(
+  "integration_watch_channels",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    integrationId: text("integration_id")
+      .notNull()
+      .references(() => integrations.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    channelId: text("channel_id").notNull(),
+    resourceId: text("resource_id").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("watch_channels_integration_id_idx").on(table.integrationId),
+    uniqueIndex("watch_channels_channel_id_idx").on(table.channelId),
+  ],
+);
+
 export const appSchema = {
+  feedback,
   meetings,
   meetingFiles,
   meetingSummaries,
@@ -367,4 +417,5 @@ export const appSchema = {
   externalMeetings,
   externalParticipants,
   integrationWebhookEvents,
+  integrationWatchChannels,
 };

@@ -60,6 +60,17 @@ export class OAuthService {
       accountId,
       tokens,
     );
+
+    if (provider === "google") {
+      const { WatchService } = await import("./watch.service");
+      WatchService.registerGoogleWatch(integrationId).catch((err) =>
+        console.error(
+          "[integration] Failed to register Google calendar watch:",
+          err,
+        ),
+      );
+    }
+
     return { userId, integrationId };
   }
 

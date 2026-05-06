@@ -52,14 +52,12 @@ export const baseController = new Elysia()
           ? "ms_admin_required"
           : (error ?? "missing_params");
         return redirect(
-          `${frontendUrl}/settings/integrations?error=${errorCode}`,
+          `${frontendUrl}/integrations/${provider}?error=${errorCode}`,
         );
       }
 
       if (!["google", "zoom", "microsoft"].includes(provider)) {
-        return redirect(
-          `${frontendUrl}/settings/integrations?error=invalid_provider`,
-        );
+        return redirect(`${frontendUrl}/integrations?error=invalid_provider`);
       }
 
       try {
@@ -70,12 +68,12 @@ export const baseController = new Elysia()
           state,
         );
         return redirect(
-          `${frontendUrl}/settings/integrations?connected=${provider}`,
+          `${frontendUrl}/integrations/${provider}?connected=true`,
         );
       } catch (err) {
         console.error(`[integration] OAuth callback error (${provider}):`, err);
         return redirect(
-          `${frontendUrl}/settings/integrations?error=callback_failed`,
+          `${frontendUrl}/integrations/${provider}?error=callback_failed`,
         );
       }
     },

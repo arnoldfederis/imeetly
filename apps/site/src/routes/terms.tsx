@@ -48,10 +48,11 @@ function TermsPage() {
               <p className="mt-3">
                 imeetly is an AI-powered meeting notes service. You can upload
                 meeting recordings, video files, or text transcripts - or
-                connect your Google Meet, Zoom, or Microsoft Teams account to
-                import recordings automatically. The Service uses artificial
-                intelligence to generate structured outputs including
-                transcripts, summaries, decisions, blockers, and action items.
+                connect your Google Meet or Zoom account to import recordings
+                automatically, or connect Microsoft Teams to manually import
+                recordings. The Service uses artificial intelligence to generate
+                structured outputs including transcripts, summaries, decisions,
+                blockers, and action items.
               </p>
               <p className="mt-3">
                 The Service is provided on a best-effort basis. Features and

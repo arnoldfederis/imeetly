@@ -203,6 +203,12 @@ function PrivacyPage() {
                   practices as content you upload directly.
                 </li>
                 <li>
+                  When you connect Google Meet, we register a Google Calendar
+                  push notification channel so we can automatically detect when
+                  new recordings are available. This channel is removed when you
+                  disconnect the integration.
+                </li>
+                <li>
                   You can disconnect any integration at any time from{" "}
                   <strong>Settings → Integrations</strong>. Disconnecting
                   revokes our access and deletes the stored OAuth tokens. It
@@ -253,10 +259,11 @@ function PrivacyPage() {
                 <li>
                   <strong>Google</strong> - OAuth 2.0 sign-in and, if you
                   connect the Google Meet integration, Google Calendar API to
-                  retrieve calendar events and Google Drive API (
-                  <code>drive.file</code> scope only) to access recording files
-                  you explicitly select. We do not access your full Google
-                  Drive.
+                  retrieve calendar events, Google Meet API to find conference
+                  recording artifacts, and Google Drive API (
+                  <code>drive.meet.readonly</code> scope only) to download
+                  Meet-generated recording files. We do not access your full
+                  Google Drive.
                 </li>
                 <li>
                   <strong>Zoom</strong> - if you connect the Zoom integration,

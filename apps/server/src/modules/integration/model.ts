@@ -18,12 +18,9 @@ export const integrationModel = {
     limit: z.number().min(1).max(100).default(20),
     offset: z.number().min(0).default(0),
   }),
-  getGooglePickerConfig: z.object({
+  checkGoogleMeetRecording: z.object({
     integrationId: z.string().min(1),
-  }),
-  importDriveFile: z.object({
     externalMeetingId: z.string().min(1),
-    driveFileId: z.string().min(1),
   }),
 } as const;
 

@@ -53,22 +53,13 @@ export const integrationController = base.router({
       ),
     ),
 
-  getGooglePickerConfig: privateProcedure
-    .input(integrationModel.getGooglePickerConfig)
+  checkGoogleMeetRecording: privateProcedure
+    .input(integrationModel.checkGoogleMeetRecording)
     .handler(async ({ input, context }) =>
-      IntegrationService.getGooglePickerConfig(
+      IntegrationService.checkGoogleMeetRecording(
         context.user.id,
         input.integrationId,
-      ),
-    ),
-
-  importDriveFile: privateProcedure
-    .input(integrationModel.importDriveFile)
-    .handler(async ({ input, context }) =>
-      IntegrationService.importDriveFile(
-        context.user.id,
         input.externalMeetingId,
-        input.driveFileId,
       ),
     ),
 });

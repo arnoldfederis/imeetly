@@ -86,6 +86,7 @@ export const env = createEnv({
     ZOOM_WEBHOOK_SECRET_TOKEN: optional(string()),
     MICROSOFT_CLIENT_ID: optional(string()),
     MICROSOFT_CLIENT_SECRET: optional(string()),
+    GOOGLE_WEBHOOK_SECRET: optional(string()),
   },
   client: {
     NEXT_PUBLIC_APP_BASE_URL: string().check(
@@ -94,16 +95,10 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_SERVER_URL: string().check(
       minLength(1, "NEXT_PUBLIC_APP_SERVER_URL is required"),
     ),
-    NEXT_PUBLIC_GOOGLE_PICKER_API_KEY: optional(string()),
-    NEXT_PUBLIC_GOOGLE_PICKER_APP_ID: optional(string()),
   },
   shared: {},
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_BASE_URL: process.env.NEXT_PUBLIC_APP_BASE_URL,
     NEXT_PUBLIC_APP_SERVER_URL: process.env.NEXT_PUBLIC_APP_SERVER_URL,
-    NEXT_PUBLIC_GOOGLE_PICKER_API_KEY:
-      process.env.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY,
-    NEXT_PUBLIC_GOOGLE_PICKER_APP_ID:
-      process.env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID,
   },
 });

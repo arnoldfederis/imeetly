@@ -57,6 +57,33 @@ setInterval(() => {
   }
 }, 5 * 60_000).unref();
 
+// Retry Google Meet recordings not yet ready at time of push notification
+setInterval(async () => {
+  try {
+    const { retryPendingGoogleRecordings } = await import(
+      "./modules/integration/webhook"
+    );
+    await retryPendingGoogleRecordings();
+  } catch (err) {
+    console.error("[bg] Google recording retry error:", err);
+  }
+}, 5 * 60_000).unref();
+
+// Renew Google Calendar watch channels expiring within 24h
+setInterval(
+  async () => {
+    try {
+      const { WatchService } = await import(
+        "./modules/integration/watch.service"
+      );
+      await WatchService.renewExpiringGoogleChannels();
+    } catch (err) {
+      console.error("[bg] Google watch renewal error:", err);
+    }
+  },
+  6 * 60 * 60_000,
+).unref();
+
 export const app = new Elysia()
   .use(wrap(logger, {}))
   .use(

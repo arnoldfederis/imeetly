@@ -103,6 +103,11 @@ export interface IMeetingIntegrationProvider {
   getRecording(
     accessToken: string,
     externalMeetingId: string,
+    options?: {
+      meetingId?: string;
+      startsAt?: Date | null;
+      endsAt?: Date | null;
+    },
   ): Promise<ExternalRecording | null>;
 
   listParticipants(

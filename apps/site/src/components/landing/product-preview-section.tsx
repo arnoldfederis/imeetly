@@ -92,7 +92,7 @@ export function ProductPreviewSection() {
                         <ArrowRightIcon className="size-3" />
                       </div>
                     </div>
-                    <div className="divide-y px-2">
+                    <div className="divide-y px-4">
                       <MeetingRow
                         date="Today, 2:30 PM"
                         status="completed"
@@ -125,7 +125,7 @@ export function ProductPreviewSection() {
                         8 open
                       </span>
                     </div>
-                    <div className="divide-y px-2">
+                    <div className="divide-y px-4">
                       <ActionRow
                         meeting="Q4 Planning"
                         text="Draft API v2 migration guide"
@@ -149,14 +149,14 @@ export function ProductPreviewSection() {
 
                   {/* Mini stats */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border p-3">
+                    <div className="rounded-xl border p-4">
                       <p className="text-muted-foreground text-xs">Completed</p>
                       <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                         47
                         <CheckSquareIcon className="size-4 text-emerald-500" />
                       </div>
                     </div>
-                    <div className="rounded-xl border p-3">
+                    <div className="rounded-xl border p-4">
                       <p className="text-muted-foreground text-xs">
                         Open tasks
                       </p>

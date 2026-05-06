@@ -11,8 +11,6 @@ import {
 import {
   CheckCircleIcon,
   ExternalLinkIcon,
-  FileVideoIcon,
-  FolderOpenIcon,
   InfoIcon,
   LinkIcon,
   LoaderIcon,
@@ -63,7 +61,6 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 import { getLandingPageUrl } from "@/lib/utils";
-import { useGoogleDrivePicker } from "./google-drive-picker";
 
 type Integration = {
   id: string;
@@ -86,11 +83,6 @@ type ExternalMeeting = {
   metadata: Record<string, unknown>;
 };
 
-type SelectedDriveFile = {
-  id: string;
-  name: string;
-};
-
 type Provider = "google" | "zoom" | "microsoft";
 
 const PROVIDER_META: Record<
@@ -100,7 +92,7 @@ const PROVIDER_META: Record<
   google: {
     name: "Google Meet",
     description:
-      "Sync Google Meet calendar events, then select a Drive recording to import",
+      "Sync Google Calendar events, find Meet recording artifacts, and import available recordings automatically",
     icon: <GoogleMeetIcon className="size-6" />,
   },
   zoom: {
@@ -110,7 +102,8 @@ const PROVIDER_META: Record<
   },
   microsoft: {
     name: "Microsoft Teams",
-    description: "Import Teams meetings from your Outlook calendar",
+    description:
+      "Sync Outlook calendar meetings and manually import Teams recordings",
     icon: <MicrosoftTeamsIcon className="size-6" />,
   },
 };
@@ -143,7 +136,6 @@ export function IntegrationsContainer({
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { openPicker, clearCache } = useGoogleDrivePicker();
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<
     string | null
   >(null);
@@ -205,7 +197,6 @@ export function IntegrationsContainer({
           client.integration.list.queryOptions(),
         );
         setSelectedIntegrationId(null);
-        clearCache();
       },
     }),
   );
@@ -317,114 +308,130 @@ export function IntegrationsContainer({
       {selectedIntegrationId && (
         <>
           <Separator />
-          <ExternalMeetingsList
-            integrationId={selectedIntegrationId}
-            openPicker={openPicker}
-          />
+          <ExternalMeetingsList integrationId={selectedIntegrationId} />
         </>
       )}
     </div>
   );
 }
 
-function GoogleDriveImportDialog({
+function GoogleMeetRecordingImportDialog({
   meeting,
   open,
   onOpenChange,
-  selectedDriveFile,
-  pickerError,
-  isOpeningPicker,
+  lookup,
+  lookupError,
+  isSearching,
   isImporting,
-  onChooseDriveFile,
+  onRetry,
   onImport,
 }: {
   meeting: ExternalMeeting | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedDriveFile: SelectedDriveFile | null;
-  pickerError: string | null;
-  isOpeningPicker: boolean;
+  lookup:
+    | {
+        status: "found" | "not_ready" | "not_found";
+        message: string;
+        driveFile?: { name: string; mimeType: string };
+      }
+    | undefined;
+  lookupError: string | null;
+  isSearching: boolean;
   isImporting: boolean;
-  onChooseDriveFile: () => void;
+  onRetry: () => void;
   onImport: () => void;
 }) {
+  const status = isSearching
+    ? "searching"
+    : isImporting
+      ? "importing"
+      : lookup?.status;
+  const isRecordingFound = lookup?.status === "found";
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="pr-10">
           <DialogTitle className="leading-6">
-            Select Google Meet recording
+            Import recording from Calendar event
           </DialogTitle>
           <DialogDescription className="wrap-break-word line-clamp-2">
-            {meeting?.title ?? "Choose a Drive recording for this meeting."}
+            {meeting?.title ?? "Find the Google Meet recording for this event."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          {pickerError === "drive_scope_missing" ? (
+          {lookupError === "google_meet_recording_scope_missing" ? (
             <Alert variant="destructive">
               <InfoIcon />
-              <AlertTitle>Google Drive access required</AlertTitle>
+              <AlertTitle>Google Meet recording access required</AlertTitle>
               <AlertDescription>
-                Your Google account needs Drive access to import recordings.
-                Please disconnect and reconnect your Google account on the{" "}
-                <Link className="underline" href="/settings/integrations">
-                  integrations page
-                </Link>
-                .
+                Please reconnect Google Meet so imeetly can request Calendar
+                event, Meet conference, and Meet recording file access.
               </AlertDescription>
             </Alert>
-          ) : pickerError ? (
+          ) : lookupError ? (
             <Alert variant="destructive">
               <InfoIcon />
-              <AlertTitle>Could not open Drive picker</AlertTitle>
+              <AlertTitle>Import failed</AlertTitle>
               <AlertDescription>
-                {pickerError === "Google Picker is not configured"
-                  ? "Missing NEXT_PUBLIC_GOOGLE_PICKER_API_KEY or NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
-                  : "Please try again."}
+                {lookupError.includes("does not have access")
+                  ? "The recording must be available to the signed-in Google account, usually the meeting organizer or someone with access to the recording."
+                  : "imeetly could not check this Google Meet recording. Please try again."}
               </AlertDescription>
             </Alert>
           ) : null}
 
-          <div className="flex flex-col gap-3 rounded-2xl border p-4">
+          <div className="flex flex-col gap-3 rounded-xl border p-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted">
-                <FileVideoIcon className="size-4 text-muted-foreground" />
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                {status === "searching" || status === "importing" ? (
+                  <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+                ) : isRecordingFound ? (
+                  <CheckCircleIcon className="size-4 text-muted-foreground" />
+                ) : (
+                  <InfoIcon className="size-4 text-muted-foreground" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-sm">
-                  {selectedDriveFile?.name ?? "No recording selected"}
+                <p className="font-medium text-sm">
+                  {status === "searching"
+                    ? "Searching for recording"
+                    : status === "importing"
+                      ? "Importing"
+                      : isRecordingFound
+                        ? "Recording found"
+                        : "Recording not ready yet"}
                 </p>
-                <p className="text-muted-foreground text-xs">
-                  {selectedDriveFile
-                    ? "Ready to import from Google Drive"
-                    : "Supported files include MP4, WebM, M4A, and MP3."}
+                <p className="break-words text-muted-foreground text-xs">
+                  {isRecordingFound && lookup?.driveFile
+                    ? lookup.driveFile.name
+                    : (lookup?.message ??
+                      "Meet recordings may become available after the meeting ends.")}
                 </p>
               </div>
             </div>
-
-            <Button
-              disabled={
-                isOpeningPicker ||
-                isImporting ||
-                pickerError === "drive_scope_missing"
-              }
-              onClick={onChooseDriveFile}
-              variant="secondary"
-            >
-              {isOpeningPicker ? (
-                <LoaderIcon className="animate-spin" data-icon="inline-start" />
-              ) : (
-                <FolderOpenIcon data-icon="inline-start" />
-              )}
-              Choose from Google Drive
-            </Button>
           </div>
         </div>
 
         <DialogFooter>
+          {!isRecordingFound && (
+            <Button
+              disabled={isSearching || isImporting}
+              onClick={onRetry}
+              variant="secondary"
+            >
+              {isSearching ? (
+                <LoaderIcon className="animate-spin" data-icon="inline-start" />
+              ) : (
+                <SearchIcon data-icon="inline-start" />
+              )}
+              Retry
+            </Button>
+          )}
           <Button
-            disabled={!selectedDriveFile || isImporting}
+            disabled={!isRecordingFound || isSearching || isImporting}
             onClick={onImport}
           >
             {isImporting ? (
@@ -444,12 +451,10 @@ export function ExternalMeetingsList({
   integrationId,
   showTitle = true,
   onTotalChange,
-  openPicker,
 }: {
   integrationId: string;
   showTitle?: boolean;
   onTotalChange?: (total: number | null) => void;
-  openPicker: ReturnType<typeof useGoogleDrivePicker>["openPicker"];
 }) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shouldRestoreFocusRef = useRef(false);
@@ -457,12 +462,9 @@ export function ExternalMeetingsList({
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [driveImportMeeting, setDriveImportMeeting] =
+  const [googleImportMeeting, setGoogleImportMeeting] =
     useState<ExternalMeeting | null>(null);
-  const [selectedDriveFile, setSelectedDriveFile] =
-    useState<SelectedDriveFile | null>(null);
-  const [isOpeningDrivePicker, setIsOpeningDrivePicker] = useState(false);
-  const [pickerError, setPickerError] = useState<string | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
 
   const importMutation = useMutation(
     client.integration.importRecording.mutationOptions({
@@ -470,10 +472,6 @@ export function ExternalMeetingsList({
         window.location.href = `/meetings/${meetingId}`;
       },
     }),
-  );
-
-  const getPickerConfigMutation = useMutation(
-    client.integration.getGooglePickerConfig.mutationOptions(),
   );
 
   const reconnectGoogleMutation = useMutation(
@@ -484,66 +482,51 @@ export function ExternalMeetingsList({
     }),
   );
 
-  const importDriveMutation = useMutation(
-    client.integration.importDriveFile.mutationOptions({
-      onSuccess: ({ meetingId }) => {
-        window.location.href = `/meetings/${meetingId}`;
-      },
-      onError: () => {
-        toast.error("Failed to import recording from Drive");
+  const recordingLookupMutation = useMutation(
+    client.integration.checkGoogleMeetRecording.mutationOptions({
+      onError: (error) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to check Google Meet recording";
+        const normalizedMessage = message.includes(
+          "google_meet_recording_scope_missing",
+        )
+          ? "google_meet_recording_scope_missing"
+          : message;
+        setLookupError(normalizedMessage);
+        if (normalizedMessage === "google_meet_recording_scope_missing") {
+          reconnectGoogleMutation.mutate({ provider: "google" });
+          return;
+        }
+        toast.error("Failed to check Google Meet recording", {
+          description: message.includes("does not have access")
+            ? "The recording must be available to the signed-in Google account."
+            : "Please try again.",
+        });
       },
     }),
   );
 
-  const handleChooseDriveFile = async () => {
-    try {
-      setPickerError(null);
-      setIsOpeningDrivePicker(true);
-      const { pickerClientId } = await getPickerConfigMutation.mutateAsync({
-        integrationId,
-      });
-      await openPicker(
-        { pickerClientId },
-        (fileId: string, fileName: string) => {
-          setSelectedDriveFile({ id: fileId, name: fileName });
-        },
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to open Drive picker";
-      const normalizedMessage = message.includes("drive_scope_missing")
-        ? "drive_scope_missing"
-        : message;
-      setPickerError(normalizedMessage);
-      if (normalizedMessage === "drive_scope_missing") {
-        reconnectGoogleMutation.mutate({ provider: "google" });
-        return;
-      }
-      toast.error("Failed to open Drive picker", {
-        description:
-          normalizedMessage === "Google Picker is not configured"
-            ? "Set NEXT_PUBLIC_GOOGLE_PICKER_API_KEY and NEXT_PUBLIC_GOOGLE_PICKER_APP_ID."
-            : "Please try again.",
-      });
-    } finally {
-      setIsOpeningDrivePicker(false);
-    }
-  };
-
-  const handleImportSelectedDriveFile = () => {
-    if (!driveImportMeeting || !selectedDriveFile) return;
-    importDriveMutation.mutate({
-      externalMeetingId: driveImportMeeting.id,
-      driveFileId: selectedDriveFile.id,
+  const checkGoogleRecording = (meeting: ExternalMeeting) => {
+    setLookupError(null);
+    recordingLookupMutation.mutate({
+      integrationId,
+      externalMeetingId: meeting.id,
     });
   };
 
-  const handleDriveDialogOpenChange = (open: boolean) => {
-    if (importDriveMutation.isPending) return;
+  const handleImportGoogleRecording = () => {
+    if (!googleImportMeeting) return;
+    importMutation.mutate({ externalMeetingId: googleImportMeeting.id });
+  };
+
+  const handleGoogleDialogOpenChange = (open: boolean) => {
+    if (importMutation.isPending) return;
     if (!open) {
-      setDriveImportMeeting(null);
-      setSelectedDriveFile(null);
-      setPickerError(null);
+      setGoogleImportMeeting(null);
+      setLookupError(null);
+      recordingLookupMutation.reset();
     }
   };
 
@@ -676,21 +659,19 @@ export function ExternalMeetingsList({
               <EmptyDescription>
                 {search || statusFilter !== "all"
                   ? "Try adjusting your search or filters."
-                  : "Click “Sync meetings” to import from your calendar."}
+                  : "Meetings sync automatically after you connect your calendar."}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
           meetings.map((meeting) => (
             <MeetingRow
-              importDriveMutation={importDriveMutation}
               importMutation={importMutation}
               key={meeting.id}
               meeting={meeting}
-              onSelectFromDrive={(selectedMeeting) => {
-                setDriveImportMeeting(selectedMeeting);
-                setSelectedDriveFile(null);
-                setPickerError(null);
+              onImportGoogleRecording={(selectedMeeting) => {
+                setGoogleImportMeeting(selectedMeeting);
+                checkGoogleRecording(selectedMeeting);
               }}
             />
           ))
@@ -702,20 +683,24 @@ export function ExternalMeetingsList({
           </div>
         )}
       </div>
-      <GoogleDriveImportDialog
-        isImporting={importDriveMutation.isPending}
-        isOpeningPicker={
-          isOpeningDrivePicker ||
-          getPickerConfigMutation.isPending ||
-          reconnectGoogleMutation.isPending
+      <GoogleMeetRecordingImportDialog
+        isImporting={
+          importMutation.isPending &&
+          importMutation.variables?.externalMeetingId ===
+            googleImportMeeting?.id
         }
-        meeting={driveImportMeeting}
-        onChooseDriveFile={handleChooseDriveFile}
-        onImport={handleImportSelectedDriveFile}
-        onOpenChange={handleDriveDialogOpenChange}
-        open={!!driveImportMeeting}
-        pickerError={pickerError}
-        selectedDriveFile={selectedDriveFile}
+        isSearching={
+          recordingLookupMutation.isPending || reconnectGoogleMutation.isPending
+        }
+        lookup={recordingLookupMutation.data}
+        lookupError={lookupError}
+        meeting={googleImportMeeting}
+        onImport={handleImportGoogleRecording}
+        onOpenChange={handleGoogleDialogOpenChange}
+        onRetry={() => {
+          if (googleImportMeeting) checkGoogleRecording(googleImportMeeting);
+        }}
+        open={!!googleImportMeeting}
       />
     </div>
   );
@@ -749,8 +734,7 @@ function ExternalMeetingListSkeleton() {
 function MeetingRow({
   meeting,
   importMutation,
-  importDriveMutation,
-  onSelectFromDrive,
+  onImportGoogleRecording,
 }: {
   meeting: ExternalMeeting;
   importMutation: UseMutationResult<
@@ -758,19 +742,11 @@ function MeetingRow({
     Error,
     { externalMeetingId: string }
   >;
-  importDriveMutation: UseMutationResult<
-    { meetingId: string },
-    Error,
-    { externalMeetingId: string; driveFileId: string }
-  >;
-  onSelectFromDrive: (meeting: ExternalMeeting) => void;
+  onImportGoogleRecording: (meeting: ExternalMeeting) => void;
 }) {
   const isImporting =
     importMutation.isPending &&
     importMutation.variables?.externalMeetingId === meeting.id;
-  const isImportingDriveFile =
-    importDriveMutation.isPending &&
-    importDriveMutation.variables?.externalMeetingId === meeting.id;
   const resolvedProvider = detectMeetingProvider({
     provider: meeting.provider,
     meetingUrl: meeting.joinUrl,
@@ -804,17 +780,17 @@ function MeetingRow({
               meeting.status === "failed") && (
               <Button
                 className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
-                disabled={isImportingDriveFile}
-                onClick={() => onSelectFromDrive(meeting)}
+                disabled={isImporting}
+                onClick={() => onImportGoogleRecording(meeting)}
                 size="sm"
                 variant="secondary"
               >
-                {isImportingDriveFile ? (
+                {isImporting ? (
                   <LoaderIcon className="size-4 animate-spin" />
                 ) : (
-                  <FolderOpenIcon className="size-4" />
+                  <SearchIcon className="size-4" />
                 )}
-                Select recording
+                Import recording
               </Button>
             )}
           {meeting.provider !== "google" &&

@@ -1,11 +1,13 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
 import { externalMeetings, integrations } from "@repo/db/schemas/app";
-import { env } from "@repo/env";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { OAuthService } from "./oauth.service";
-import { GOOGLE_DRIVE_PICKER_SCOPES } from "./providers/google";
+import {
+  GOOGLE_MEET_RECORDING_SCOPES,
+  GoogleIntegrationProvider,
+} from "./providers/google";
 import { getProvider } from "./resolver";
 import type { IntegrationProviderType } from "./types";
 
@@ -38,7 +40,7 @@ export class IntegrationService {
     integrationId: string,
   ): Promise<void> {
     const [row] = await db
-      .select({ id: integrations.id })
+      .select({ id: integrations.id, provider: integrations.provider })
       .from(integrations)
       .where(
         and(
@@ -50,6 +52,12 @@ export class IntegrationService {
 
     if (!row)
       throw new ORPCError("NOT_FOUND", { message: "Integration not found" });
+
+    if (row.provider === "google") {
+      const { WatchService } = await import("./watch.service");
+      await WatchService.stopGoogleWatch(integrationId).catch(() => {});
+    }
+
     await OAuthService.revokeIntegration(userId, integrationId);
   }
 
@@ -222,16 +230,13 @@ export class IntegrationService {
     });
   }
 
-  static async getGooglePickerConfig(
+  static async checkGoogleMeetRecording(
     userId: string,
     integrationId: string,
-  ): Promise<{ pickerClientId: string }> {
+    externalMeetingDbId: string,
+  ) {
     const [integration] = await db
-      .select({
-        id: integrations.id,
-        provider: integrations.provider,
-        status: integrations.status,
-      })
+      .select()
       .from(integrations)
       .where(
         and(
@@ -252,57 +257,6 @@ export class IntegrationService {
       });
     }
 
-    const token = await OAuthService.getAccessTokenDetails(integrationId);
-    const missingDriveScopes = GOOGLE_DRIVE_PICKER_SCOPES.filter(
-      (scope) => !token.scopes.includes(scope),
-    );
-
-    console.info("[integration:google-drive-picker]", {
-      event: missingDriveScopes.length > 0 ? "scope_missing" : "token_ready",
-      expiresAt: token.expiresAt?.toISOString() ?? null,
-      hasAccessToken: Boolean(token.accessToken),
-      missingDriveScopes,
-      provider: token.provider,
-      scopes: token.scopes,
-      userId: token.userId,
-    });
-
-    if (missingDriveScopes.length > 0) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "drive_scope_missing",
-      });
-    }
-
-    const pickerClientId = env.GOOGLE_CLIENT_ID;
-    const pickerClientProjectNumber =
-      getGoogleOAuthClientProjectNumber(pickerClientId);
-
-    if (
-      pickerClientProjectNumber &&
-      env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID &&
-      pickerClientProjectNumber !== env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID
-    ) {
-      console.error("[integration:google-drive-picker]", {
-        event: "config_mismatch",
-        pickerAppId: env.NEXT_PUBLIC_GOOGLE_PICKER_APP_ID,
-        pickerClientProjectNumber,
-        provider: token.provider,
-        userId: token.userId,
-      });
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message:
-          "Google Picker is misconfigured: OAuth client and Picker App ID must use the same Google Cloud project",
-      });
-    }
-
-    return { pickerClientId };
-  }
-
-  static async importDriveFile(
-    userId: string,
-    externalMeetingDbId: string,
-    driveFileId: string,
-  ): Promise<{ meetingId: string }> {
     const [extMeeting] = await db
       .select()
       .from(externalMeetings)
@@ -310,6 +264,7 @@ export class IntegrationService {
         and(
           eq(externalMeetings.id, externalMeetingDbId),
           eq(externalMeetings.userId, userId),
+          eq(externalMeetings.integrationId, integrationId),
         ),
       )
       .limit(1);
@@ -319,31 +274,50 @@ export class IntegrationService {
         message: "External meeting not found",
       });
     }
-    if (extMeeting.provider !== "google") {
+
+    const token = await OAuthService.getAccessTokenDetails(integrationId);
+    const missingScopes = GOOGLE_MEET_RECORDING_SCOPES.filter(
+      (scope) => !token.scopes.includes(scope),
+    );
+
+    console.info("[integration:google-meet-recording]", {
+      event: missingScopes.length > 0 ? "scope_missing" : "lookup_start",
+      expiresAt: token.expiresAt?.toISOString() ?? null,
+      hasAccessToken: Boolean(token.accessToken),
+      missingScopes,
+      provider: token.provider,
+      scopes: token.scopes,
+      userId: token.userId,
+    });
+
+    if (missingScopes.length > 0) {
       throw new ORPCError("BAD_REQUEST", {
-        message: "Drive import is only supported for Google Meet",
+        message: "google_meet_recording_scope_missing",
       });
     }
 
-    if (
-      extMeeting.status === "processing" ||
-      extMeeting.status === "completed"
-    ) {
-      const meta = extMeeting.metadata as Record<string, unknown>;
-      if (typeof meta.imeetlyMeetingId === "string") {
-        return { meetingId: meta.imeetlyMeetingId };
-      }
+    const provider = getProvider("google");
+    if (!(provider instanceof GoogleIntegrationProvider)) {
+      throw new ORPCError("INTERNAL_SERVER_ERROR", {
+        message: "Google provider is unavailable",
+      });
     }
 
-    return MeetingRecordingIngestionService.ingestFromDriveFile({
-      userId,
-      integrationId: extMeeting.integrationId,
-      externalMeetingDbId,
-      driveFileId,
-      title: extMeeting.title,
-      startsAt: extMeeting.startsAt,
-      externalMeetingMetadata: asMetadata(extMeeting.metadata),
-    });
+    try {
+      return await provider.findMeetRecording(
+        token.accessToken,
+        extMeeting.externalMeetingId,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to check Google Meet recording";
+      if (message.includes("does not have access")) {
+        throw new ORPCError("FORBIDDEN", { message });
+      }
+      throw error;
+    }
   }
 }
 
@@ -351,9 +325,4 @@ function asMetadata(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-}
-
-function getGoogleOAuthClientProjectNumber(clientId: string) {
-  const [projectNumber] = clientId.split("-");
-  return /^\d+$/.test(projectNumber ?? "") ? projectNumber : null;
 }

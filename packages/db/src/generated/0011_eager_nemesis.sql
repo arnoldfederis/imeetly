@@ -1,0 +1,1 @@
+ALTER TABLE "app"."feedbacks" ADD COLUMN "files" jsonb;

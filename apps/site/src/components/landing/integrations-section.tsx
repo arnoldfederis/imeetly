@@ -17,7 +17,7 @@ const integrations = [
   {
     name: "Google Meet",
     description:
-      "Sync Google Meet calendar events and select a Drive recording to import.",
+      "Sync Google Calendar events and import Meet recordings automatically.",
     icon: <GoogleMeetIcon className="size-6" />,
     accent: "group-hover:border-green-500/40",
     dot: "bg-green-500",
@@ -45,9 +45,8 @@ export function IntegrationsSection() {
             Works with your favorite meeting tools
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect Zoom or Microsoft Teams for automatic recording import.
-            Connect Google Meet to sync calendar events then select a Drive
-            recording to process.
+            Connect Zoom or Google Meet for automatic recording import.
+            Microsoft Teams integration available for manual import.
           </p>
         </FadeIn>
 

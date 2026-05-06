@@ -508,7 +508,7 @@ export function NewMeetingForm({
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col-reverse justify-end gap-3 lg:flex-row">
         <Button
           disabled={isPending}
           onClick={() => router.push("/meetings")}

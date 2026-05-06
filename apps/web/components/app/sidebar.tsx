@@ -6,6 +6,7 @@ import {
   ChevronRight,
   LayoutDashboardIcon,
   LinkIcon,
+  MessageSquareIcon,
   ProjectorIcon,
   SettingsIcon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -309,6 +311,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link href="/feedbacks/new" onClick={onToggleSidebar} />}
+              tooltip="Feedback"
+            >
+              <MessageSquareIcon />
+              <span>Feedback</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

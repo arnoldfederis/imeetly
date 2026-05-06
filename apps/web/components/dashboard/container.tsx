@@ -204,7 +204,7 @@ export function DashboardContainer(props: Props) {
                 </Empty>
               </div>
             ) : (
-              <div className="divide-y px-2 py-3">
+              <div className="divide-y px-4 py-3">
                 {recent.map((m) => (
                   <MeetingRow key={m.id} meeting={m} />
                 ))}
@@ -235,7 +235,7 @@ export function DashboardContainer(props: Props) {
               </div>
             ) : (
               <>
-                <div className="divide-y px-2">
+                <div className="divide-y px-4">
                   {actionItemsData.items.map((item) => (
                     <div
                       className="flex items-start gap-2.5 py-2.5"
@@ -271,14 +271,14 @@ export function DashboardContainer(props: Props) {
 
           {/* Quick stats */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border p-3">
+            <div className="rounded-xl border p-4">
               <p className="text-muted-foreground text-xs">Completed</p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                 {stats?.completedMeetings ?? 0}
                 <CheckSquareIcon className="size-4 text-emerald-500" />
               </div>
             </div>
-            <div className="rounded-xl border p-3">
+            <div className="rounded-xl border p-4">
               <p className="text-muted-foreground text-xs">Open tasks</p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                 {stats?.openActionItems ?? 0}
@@ -339,7 +339,7 @@ function DashboardSkeleton() {
               </div>
               <Skeleton className="h-3 w-12 rounded-lg" />
             </div>
-            <div className="divide-y px-2 py-3">
+            <div className="divide-y px-4 py-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
@@ -363,7 +363,7 @@ function DashboardSkeleton() {
               <Skeleton className="h-5 w-24 rounded-lg" />
               <Skeleton className="h-5 w-12 rounded-full" />
             </div>
-            <div className="divide-y px-2">
+            <div className="divide-y px-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div className="flex items-start gap-2.5 py-2.5" key={i}>
                   <Skeleton className="mt-0.5 size-5 shrink-0 rounded-full" />
@@ -380,11 +380,11 @@ function DashboardSkeleton() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5 rounded-xl border p-3">
+            <div className="space-y-1.5 rounded-xl border p-4">
               <Skeleton className="h-3 w-16 rounded-lg" />
               <Skeleton className="h-7 w-12 rounded-lg" />
             </div>
-            <div className="space-y-1.5 rounded-xl border p-3">
+            <div className="space-y-1.5 rounded-xl border p-4">
               <Skeleton className="h-3 w-16 rounded-lg" />
               <Skeleton className="h-7 w-12 rounded-lg" />
             </div>

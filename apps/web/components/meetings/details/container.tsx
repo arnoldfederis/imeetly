@@ -170,7 +170,7 @@ export function MeetingDetailsContainer(props: Props) {
       {/* ── Header ── */}
       <div className="flex items-start gap-3 sm:gap-4">
         <Button
-          className="mt-0.5 size-10 shrink-0"
+          className="mt-0.5 size-9 shrink-0"
           nativeButton={false}
           render={<Link href={sourceLink} />}
           variant="secondary"
