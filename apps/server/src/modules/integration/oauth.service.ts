@@ -63,9 +63,17 @@ export class OAuthService {
     return { userId, integrationId };
   }
 
-  static async getAccessToken(integrationId: string): Promise<string> {
-    const details = await OAuthService.getAccessTokenDetails(integrationId);
-    return details.accessToken;
+  static async getAccessToken(integrationId: string): Promise<string | null> {
+    try {
+      const details = await OAuthService.getAccessTokenDetails(integrationId);
+      return details.accessToken;
+    } catch (error) {
+      console.error("[integration:token] Failed to get access token", {
+        integrationId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
   }
 
   static async getAccessTokenDetails(
@@ -82,16 +90,22 @@ export class OAuthService {
       )
       .limit(1);
 
-    if (!row) throw new Error("Integration not found or disconnected");
+    if (!row)
+      throw new Error("Integration not found, disconnected, or expired");
 
     OAuthService._logTokenState("loaded", row, {
       accessTokenExists: Boolean(row.accessTokenEncrypted),
       refreshTokenExists: Boolean(row.refreshTokenEncrypted),
     });
 
-    // Refresh if within 5 minutes of expiry
+    // Refresh if within 5 minutes of expiry or already expired
     if (row.expiresAt && row.expiresAt.getTime() - Date.now() < 5 * 60 * 1000) {
-      return OAuthService._refreshAccessToken(row);
+      try {
+        return await OAuthService._refreshAccessToken(row);
+      } catch (error) {
+        // If refresh fails, we already marked it as expired in _refreshAccessToken
+        throw error;
+      }
     }
 
     const accessToken = decrypt(row.accessTokenEncrypted);
@@ -189,6 +203,7 @@ export class OAuthService {
         expiresAt: tokens.expiresAt,
         scopes,
         status: "active",
+        updatedAt: new Date(),
       })
       .where(eq(integrations.id, row.id));
 
@@ -216,7 +231,7 @@ export class OAuthService {
     tokens: OAuthTokens,
   ): Promise<string> {
     const [existing] = await db
-      .select({ id: integrations.id })
+      .select({ id: integrations.id, scopes: integrations.scopes })
       .from(integrations)
       .where(
         and(
@@ -228,6 +243,7 @@ export class OAuthService {
       .limit(1);
 
     if (existing) {
+      const scopes = tokens.scopes.length > 0 ? tokens.scopes : existing.scopes;
       await db
         .update(integrations)
         .set({
@@ -236,8 +252,9 @@ export class OAuthService {
             ? { refreshTokenEncrypted: encrypt(tokens.refreshToken) }
             : {}),
           expiresAt: tokens.expiresAt,
-          scopes: tokens.scopes,
+          scopes,
           status: "active",
+          updatedAt: new Date(),
         })
         .where(eq(integrations.id, existing.id));
       return existing.id;
