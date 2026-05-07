@@ -1,0 +1,1 @@
+ALTER TABLE "app"."meetings" ADD COLUMN "visibility" text DEFAULT 'shared' NOT NULL;

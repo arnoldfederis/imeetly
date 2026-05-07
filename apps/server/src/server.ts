@@ -2,6 +2,7 @@ import { wrap } from "@bogeychan/elysia-logger";
 import cors from "@elysiajs/cors";
 import { env } from "@repo/env";
 import { baseController } from "@repo/server/modules/base";
+import { publicMeetingRouter } from "@repo/server/modules/meeting/public.router";
 import { Elysia } from "elysia";
 import pino from "pino";
 import pretty from "pino-pretty";
@@ -121,6 +122,7 @@ export const app = new Elysia()
     set.headers["Content-Security-Policy"] =
       "default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; connect-src 'self' https:; font-src 'self' https: data:; frame-ancestors 'none'";
   })
+  .use(publicMeetingRouter)
   .use(baseController)
   .listen(Number(env.SERVER_PORT));
 

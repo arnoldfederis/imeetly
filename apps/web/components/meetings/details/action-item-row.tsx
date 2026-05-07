@@ -175,10 +175,9 @@ export function ActionItemRow({
   if (editing) {
     return (
       <div className="flex flex-col gap-2 rounded-md border p-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
           <Input
-            autoFocus
-            className="flex-1 text-sm"
+            className="w-full"
             disabled={editMutation.isPending}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -190,7 +189,7 @@ export function ActionItemRow({
             value={editTitle}
           />
           <Input
-            className="w-36 shrink-0 text-sm"
+            className="w-full lg:w-56"
             disabled={editMutation.isPending}
             onChange={(e) => setEditOwner(e.target.value)}
             onKeyDown={(e) => {
@@ -201,7 +200,7 @@ export function ActionItemRow({
             value={editOwner}
           />
         </div>
-        <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             disabled={editMutation.isPending}
             onClick={cancelEdit}

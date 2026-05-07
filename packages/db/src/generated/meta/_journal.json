@@ -92,6 +92,13 @@
       "when": 1778113141567,
       "tag": "0012_fast_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778187135946,
+      "tag": "0013_burly_supreme_intelligence",
+      "breakpoints": true
     }
   ]
 }

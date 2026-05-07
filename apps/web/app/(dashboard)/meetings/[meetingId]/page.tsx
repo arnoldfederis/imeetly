@@ -30,20 +30,5 @@ export default async function Page({
     return notFound();
   }
 
-  const [meeting, planData] = await requireAuth(() =>
-    Promise.all([
-      server.meeting.getById({ id: meetingId }),
-      server.billing.getPlan(),
-    ]),
-  );
-
-  const canExport = planData.plan === "pro" || planData.plan === "team";
-
-  return (
-    <MeetingDetailsContainer
-      canExport={canExport}
-      meeting={meeting}
-      meetingId={meetingId}
-    />
-  );
+  return <MeetingDetailsContainer meetingId={meetingId} />;
 }

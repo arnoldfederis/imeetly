@@ -1,11 +1,10 @@
 "use client";
 
-import type { RouterOutputs } from "@repo/server/types";
+import { env } from "@repo/env";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeftIcon,
   CalendarIcon,
-  ChevronDownIcon,
   DownloadIcon,
   FileAudioIcon,
   FileTextIcon,
@@ -55,14 +54,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { client } from "@/lib/orpc";
-import { downloadMeetingMarkdown, downloadMeetingPdf } from "@/lib/utils";
+import {
+  downloadMeetingMarkdown,
+  downloadMeetingPdf,
+  getLandingPageUrl,
+} from "@/lib/utils";
 
 interface Props {
-  meeting: RouterOutputs["meeting"]["getById"];
   meetingId: string;
-  canExport: boolean;
 }
 
 export function MeetingDetailsContainer(props: Props) {
@@ -79,11 +83,14 @@ export function MeetingDetailsContainer(props: Props) {
   const [addItemTitle, setAddItemTitle] = useState("");
   const [addItemOwner, setAddItemOwner] = useState("");
   const [addItemOpen, setAddItemOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  const { data: meeting } = useQuery({
+  const { data: planData } = useQuery(client.billing.getPlan.queryOptions());
+  const canExport = planData?.plan === "pro" || planData?.plan === "team";
+
+  const { data: meeting, isLoading: isMeetingLoading } = useQuery({
     ...client.meeting.getById.queryOptions({
-      input: { id: props.meeting?.id ?? "" },
-      initialData: props.meeting,
+      input: { id: meetingId },
     }),
     refetchInterval: (query) => {
       const data = query.state.data;
@@ -106,9 +113,7 @@ export function MeetingDetailsContainer(props: Props) {
     ) {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: client.meeting.list.key() }),
-        queryClient.invalidateQueries({
-          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
-        }),
+        invalidateMeetingDetailsQuery(),
         queryClient.invalidateQueries({
           queryKey: client.actionItem.list.key(),
         }),
@@ -119,15 +124,23 @@ export function MeetingDetailsContainer(props: Props) {
 
   const shareMutation = useMutation(
     client.meeting.generateShareToken.mutationOptions({
-      onSuccess: (token) => {
+      onSuccess: async (token) => {
         if (!token) {
           return;
         }
         posthog.capture("meeting_shared", { meeting_id: meetingId });
-        const url = `${window.location.origin}/s/${token}`;
-        navigator.clipboard.writeText(url).then(() => {
-          toast.success("Share link copied to clipboard");
-        });
+        await invalidateMeetingDetailsQuery();
+        const url = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/meet/${token}`;
+        if (navigator.share) {
+          navigator
+            .share({ url, title: meeting?.title ?? "Meeting" })
+            .catch(() => {});
+        } else {
+          navigator.clipboard
+            .writeText(url)
+            .then(() => toast.success("Share link copied to clipboard"))
+            .catch(() => toast.error("Could not copy link"));
+        }
       },
       onError: (err) => toast.error(err.message),
     }),
@@ -136,9 +149,7 @@ export function MeetingDetailsContainer(props: Props) {
   const createActionItemMutation = useMutation(
     client.actionItem.create.mutationOptions({
       onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
-        });
+        await invalidateMeetingDetailsQuery();
         setAddItemTitle("");
         setAddItemOwner("");
         setAddItemOpen(false);
@@ -150,9 +161,7 @@ export function MeetingDetailsContainer(props: Props) {
   const retryMutation = useMutation(
     client.meeting.process.mutationOptions({
       onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
-        });
+        await invalidateMeetingDetailsQuery();
         posthog.capture("meeting_processing_retried", {
           meeting_id: meetingId,
         });
@@ -164,14 +173,43 @@ export function MeetingDetailsContainer(props: Props) {
 
   const deleteMutation = useMutation(
     client.meeting.remove.mutationOptions({
-      onSuccess: () => {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: client.meeting.list.key(),
+        });
+
         posthog.capture("meeting_deleted", { meeting_id: meetingId });
         toast.success("Meeting deleted");
+
         router.replace(sourceLink);
       },
       onError: (err) => toast.error(err.message),
     }),
   );
+
+  const visibilityMutation = useMutation(
+    client.meeting.setVisibility.mutationOptions({
+      onSuccess: async (visibility) => {
+        await invalidateMeetingDetailsQuery();
+        if (visibility === "public") {
+          posthog.capture("public_index_enabled", { meeting_id: meetingId });
+        } else {
+          posthog.capture("public_index_disabled", { meeting_id: meetingId });
+        }
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
+
+  async function invalidateMeetingDetailsQuery() {
+    await queryClient.invalidateQueries({
+      queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+    });
+  }
+
+  if (isMeetingLoading) {
+    return <MeetingDetailsSkeleton />;
+  }
 
   if (!meeting) {
     return (
@@ -215,80 +253,80 @@ export function MeetingDetailsContainer(props: Props) {
           Back
         </Button>
         <div className="flex items-center gap-2">
-          {meeting.status === "completed" && (
+          <Button
+            disabled={shareMutation.isPending || meeting.status !== "completed"}
+            onClick={() => shareMutation.mutate({ id: meetingId })}
+            size={isMobile ? "icon-sm" : "sm"}
+            variant="secondary"
+          >
+            {shareMutation.isPending ? (
+              <Spinner className="size-3.5" />
+            ) : (
+              <LinkIcon className="size-3.5" />
+            )}
+            <span className="hidden md:inline">Share</span>
+          </Button>
+          {canExport ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    disabled={meeting.status !== "completed"}
+                    size={isMobile ? "icon-sm" : "sm"}
+                    type="button"
+                    variant="secondary"
+                  >
+                    <DownloadIcon className="size-3.5" />
+                    <span className="hidden md:inline">Export</span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => {
+                    posthog.capture("meeting_exported", {
+                      meeting_id: meetingId,
+                      format: "markdown",
+                    });
+                    downloadMeetingMarkdown(meeting);
+                  }}
+                >
+                  <FileTextIcon className="size-4" />
+                  Export Markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    posthog.capture("meeting_exported", {
+                      meeting_id: meetingId,
+                      format: "pdf",
+                    });
+                    downloadMeetingPdf(meeting);
+                  }}
+                >
+                  <PrinterIcon className="size-4" />
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
             <Button
-              disabled={shareMutation.isPending}
-              onClick={() => shareMutation.mutate({ id: meetingId })}
-              size="sm"
+              disabled={meeting.status !== "completed"}
+              onClick={() => setExportUpgradeOpen(true)}
+              size={isMobile ? "icon-sm" : "sm"}
               variant="secondary"
             >
-              {shareMutation.isPending ? (
-                <Spinner className="size-3.5" />
-              ) : (
-                <LinkIcon className="size-3.5" />
-              )}
-              <span className="hidden sm:inline">Share</span>
+              <DownloadIcon className="size-3.5" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           )}
-          {meeting.status === "completed" &&
-            (props.canExport ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button size="sm" type="button" variant="secondary">
-                      <DownloadIcon className="size-3.5" />
-                      <span className="hidden sm:inline">Export</span>
-                      <ChevronDownIcon className="size-3 opacity-60" />
-                    </Button>
-                  }
-                />
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      posthog.capture("meeting_exported", {
-                        meeting_id: meetingId,
-                        format: "markdown",
-                      });
-                      downloadMeetingMarkdown(meeting);
-                    }}
-                  >
-                    <FileTextIcon className="size-4" />
-                    Export Markdown
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      posthog.capture("meeting_exported", {
-                        meeting_id: meetingId,
-                        format: "pdf",
-                      });
-                      downloadMeetingPdf(meeting);
-                    }}
-                  >
-                    <PrinterIcon className="size-4" />
-                    Export PDF
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                onClick={() => setExportUpgradeOpen(true)}
-                size="sm"
-                variant="secondary"
-              >
-                <DownloadIcon className="size-3.5" />
-                <span className="hidden sm:inline">Export</span>
-                <Badge className="ml-0.5" variant="default">
-                  Pro
-                </Badge>
-              </Button>
-            ))}
           <AlertDialog>
             <AlertDialogTrigger
               render={
                 <Button
-                  className="size-8"
-                  disabled={deleteMutation.isPending}
-                  size="sm"
+                  disabled={
+                    deleteMutation.isPending || meeting.status !== "completed"
+                  }
+                  size="icon-sm"
                   type="button"
                   variant="destructive"
                 >
@@ -325,7 +363,6 @@ export function MeetingDetailsContainer(props: Props) {
           </AlertDialog>
         </div>
       </div>
-
       {/* ── Meeting info card ── */}
       <Card>
         <CardHeader>
@@ -359,7 +396,58 @@ export function MeetingDetailsContainer(props: Props) {
           </div>
         </CardHeader>
       </Card>
-
+      {/* ── Sharing & Visibility ── */}
+      {meeting.shareToken && meeting.status === "completed" && (
+        <Card size="sm">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm">Sharing & Visibility</CardTitle>
+                <CardDescription className="text-xs">
+                  Control who can find this meeting.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <LinkIcon className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-medium">Shared by link</span>
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs dark:text-emerald-400">
+                Active
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <p className="font-medium text-sm">
+                  Allow search engines to index
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  Your meeting title, summary, and action items will be publicly
+                  crawlable by Google and other search engines.
+                </p>
+                {meeting.visibility === "public" && (
+                  <p className="mt-1 text-orange-600 text-xs dark:text-orange-400">
+                    ⚠ This meeting is currently indexed by search engines.
+                    Disable to remove it from public search results.
+                  </p>
+                )}
+              </div>
+              <Switch
+                checked={meeting.visibility === "public"}
+                disabled={visibilityMutation.isPending}
+                onCheckedChange={(checked) => {
+                  visibilityMutation.mutate({
+                    id: meetingId,
+                    visibility: checked ? "public" : "shared",
+                  });
+                }}
+                size="sm"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* ── Draft state ── */}
       {meeting.status === "draft" && (
         <Card size="sm">
@@ -383,7 +471,6 @@ export function MeetingDetailsContainer(props: Props) {
           </CardContent>
         </Card>
       )}
-
       {/* ── Processing timeline ── */}
       {meeting.status !== "completed" && meeting.status !== "draft" && (
         <ProcessingTimeline
@@ -397,7 +484,6 @@ export function MeetingDetailsContainer(props: Props) {
           sourceType={meeting.sourceType}
         />
       )}
-
       {/* ── AI Summary sections - value-first order ── */}
       {meeting.summary && (
         <div className="flex flex-col gap-4">
@@ -438,7 +524,6 @@ export function MeetingDetailsContainer(props: Props) {
           />
         </div>
       )}
-
       {/* ── Action Items ── */}
       {meeting.status === "completed" && (
         <Card>
@@ -488,10 +573,10 @@ export function MeetingDetailsContainer(props: Props) {
 
             {addItemOpen ? (
               <div className="mt-3 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
                   <Input
                     autoFocus
-                    className="flex-1 text-sm"
+                    className="w-full"
                     disabled={createActionItemMutation.isPending}
                     onChange={(e) => setAddItemTitle(e.target.value)}
                     onKeyDown={(e) => {
@@ -505,14 +590,14 @@ export function MeetingDetailsContainer(props: Props) {
                     value={addItemTitle}
                   />
                   <Input
-                    className="w-36 shrink-0 text-sm"
+                    className="w-full lg:w-56"
                     disabled={createActionItemMutation.isPending}
                     onChange={(e) => setAddItemOwner(e.target.value)}
                     placeholder="Owner (optional)"
                     value={addItemOwner}
                   />
                 </div>
-                <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     onClick={() => {
                       setAddItemOpen(false);
@@ -561,7 +646,6 @@ export function MeetingDetailsContainer(props: Props) {
           </CardContent>
         </Card>
       )}
-
       {/* Source file */}
       {meeting.files && meeting.files.length > 0 && (
         <Card size="sm">
@@ -603,7 +687,6 @@ export function MeetingDetailsContainer(props: Props) {
           </CardContent>
         </Card>
       )}
-
       {/* Transcript */}
       {meeting.transcriptText && (
         <Card>
@@ -619,7 +702,6 @@ export function MeetingDetailsContainer(props: Props) {
           </CardContent>
         </Card>
       )}
-
       <UpgradeDialog
         onOpenChange={setExportUpgradeOpen}
         open={exportUpgradeOpen}
@@ -655,5 +737,31 @@ function MeetingStatusBadge({ status }: { status: string }) {
     <Badge className="capitalize" variant="outline">
       {status}
     </Badge>
+  );
+}
+
+function MeetingDetailsSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <Skeleton className="h-8 w-[77.05px] rounded-4xl" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-8 rounded-4xl md:w-[82.79px]" />
+          <Skeleton className="h-8 w-8 rounded-4xl md:w-[88.87px]" />
+          <Skeleton className="size-8 rounded-full" />
+        </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-7 w-2/3 rounded-lg" />
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
+            <Skeleton className="h-4 w-40 rounded-lg" />
+            <Skeleton className="h-4 w-16 rounded-lg" />
+          </div>
+        </CardHeader>
+      </Card>
+    </div>
   );
 }

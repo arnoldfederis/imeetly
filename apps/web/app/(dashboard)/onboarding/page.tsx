@@ -56,19 +56,19 @@ export default function Page() {
           description="Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly."
           icon={<UploadIcon className="size-5 text-primary" />}
           step="01"
-          title="Connect your meeting tools"
+          title="Bring your meetings in"
         />
         <StepCard
-          description="imeetly analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups, and action items."
+          description="Every summary, decision, action item, blocker, and follow-up extracted automatically. The full meeting distilled into a clear, structured record."
           icon={<BrainCircuitIcon className="size-5 text-primary" />}
           step="02"
-          title="AI extracts the signal"
+          title="imeetly captures everything"
         />
         <StepCard
-          description="Review a clean summary with structured action items and follow-ups. Search your entire meeting history anytime."
+          description="Read the summary, check action items, and search across every meeting you have ever had. Your team's memory, always within reach."
           icon={<ClipboardListIcon className="size-5 text-primary" />}
           step="03"
-          title="Review and follow up"
+          title="Search, recall, act"
         />
       </div>
     </div>

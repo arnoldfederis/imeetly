@@ -65,7 +65,8 @@ export class ProviderError extends Error {
       | "MISSING_API_KEY"
       | "PROVIDER_REQUEST_FAILED"
       | "PARSE_FAILED"
-      | "ALL_PROVIDERS_EXHAUSTED",
+      | "ALL_PROVIDERS_EXHAUSTED"
+      | "EMPTY_TRANSCRIPT",
     message: string,
     public readonly provider?: string,
     public readonly cause?: unknown,

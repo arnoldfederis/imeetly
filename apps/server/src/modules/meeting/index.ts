@@ -113,6 +113,12 @@ export const meetingController = base.router({
       MeetingService.generateShareToken(context.user.id, input.id),
     ),
 
+  setVisibility: privateProcedure
+    .input(meetingModel.setVisibility)
+    .handler(async ({ input, context }) =>
+      MeetingService.setVisibility(context.user.id, input.id, input.visibility),
+    ),
+
   getByShareToken: base
     .input(meetingModel.byShareToken)
     .handler(async ({ input }) => MeetingService.getByShareToken(input.token)),

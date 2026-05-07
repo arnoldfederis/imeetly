@@ -37,6 +37,8 @@ const config = defineConfig({
     tanstackStart(),
     nitro({
       preset: "bun",
+      scanDirs: ["server"],
+      routesDir: "routes",
       rollupConfig: {
         external: ["bun"],
       },

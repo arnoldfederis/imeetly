@@ -1,5 +1,5 @@
 import { DeepgramClient } from "@deepgram/sdk";
-import type { TranscriptionProviderImpl } from "../types";
+import { ProviderError, type TranscriptionProviderImpl } from "../types";
 
 export function createDeepgramTranscription(
   apiKey: string,
@@ -8,7 +8,11 @@ export function createDeepgramTranscription(
 
   return {
     name: "deepgram",
-    async transcribe(fileBytes, _fileName, _mimeType, language) {
+    async transcribe(fileBytes, fileName, mimeType, language) {
+      console.log(
+        `[deepgram] Transcribing ${fileName} (${mimeType}, ${fileBytes.length} bytes)${language ? ` lang=${language}` : ""}`,
+      );
+
       const response = await client.listen.v1.media.transcribeFile(
         Buffer.from(fileBytes),
         {
@@ -19,14 +23,28 @@ export function createDeepgramTranscription(
       );
 
       if (!("results" in response)) {
-        throw new Error("Deepgram returned unexpected response");
+        throw new ProviderError(
+          "PROVIDER_REQUEST_FAILED",
+          "Deepgram returned unexpected response format",
+          "deepgram",
+        );
       }
 
-      const transcript =
-        response.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+      const raw =
+        response.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? "";
+      const transcript = raw.trim();
+
+      const duration = (response.metadata as { duration?: number })?.duration;
+      console.log(
+        `[deepgram] Received ${transcript.length} chars${duration != null ? `, audio duration: ${duration}s` : ""}`,
+      );
 
       if (!transcript) {
-        throw new Error("Deepgram returned empty transcript");
+        throw new ProviderError(
+          "EMPTY_TRANSCRIPT",
+          "Deepgram returned empty transcript",
+          "deepgram",
+        );
       }
 
       return transcript;

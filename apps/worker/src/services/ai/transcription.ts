@@ -80,12 +80,12 @@ function resolveChain(): TranscriptionProvider[] {
 
   if (configured === "auto") {
     const chain = isDev ? AUTO_DEV : AUTO_PROD;
-    // Strip mock from production auto chains
     return isProd ? chain.filter((p) => p !== "mock") : chain;
   }
 
-  const chain: TranscriptionProvider[] = [configured as TranscriptionProvider];
-  if (effectiveFallback && effectiveFallback !== configured) {
+  const primary = configured as TranscriptionProvider;
+  const chain: TranscriptionProvider[] = [primary];
+  if (effectiveFallback && effectiveFallback !== primary) {
     chain.push(effectiveFallback);
   }
   return chain;
@@ -110,11 +110,14 @@ export async function transcribeMeeting(
   const bytes = await response.Body.transformToByteArray();
   const fileName = storageKey.split("/").pop() ?? "audio.mp3";
   const mimeType = response.ContentType ?? "audio/mpeg";
-  console.log(`[transcribe] Downloaded ${bytes.length} bytes`);
+  console.log(
+    `[transcribe] Downloaded ${fileName} — ${bytes.length} bytes, ${mimeType}`,
+  );
 
-  // Try providers in order
   const chain = resolveChain();
-  const errors: Array<{ provider: string; error: unknown }> = [];
+  const triedProviders: string[] = [];
+  const emptyTranscriptProviders: string[] = [];
+  const infraErrors: Array<{ provider: string; error: unknown }> = [];
 
   for (const name of chain) {
     if (!hasKey(name)) {
@@ -125,10 +128,12 @@ export async function transcribeMeeting(
     const provider = buildProvider(name);
     if (!provider) continue;
 
+    triedProviders.push(name);
     const start = Date.now();
+
     try {
       console.log(
-        `[transcribe] Trying provider: ${name}${language ? ` (lang: ${language})` : ""}`,
+        `[transcribe] Trying ${name}${language ? ` (lang: ${language})` : ""}`,
       );
       const text = await provider.transcribe(
         bytes,
@@ -136,21 +141,67 @@ export async function transcribeMeeting(
         mimeType,
         language,
       );
+      const trimmed = text.trim();
       const durationMs = Date.now() - start;
+
+      if (!trimmed) {
+        console.warn(
+          `[transcribe] ${name} returned empty transcript after ${durationMs}ms — trying next provider`,
+        );
+        emptyTranscriptProviders.push(name);
+        continue;
+      }
+
       console.log(
-        `[transcribe] Success with ${name} (${durationMs}ms, ${text.length} chars)`,
+        `[transcribe] ${name} succeeded (${durationMs}ms, ${trimmed.length} chars)`,
       );
-      return { text, provider: name, durationMs };
+      return { text: trimmed, provider: name, durationMs };
     } catch (err) {
       const durationMs = Date.now() - start;
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn(`[transcribe] ${name} failed after ${durationMs}ms: ${msg}`);
-      errors.push({ provider: name, error: err });
+      const isEmptyTranscript =
+        err instanceof ProviderError && err.code === "EMPTY_TRANSCRIPT";
+
+      if (isEmptyTranscript) {
+        console.warn(
+          `[transcribe] ${name}: empty transcript after ${durationMs}ms — trying next provider`,
+        );
+        emptyTranscriptProviders.push(name);
+      } else {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn(
+          `[transcribe] ${name} failed after ${durationMs}ms: ${msg}`,
+        );
+        infraErrors.push({ provider: name, error: err });
+      }
     }
   }
 
+  if (triedProviders.length === 0) {
+    throw new ProviderError(
+      "MISSING_API_KEY",
+      "No transcription providers available. Configure at least one API key (DEEPGRAM_API_KEY, OPENAI_API_KEY, or GROQ_API_KEY).",
+    );
+  }
+
+  // All tried providers returned empty — audio has no speech. Retrying the same
+  // audio will not produce a transcript, so this is a non-retryable condition.
+  if (emptyTranscriptProviders.length > 0 && infraErrors.length === 0) {
+    throw new ProviderError(
+      "EMPTY_TRANSCRIPT",
+      `No speech detected in audio. Tried: ${emptyTranscriptProviders.join(", ")}`,
+    );
+  }
+
+  const allErrors = [
+    ...infraErrors.map(
+      (e) =>
+        `${e.provider}: ${e.error instanceof Error ? e.error.message : String(e.error)}`,
+    ),
+    ...emptyTranscriptProviders.map((p) => `${p}: empty transcript`),
+  ];
+
   throw new ProviderError(
     "ALL_PROVIDERS_EXHAUSTED",
-    `All transcription providers failed. Tried: ${chain.filter(hasKey).join(", ")}. Errors: ${errors.map((e) => `${e.provider}: ${e.error instanceof Error ? e.error.message : String(e.error)}`).join("; ")}`,
+    `All transcription providers failed. Tried: ${triedProviders.join(", ")}. Errors: ${allErrors.join("; ")}`,
   );
 }

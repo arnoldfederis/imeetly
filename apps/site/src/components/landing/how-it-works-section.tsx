@@ -7,14 +7,14 @@ const steps = [
     icon: UploadIcon,
     title: "Bring your meetings in",
     description:
-      "Connect Zoom or Google Meet for automatic import. Link Microsoft Teams for calendar sync and manual recording import. Or upload audio, video, or paste a transcript directly.",
+      "Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly.",
   },
   {
     step: "02",
     icon: BrainCircuitIcon,
     title: "imeetly captures everything",
     description:
-      "Every decision, action item, blocker, and follow-up extracted automatically. The full meeting distilled into a clear, structured record.",
+      "Every summary, decision, action item, blocker, and follow-up extracted automatically. The full meeting distilled into a clear, structured record.",
   },
   {
     step: "03",

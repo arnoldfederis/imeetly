@@ -7,6 +7,7 @@ import {
   meetings,
 } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
+import { ApplicationFailure } from "@temporalio/activity";
 import { eq } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
@@ -14,9 +15,10 @@ import { MeetingReadyEmail } from "./emails/meeting-ready";
 import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { transcribeMeeting } from "./services/ai/transcription";
-import type {
-  ExtractionResult,
-  TranscriptionResult,
+import {
+  type ExtractionResult,
+  ProviderError,
+  type TranscriptionResult,
 } from "./services/ai/types";
 
 // --- Types ---
@@ -102,7 +104,19 @@ export async function transcribeAudio(
   audioKey: string,
   language?: string | null,
 ): Promise<TranscriptionResult> {
-  return transcribeMeeting(audioKey, language ?? undefined);
+  try {
+    return await transcribeMeeting(audioKey, language ?? undefined);
+  } catch (err) {
+    if (err instanceof ProviderError) {
+      // Deterministic failures: same audio will produce the same result on retry.
+      // Mark non-retryable so Temporal does not waste attempts.
+      if (err.code === "EMPTY_TRANSCRIPT" || err.code === "MISSING_API_KEY") {
+        throw ApplicationFailure.nonRetryable(err.message, err.code);
+      }
+    }
+    // Infra/network errors stay retryable (default Temporal behaviour).
+    throw err;
+  }
 }
 
 export async function generateExtractionResult(

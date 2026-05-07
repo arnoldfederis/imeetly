@@ -77,6 +77,10 @@ export const meetingModel = {
   byShareToken: z.object({
     token: z.string(),
   }),
+  setVisibility: z.object({
+    id: z.string(),
+    visibility: z.enum(["shared", "public"]),
+  }),
 } as const;
 
 export type MeetingModel = {

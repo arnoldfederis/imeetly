@@ -706,6 +706,51 @@ export abstract class MeetingService {
     return token;
   }
 
+  static async listPublicIndexed() {
+    const rows = await db.query.meetings.findMany({
+      where: and(
+        eq(meetings.status, "completed"),
+        eq(meetings.visibility, "public"),
+      ),
+      columns: {
+        shareToken: true,
+        title: true,
+        updatedAt: true,
+      },
+    });
+    return rows
+      .filter((r) => r.shareToken)
+      .map((r) => ({
+        token: r.shareToken as string,
+        title: r.title,
+        updatedAt: r.updatedAt.toISOString(),
+      }));
+  }
+
+  static async setVisibility(
+    userId: string,
+    meetingId: string,
+    visibility: "shared" | "public",
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(
+        eq(meetings.id, meetingId),
+        eq(meetings.userId, userId),
+        eq(meetings.status, "completed"),
+      ),
+      columns: { id: true, shareToken: true },
+    });
+    if (!meeting?.shareToken) return null;
+
+    const [updated] = await db
+      .update(meetings)
+      .set({ visibility })
+      .where(eq(meetings.id, meetingId))
+      .returning({ visibility: meetings.visibility });
+
+    return updated?.visibility ?? null;
+  }
+
   static async getByShareToken(token: string) {
     const meeting = await db.query.meetings.findFirst({
       where: and(

@@ -5,9 +5,9 @@ import {
   HistoryIcon,
   LinkIcon,
   ListChecksIcon,
+  Share2Icon,
   ShieldAlertIcon,
   UploadCloudIcon,
-  UsersIcon,
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 
@@ -61,11 +61,10 @@ const features = [
       "Upload recordings in multiple languages including English, Spanish, French, Japanese, and more for accurate transcription.",
   },
   {
-    icon: UsersIcon,
-    title: "Shared team memory",
-    comingSoon: true,
+    icon: Share2Icon,
+    title: "Shareable meeting pages",
     description:
-      "Shared meeting libraries and collaborative follow-up tracking so the whole team has access to the same context. Coming soon.",
+      "Share any meeting summary as a public page anyone can read without logging in. Optionally allow search engines to index it so stakeholders can find it later.",
   },
 ];
 
@@ -90,15 +89,10 @@ export function FeaturesSection() {
           {features.map((f) => (
             <StaggerItem className="h-full" key={f.title}>
               <div className="group relative flex h-full flex-col rounded-2xl border bg-card p-6 transition-all hover:shadow-lg hover:shadow-primary/5">
-                <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="mb-4">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                     <f.icon className="size-5 text-primary" />
                   </div>
-                  {f.comingSoon && (
-                    <span className="mt-0.5 shrink-0 rounded-full border border-amber-500/40 border-dashed bg-amber-500/10 px-2 py-0.5 font-medium text-[11px] text-amber-700 dark:text-amber-500">
-                      Coming soon
-                    </span>
-                  )}
                 </div>
                 <h3 className="mb-2 font-semibold">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">

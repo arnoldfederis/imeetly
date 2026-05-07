@@ -1,7 +1,6 @@
 "use client";
 
 import { env } from "@repo/env";
-import type { RouterOutputs } from "@repo/server/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderIcon, Unlink2Icon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -23,7 +22,6 @@ import { client } from "@/lib/orpc";
 import { getLandingPageUrl } from "@/lib/utils";
 
 type Provider = "google" | "zoom" | "microsoft";
-type Integrations = RouterOutputs["integration"]["list"];
 
 const PROVIDER_META: Record<
   Provider,
@@ -58,10 +56,8 @@ const PROVIDER_META: Record<
 const CONTACT_URL = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/contact`;
 
 export function IntegrationProviderContainer({
-  initialIntegrations,
   provider,
 }: {
-  initialIntegrations: Integrations;
   provider: Provider;
 }) {
   const meta = PROVIDER_META[provider];
@@ -86,7 +82,6 @@ export function IntegrationProviderContainer({
   const { data: integrations = [], isLoading: isIntegrationLoading } = useQuery(
     client.integration.list.queryOptions({
       context: { cache: true },
-      initialData: initialIntegrations,
     }),
   );
 

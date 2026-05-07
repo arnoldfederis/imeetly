@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { IntegrationProviderContainer } from "@/components/integrations/container";
-import { server } from "@/lib/orpc";
-import { requireAuth } from "@/lib/server-auth";
-
-export const dynamic = "force-dynamic";
 
 type Provider = "google" | "zoom" | "microsoft";
 
@@ -41,12 +37,5 @@ export default async function Page({
     return notFound();
   }
 
-  const integrations = await requireAuth(() => server.integration.list());
-
-  return (
-    <IntegrationProviderContainer
-      initialIntegrations={integrations}
-      provider={provider}
-    />
-  );
+  return <IntegrationProviderContainer provider={provider} />;
 }

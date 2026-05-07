@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { NotFound } from "@/components/common/not-found";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { PosthogProvider } from "@/components/providers/posthog";
 import { ThemeProvider } from "@/components/providers/theme";
 import appCss from "../styles.css?url";
 
@@ -62,10 +63,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>
-          <LandingHeader />
-          {children}
-        </ThemeProvider>
+        <PosthogProvider>
+          <ThemeProvider>
+            <LandingHeader />
+            {children}
+          </ThemeProvider>
+        </PosthogProvider>
         <Scripts />
       </body>
     </html>

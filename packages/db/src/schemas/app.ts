@@ -42,6 +42,7 @@ export const meetings = schema.table(
       .notNull(),
     actualCost: numeric("actual_cost", { precision: 10, scale: 4 }),
     shareToken: text("share_token").unique(),
+    visibility: text("visibility").notNull().default("shared"), // shared | public
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

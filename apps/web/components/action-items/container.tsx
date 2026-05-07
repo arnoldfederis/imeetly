@@ -319,10 +319,10 @@ function MeetingGroup({
 
             {addOpen ? (
               <div className="mt-1 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
                   <Input
                     autoFocus
-                    className="flex-1 text-sm"
+                    className="w-full"
                     disabled={createMutation.isPending}
                     onChange={(e) => setAddTitle(e.target.value)}
                     onKeyDown={(e) => {
@@ -336,7 +336,7 @@ function MeetingGroup({
                     value={addTitle}
                   />
                   <Input
-                    className="w-36 shrink-0 text-sm"
+                    className="w-full lg:w-56"
                     disabled={createMutation.isPending}
                     onChange={(e) => setAddOwner(e.target.value)}
                     onKeyDown={(e) => {
@@ -350,7 +350,7 @@ function MeetingGroup({
                     value={addOwner}
                   />
                 </div>
-                <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     disabled={createMutation.isPending}
                     onClick={() => {
@@ -527,10 +527,10 @@ function ActionItemCard({ item }: { item: ActionItem }) {
   if (editing) {
     return (
       <div className="flex flex-col gap-2 rounded-md border p-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
           <Input
             autoFocus
-            className="flex-1 text-sm"
+            className="w-full"
             disabled={editMutation.isPending}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -541,7 +541,7 @@ function ActionItemCard({ item }: { item: ActionItem }) {
             value={editTitle}
           />
           <Input
-            className="w-36 shrink-0 text-sm"
+            className="w-full lg:w-56"
             disabled={editMutation.isPending}
             onChange={(e) => setEditOwner(e.target.value)}
             onKeyDown={(e) => {
@@ -552,7 +552,7 @@ function ActionItemCard({ item }: { item: ActionItem }) {
             value={editOwner}
           />
         </div>
-        <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             disabled={editMutation.isPending}
             onClick={cancelEdit}
@@ -571,16 +571,28 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     );
   }
 
+  const swipeTriggered = Math.abs(swipeOffset) >= 60;
+
   return (
     <div className="relative overflow-hidden rounded-md">
-      {swipeOffset < 0 && (
-        <div className="absolute inset-y-0 right-0 flex w-16 items-center justify-center rounded-r-md bg-destructive">
-          <Trash2Icon className="size-4 text-destructive-foreground" />
+      {swipeOffset < -8 && (
+        <div
+          className={`absolute inset-y-0 right-0 flex w-16 items-center justify-center rounded-r-md transition-colors ${swipeTriggered ? "bg-destructive" : "bg-destructive/50"}`}
+        >
+          <Trash2Icon
+            className={`text-destructive-foreground transition-transform ${swipeTriggered ? "scale-110" : "scale-90"}`}
+            size={swipeTriggered ? 18 : 16}
+          />
         </div>
       )}
-      {swipeOffset > 0 && (
-        <div className="absolute inset-y-0 left-0 flex w-16 items-center justify-center rounded-l-md bg-primary">
-          <EditIcon className="size-4 text-primary-foreground" />
+      {swipeOffset > 8 && (
+        <div
+          className={`absolute inset-y-0 left-0 flex w-16 items-center justify-center rounded-l-md transition-colors ${swipeTriggered ? "bg-primary" : "bg-primary/50"}`}
+        >
+          <EditIcon
+            className={`text-primary-foreground transition-transform ${swipeTriggered ? "scale-110" : "scale-90"}`}
+            size={swipeTriggered ? 18 : 16}
+          />
         </div>
       )}
       <div

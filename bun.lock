@@ -69,8 +69,10 @@
         "framer-motion": "^12.38.0",
         "lucide-react": "^1.14.0",
         "nitro": "^3.0.260429-beta",
+        "posthog-js": "^1.235.6",
         "react": "catalog:",
         "react-dom": "catalog:",
+        "react-markdown": "^10.1.0",
         "shadcn": "^4.7.0",
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "catalog:",
@@ -186,6 +188,7 @@
         "tsconfig-paths": "^4.2.0",
         "tsx": "^4.21.0",
         "typescript": "^6.0.3",
+        "vitest": "^4.1.5",
       },
     },
     "packages/db": {

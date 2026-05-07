@@ -1,6 +1,5 @@
 "use client";
 
-import type { RouterOutputs } from "@repo/server/types";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRightIcon,
@@ -18,34 +17,29 @@ import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingProviderIcon } from "@/components/meetings/provider-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
-interface Props {
-  data: RouterOutputs["meeting"]["dashboard"];
-}
-
-export function DashboardContainer(props: Props) {
+export function DashboardContainer() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { data, isLoading: isDashboardLoading } = useQuery(
     client.meeting.dashboard.queryOptions({
       context: { cache: true },
-      initialData: props.data,
     }),
   );
+
   const { data: actionItemsData, isLoading: isActionItemsLoading } = useQuery(
     client.actionItem.list.queryOptions({
+      context: { cache: true },
       input: { status: "open", limit: 3 },
     }),
   );
+
   const { data: planData, isLoading: isPlanLoading } = useQuery(
-    client.billing.getPlan.queryOptions(),
+    client.billing.getPlan.queryOptions({
+      context: { cache: true },
+    }),
   );
 
   const isLoading =
@@ -73,7 +67,7 @@ export function DashboardContainer(props: Props) {
         <div className="flex min-w-full flex-col justify-between gap-1 sm:min-w-0">
           <h1 className="font-semibold text-2xl tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            Your meetings, summarized in seconds
+            Your meeting memory, at a glance
           </p>
         </div>
         <Button
@@ -305,7 +299,7 @@ function DashboardSkeleton() {
         <div className="flex min-w-full flex-col justify-between gap-1 sm:min-w-0">
           <h1 className="font-semibold text-2xl tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            Your meetings, summarized in seconds
+            Your meeting memory, at a glance
           </p>
         </div>
         <Button className="w-full shrink-0 sm:w-auto" disabled>
@@ -317,15 +311,14 @@ function DashboardSkeleton() {
       <div className="rounded-xl border p-4">
         <div className="mb-2.5 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div className="flex justify-between gap-2 sm:items-center">
-            <Skeleton className="h-5 w-48 rounded-lg" />
-            <Skeleton className="h-5 w-10 rounded-full" />
+            <Skeleton className="h-5 w-56 rounded-lg" />
           </div>
           <Skeleton className="h-4 w-10 rounded-lg" />
         </div>
         <Skeleton className="mb-3 h-1.5 w-full rounded-full" />
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
-          <Skeleton className="h-4 w-44 rounded-lg" />
-          <Skeleton className="h-6 w-24 rounded-md" />
+          <Skeleton className="h-4 w-52 rounded-lg" />
+          <Skeleton className="h-6 w-32 rounded-md" />
         </div>
       </div>
 

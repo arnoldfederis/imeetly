@@ -35,6 +35,8 @@ interface SeoOptions {
   keywords?: string[];
   /** Prevent indexing for this specific page. */
   noindex?: boolean;
+  /** Page author. Defaults to "Arnolfo Laureta Federis". */
+  author?: string;
 }
 
 export function seo(options: SeoOptions = {}) {
@@ -47,6 +49,7 @@ export function seo(options: SeoOptions = {}) {
     ogType = "website",
     keywords: extraKeywords = [],
     noindex = false,
+    author = "Arnolfo Laureta Federis",
   } = options;
 
   const title = rawTitle
@@ -65,6 +68,7 @@ export function seo(options: SeoOptions = {}) {
   const meta: Record<string, string>[] = [
     { title },
     { name: "description", content: description },
+    { name: "author", content: author },
     { name: "keywords", content: keywords },
 
     // Open Graph

@@ -62,7 +62,7 @@ import { useMultipartUpload } from "@/hooks/use-multipart-upload";
 import { client } from "@/lib/orpc";
 
 interface Props {
-  planData: RouterOutputs["billing"]["getPlan"];
+  planData?: RouterOutputs["billing"]["getPlan"];
   setUpgradeOpen: (open: boolean) => void;
   setUpgradeReason: (reason: "limit-reached") => void;
 }

@@ -1,20 +1,20 @@
 "use client";
 
-import type { RouterOutputs } from "@repo/server/types";
+import { useQuery } from "@tanstack/react-query";
 import { TrendingUpIcon } from "lucide-react";
 import { useState } from "react";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { NewMeetingForm } from "@/components/meetings/new/form";
 import { Button } from "@/components/ui/button";
+import { client } from "@/lib/orpc";
 
-interface Props {
-  planData: RouterOutputs["billing"]["getPlan"];
-}
+export function NewMeetingContainer() {
+  const { data: planData } = useQuery(
+    client.billing.getPlan.queryOptions({
+      context: { cache: true },
+    }),
+  );
 
-const _ACCEPTED_TYPES =
-  "video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/x-m4a,audio/mp4,audio/ogg,audio/flac";
-
-export function NewMeetingContainer({ planData }: Props) {
   const limitReached = planData?.usage.limitReached ?? false;
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<
