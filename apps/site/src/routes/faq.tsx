@@ -24,7 +24,9 @@ export const Route = createFileRoute("/faq")({
       },
       {
         type: "application/ld+json",
-        children: JSON.stringify(breadcrumbJsonLd([{ name: "FAQ", path: "/faq" }])),
+        children: JSON.stringify(
+          breadcrumbJsonLd([{ name: "FAQ", path: "/faq" }]),
+        ),
       },
     ],
   }),

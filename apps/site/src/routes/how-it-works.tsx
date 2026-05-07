@@ -53,7 +53,9 @@ export const Route = createFileRoute("/how-it-works")({
       },
       {
         type: "application/ld+json",
-        children: JSON.stringify(breadcrumbJsonLd([{ name: "How it works", path: "/how-it-works" }])),
+        children: JSON.stringify(
+          breadcrumbJsonLd([{ name: "How it works", path: "/how-it-works" }]),
+        ),
       },
     ],
   }),
