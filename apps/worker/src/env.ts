@@ -29,6 +29,14 @@ export const env = createEnv({
       minLength(1, "TEMPORAL_NAMESPACE is required"),
     ),
 
+    // Email
+    RESEND_API_KEY: optional(string()),
+    APP_URL: optional(string()),
+    SMTP_HOST: optional(string()),
+    SMTP_PORT: optional(string()),
+    SMTP_USER: optional(string()),
+    SMTP_PASS: optional(string()),
+
     // AI provider keys - all optional so missing keys don't crash startup
     OPENAI_API_KEY: optional(string()),
     ANTHROPIC_API_KEY: optional(string()),

@@ -43,6 +43,7 @@ export function LoginForm() {
           email: form.getValues("email"),
           isVerify: true,
           isPasskeyAdding: res.signInMethod === "passkey",
+          isSigningIn: false,
         }));
 
         form.reset();

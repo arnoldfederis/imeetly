@@ -35,10 +35,10 @@ export function LandingFooter() {
             imeetly
           </span>
           <p className="text-muted-foreground text-xs">
-            Your meetings, summarized in seconds.
+            The memory layer for meetings.
           </p>
           <p className="text-muted-foreground text-xs">
-            AI meeting notes for fast-moving teams.
+            Never lose what happened in a meeting again.
           </p>
         </div>
 

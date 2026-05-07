@@ -17,10 +17,11 @@ export function ProductPreviewSection() {
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-            A dashboard built for clarity
+            Your meeting memory, at a glance
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            See all your meetings, action items, and insights in one clean view.
+            Every meeting, every decision, every open action item in one place.
+            Nothing buried. Nothing forgotten.
           </p>
         </FadeIn>
 
@@ -34,7 +35,7 @@ export function ProductPreviewSection() {
                     Dashboard
                   </p>
                   <p className="truncate text-muted-foreground text-sm">
-                    Your meetings, summarized in seconds
+                    Your searchable meeting memory
                   </p>
                 </div>
                 <Button

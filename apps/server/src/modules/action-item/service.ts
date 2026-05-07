@@ -48,6 +48,29 @@ export abstract class ActionItemService {
     return deleted;
   }
 
+  static async create(
+    userId: string,
+    input: { meetingId: string; title: string; ownerName?: string },
+  ) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, input.meetingId), eq(meetings.userId, userId)),
+      columns: { id: true },
+    });
+    if (!meeting) return null;
+
+    const [item] = await db
+      .insert(actionItems)
+      .values({
+        meetingId: input.meetingId,
+        userId,
+        title: input.title,
+        ownerName: input.ownerName ?? null,
+      })
+      .returning();
+
+    return item;
+  }
+
   static async listForUser(
     userId: string,
     opts: {

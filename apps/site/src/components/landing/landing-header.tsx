@@ -6,11 +6,22 @@ import { ThemeSwitcher } from "@/components/common/theme-switcher";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const VALID_PATHS = new Set([
+  "/",
+  "/features",
+  "/how-it-works",
+  "/pricing",
+  "/faq",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/login",
+]);
+
 const navLinks = [
   { label: "Features", href: "/features" },
   { label: "How it works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -21,6 +32,11 @@ export function LandingHeader() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const isNotFound = !VALID_PATHS.has(pathname);
+
+  if (isNotFound) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-border/50 border-b bg-background/80 backdrop-blur-lg">
@@ -62,15 +78,7 @@ export function LandingHeader() {
         <div className="hidden items-center gap-3 md:flex">
           <ThemeSwitcher />
           <a
-            className={buttonVariants({ variant: "secondary", size: "sm" })}
-            href={APP_URL}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Login
-          </a>
-          <a
-            className={buttonVariants({ size: "sm" })}
+            className={buttonVariants({ variant: "default", size: "sm" })}
             href={APP_URL}
             rel="noopener noreferrer"
             target="_blank"
@@ -116,20 +124,11 @@ export function LandingHeader() {
                 )}
                 href={link.href}
                 key={link.href}
-                onClick={() => setMobileOpen(false)}
               >
                 {link.label}
               </a>
             ))}
             <div className="flex flex-col gap-2 border-t pt-4">
-              <a
-                className={buttonVariants({ variant: "secondary", size: "sm" })}
-                href={APP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Login
-              </a>
               <a
                 className={buttonVariants({ size: "sm" })}
                 href={APP_URL}

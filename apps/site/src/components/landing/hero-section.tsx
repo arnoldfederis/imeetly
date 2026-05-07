@@ -21,165 +21,171 @@ export function HeroSection() {
     <section className="relative overflow-hidden border-b">
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/[0.02] to-transparent" />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
-        <div className="flex flex-col items-start gap-6">
+        {/* Left: copy */}
+        <div className="flex flex-col items-start gap-5">
           <FadeIn delay={0}>
             <Badge className="gap-1.5 px-3 py-1" variant="secondary">
               <SparklesIcon className="size-3" />
-              AI-powered meeting notes
+              AI meeting memory
             </Badge>
           </FadeIn>
 
           <FadeIn delay={0.1}>
             <h1 className="font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-              Your meetings, summarized{" "}
-              <span className="text-primary">in seconds</span>
+              Never lose what happened{" "}
+              <span className="text-primary">in a meeting again</span>
             </h1>
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <p className="font-medium text-lg text-muted-foreground sm:text-xl">
-              AI meeting notes for fast-moving teams
+            <p className="text-lg text-muted-foreground">
+              imeetly captures every decision, action item, and follow-up the
+              moment your meeting ends. Your entire meeting history, searchable
+              from one place.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.3}>
-            <p className="max-w-lg text-muted-foreground text-sm">
-              Get clear summaries, action items, and decisions - powered by AI.
-              Upload a recording or transcript and let imeetly do the rest.
-            </p>
-          </FadeIn>
-
-          <FadeIn delay={0.4}>
             <div className="flex flex-wrap items-center gap-3">
-              <a
-                className={buttonVariants({ size: "lg" })}
-                href={APP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <a className={buttonVariants({ size: "lg" })} href={APP_URL}>
                 Start free
               </a>
               <a
-                className={buttonVariants({
-                  variant: "secondary",
-                  size: "lg",
-                })}
-                href="/#how-it-works"
+                className={buttonVariants({ variant: "secondary", size: "lg" })}
+                href="/how-it-works"
               >
                 See how it works
               </a>
             </div>
           </FadeIn>
 
-          <FadeIn delay={0.5}>
+          <FadeIn delay={0.4}>
             <p className="text-muted-foreground text-xs">
-              No credit card required. 5 meetings/month free.
+              5 meetings/month free. No credit card required.
             </p>
           </FadeIn>
         </div>
 
-        <FadeIn delay={0.3} direction="right">
-          <div className="relative">
-            <div className="rounded-2xl border bg-card p-1.5 shadow-primary/5 shadow-xl">
-              <div className="rounded-xl bg-background p-5">
-                {/* Meeting header */}
+        {/* Right: product mock */}
+        <FadeIn delay={0.25} direction="right">
+          <div className="rounded-2xl border bg-card p-1.5 shadow-primary/5 shadow-xl">
+            <div className="flex flex-col gap-2.5 rounded-xl bg-background p-4">
+              {/* Meeting info card */}
+              <div className="rounded-xl border bg-card p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-base tracking-tight">
-                    Q4 Planning - Product Sync
+                    Q1 Roadmap Planning
                   </h2>
-                  <span className="inline-flex h-5 items-center rounded-full bg-emerald-500/10 px-2 font-medium text-emerald-600 text-xs dark:text-emerald-400">
-                    Completed
+                  <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-emerald-500/10 px-2.5 font-medium text-emerald-600 text-xs capitalize dark:text-emerald-400">
+                    completed
                   </span>
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-muted-foreground text-xs">
-                  <span className="flex items-center gap-1">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
+                  <span className="flex items-center gap-1.5">
                     <CalendarIcon className="size-3" />
-                    Nov 12, 2024
+                    Jan 14, 2026
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <UsersIcon className="size-3" />
-                    Sarah, Mike, Jordan
+                    Sarah, Marcus, Priya
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5 capitalize">
                     <FileAudioIcon className="size-3" />
-                    Audio
+                    audio
                   </span>
                 </div>
+              </div>
 
-                {/* Summary - full width */}
-                <div className="mt-4 rounded-lg border p-3">
-                  <div className="mb-1.5 flex items-center gap-1.5">
-                    <div className="flex size-5 items-center justify-center rounded bg-primary/10">
-                      <FileTextIcon className="size-3 text-primary" />
-                    </div>
-                    <p className="font-semibold text-sm">Summary</p>
+              {/* Summary */}
+              <div className="rounded-xl border bg-card p-3">
+                <div className="mb-2 flex items-center gap-2.5">
+                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <FileTextIcon className="size-3.5" />
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    The team aligned on the Q4 product roadmap, prioritizing the
-                    dashboard redesign and API v2 launch before end of quarter.
+                  <p className="font-semibold text-sm">Summary</p>
+                </div>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  Team aligned on shipping the new onboarding flow and search
+                  overhaul in Q1. Payments refactor pushed to Q2 to reduce scope
+                  risk.
+                </p>
+              </div>
+
+              {/* Decisions + Blockers */}
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-50/50 p-3 dark:bg-emerald-950/20">
+                  <div className="mb-2 flex items-center gap-2.5">
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2Icon className="size-3.5" />
+                    </div>
+                    <p className="font-semibold text-sm">Key Decisions</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Decision text="Onboarding ships Feb 3" />
+                    <Decision text="Search overhaul owns the sprint" />
+                  </div>
+                </div>
+                <div className="rounded-xl border border-orange-500/30 bg-orange-50/50 p-3 dark:bg-orange-950/20">
+                  <div className="mb-2 flex items-center gap-2.5">
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400">
+                      <AlertTriangleIcon className="size-3.5" />
+                    </div>
+                    <p className="font-semibold text-sm">Blockers & Risks</p>
+                  </div>
+                  <p className="pl-4 text-muted-foreground text-xs leading-relaxed">
+                    <li>
+                      Design handoff for search pending final copy review.
+                    </li>
                   </p>
                 </div>
+              </div>
 
-                {/* Decisions + Blockers side by side */}
-                <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
-                  {/* Key Decisions */}
-                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-50/50 p-3 dark:bg-emerald-950/20">
-                    <div className="mb-1.5 flex items-center gap-1.5">
-                      <div className="flex size-5 items-center justify-center rounded bg-emerald-500/10">
-                        <CheckCircle2Icon className="size-3 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <p className="font-semibold text-xs">Key Decisions</p>
-                    </div>
-                    <div className="space-y-1">
-                      <Decision text="Ship API v2 before dashboard" />
-                      <Decision text="Delay billing refactor to Q1" />
-                    </div>
+              {/* Follow-ups */}
+              <div className="rounded-xl border border-violet-500/30 bg-violet-50/50 p-3 dark:bg-violet-950/20">
+                <div className="mb-2 flex items-center gap-2.5">
+                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                    <CalendarClockIcon className="size-3.5" />
                   </div>
-
-                  {/* Blockers */}
-                  <div className="rounded-lg border border-orange-500/20 bg-orange-50/50 p-3 dark:bg-orange-950/20">
-                    <div className="mb-1.5 flex items-center gap-1.5">
-                      <div className="flex size-5 items-center justify-center rounded bg-orange-500/10">
-                        <AlertTriangleIcon className="size-3 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <p className="font-semibold text-xs">Blockers</p>
-                    </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      Auth service migration blocking API v2 rollout.
-                    </p>
-                  </div>
+                  <p className="font-semibold text-sm">Follow-ups</p>
                 </div>
+                <p className="pl-4 text-muted-foreground text-xs leading-relaxed">
+                  <li>
+                    Marcus to share design specs by Jan 17. Sarah to book
+                    kick-off with eng.
+                  </li>
+                </p>
+              </div>
 
-                {/* Follow-ups - full width */}
-                <div className="mt-2.5 rounded-lg border border-violet-500/20 bg-violet-50/50 p-3 dark:bg-violet-950/20">
-                  <div className="mb-1.5 flex items-center gap-1.5">
-                    <div className="flex size-5 items-center justify-center rounded bg-violet-500/10">
-                      <CalendarClockIcon className="size-3 text-violet-600 dark:text-violet-400" />
+              {/* Action Items */}
+              <div className="rounded-xl border bg-card p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                      <ListChecksIcon className="size-3.5 text-primary" />
                     </div>
-                    <p className="font-semibold text-xs">Follow-ups</p>
+                    <div>
+                      <p className="font-semibold text-sm">Action Items</p>
+                      <p className="text-muted-foreground text-xs">
+                        2 open · 1 done
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    Schedule auth service review by Nov 18. Share API v2
-                    timeline with stakeholders.
-                  </p>
-                </div>
-
-                {/* Action Items */}
-                <div className="mt-2.5 rounded-lg border p-3">
-                  <div className="mb-2 flex items-center gap-1.5">
-                    <div className="flex size-5 items-center justify-center rounded bg-primary/10">
-                      <ListChecksIcon className="size-3 text-primary" />
-                    </div>
-                    <p className="font-semibold text-xs">Action Items</p>
-                    <span className="ml-auto rounded-full bg-orange-500/10 px-1.5 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
                       2 open
                     </span>
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs dark:text-emerald-400">
+                      1 done
+                    </span>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <ActionItem text="Draft API v2 migration guide" />
-                    <ActionItem text="Finalize dashboard wireframes" />
-                    <ActionItem done text="Schedule QA review for Nov 1" />
-                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <ActionItem owner="Sarah" text="Finalize onboarding copy" />
+                  <ActionItem owner="Marcus" text="Search API spec" />
+                  <ActionItem
+                    done
+                    text="Share Q1 scope doc with stakeholders"
+                  />
                 </div>
               </div>
             </div>
@@ -190,28 +196,43 @@ export function HeroSection() {
   );
 }
 
-function ActionItem({ text, done = false }: { text: string; done?: boolean }) {
+function ActionItem({
+  text,
+  owner,
+  done = false,
+}: {
+  text: string;
+  owner?: string;
+  done?: boolean;
+}) {
   return (
     <div className="flex items-center gap-2 rounded-md border p-2">
       <div
-        className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border ${done ? "border-primary bg-primary" : "border-input"}`}
+        className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${done ? "border-primary bg-primary" : "border-input"}`}
       >
         {done && <CheckIcon className="size-2.5 text-primary-foreground" />}
       </div>
-      <span
-        className={`text-xs ${done ? "text-muted-foreground line-through" : "font-medium"}`}
-      >
-        {text}
-      </span>
+      <div className="min-w-0 flex-1">
+        <span
+          className={`text-xs leading-snug ${done ? "text-muted-foreground line-through" : "font-medium"}`}
+        >
+          {text}
+        </span>
+        {owner && (
+          <div className="mt-0.5 flex items-center gap-1 text-muted-foreground text-xs">
+            <UsersIcon className="size-3" />
+            {owner}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function Decision({ text }: { text: string }) {
   return (
-    <div className="flex items-start gap-1.5 text-xs leading-relaxed">
-      <CheckCircle2Icon className="mt-0.5 size-3 shrink-0 text-emerald-500" />
-      <span className="text-muted-foreground">{text}</span>
+    <div className="flex items-start gap-1.5 pl-4 text-xs leading-relaxed">
+      <li className="text-muted-foreground">{text}</li>
     </div>
   );
 }

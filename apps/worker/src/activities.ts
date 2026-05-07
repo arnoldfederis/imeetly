@@ -1,12 +1,16 @@
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { render } from "@react-email/components";
 import {
   actionItems,
   meetingFiles,
   meetingSummaries,
   meetings,
 } from "@repo/db/schemas/app";
+import { users } from "@repo/db/schemas/auth";
 import { eq } from "drizzle-orm";
+import nodemailer from "nodemailer";
 import { db } from "./db";
+import { MeetingReadyEmail } from "./emails/meeting-ready";
 import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { transcribeMeeting } from "./services/ai/transcription";
@@ -167,6 +171,80 @@ export async function saveProcessingResults(
   console.log(
     `[${meetingId}] Saved results (${results.actionItems.length} action items, extraction: ${results.extractionProvider ?? "unknown"}, transcription: ${results.transcriptionProvider ?? "n/a"})`,
   );
+}
+
+// --- Notifications ---
+
+export async function notifyMeetingReady(meetingId: string): Promise<void> {
+  const meeting = await db.query.meetings.findFirst({
+    where: eq(meetings.id, meetingId),
+    columns: { id: true, title: true, userId: true },
+    with: {
+      actionItems: { columns: { status: true } },
+    },
+  });
+  if (!meeting) return;
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, meeting.userId),
+    columns: { email: true, name: true },
+  });
+  if (!user?.email) return;
+
+  const appUrl = env.APP_URL ?? "https://app.imeetly.app";
+  const meetingUrl = `${appUrl}/meetings/${meeting.id}`;
+  const subject = `Your meeting notes are ready: ${meeting.title}`;
+  const openItemCount =
+    meeting.actionItems?.filter((i) => i.status !== "done").length ?? 0;
+  const html = await render(
+    MeetingReadyEmail({
+      userName: user.name ?? null,
+      meetingTitle: meeting.title,
+      meetingUrl,
+      openItemCount,
+    }),
+  );
+
+  try {
+    if (env.APP_ENV !== "production") {
+      const transport = nodemailer.createTransport({
+        host: env.SMTP_HOST ?? "localhost",
+        port: Number(env.SMTP_PORT ?? 1025),
+        auth:
+          env.SMTP_USER && env.SMTP_PASS
+            ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
+            : undefined,
+        tls: { rejectUnauthorized: false },
+      });
+      await transport.sendMail({
+        from: "imeetly <notifications@imeetly.app>",
+        to: user.email,
+        subject,
+        html,
+      });
+    } else {
+      if (!env.RESEND_API_KEY) return;
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "imeetly <notifications@imeetly.app>",
+          to: [user.email],
+          subject,
+          html,
+        }),
+      });
+    }
+    console.log(`[${meetingId}] Meeting ready email sent to ${user.email}`);
+  } catch (err) {
+    console.warn(
+      `[${meetingId}] Failed to send meeting ready email:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 }
 
 // --- Cleanup ---

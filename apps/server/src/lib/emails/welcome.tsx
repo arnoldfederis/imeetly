@@ -1,6 +1,7 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Heading,
@@ -8,6 +9,7 @@ import {
   Html,
   Img,
   Preview,
+  Row,
   Section,
   Text,
 } from "@react-email/components";
@@ -24,58 +26,69 @@ export function WelcomeEmail({
   return (
     <Html>
       <Head />
-      <Preview>
-        Welcome to imeetly - your meetings, summarized in seconds
-      </Preview>
+      <Preview>Never lose what happened in a meeting again</Preview>
       <Body style={body}>
         <Container style={container}>
           <Section style={logoSection}>
-            <Img
-              alt="imeetly"
-              height={40}
-              src={`${siteUrl}/icons/icon-64.png`}
-              style={logo}
-              width={40}
-            />
-          </Section>
-
-          <Heading style={heading}>Welcome to imeetly</Heading>
-          <Text style={tagline}>Your meetings, summarized in seconds</Text>
-
-          <Hr style={divider} />
-
-          <Text style={paragraph}>Hi {name},</Text>
-          <Text style={paragraph}>
-            Thanks for joining imeetly. Upload a recording or paste a transcript
-            - imeetly will generate a summary, decisions, blockers, follow-ups,
-            and action items automatically.
-          </Text>
-
-          <Section style={buttonSection}>
-            <Button href={`${appUrl}/meetings/new`} style={button}>
-              Create your first meeting
-            </Button>
+            <Row>
+              <Column style={{ width: "44px" }}>
+                <Img
+                  alt="imeetly"
+                  height={32}
+                  src={`${siteUrl}/imeetly-transparent.png`}
+                  width={32}
+                />
+              </Column>
+              <Column>
+                <Text style={logoText}>imeetly</Text>
+              </Column>
+            </Row>
           </Section>
 
           <Hr style={divider} />
 
-          <Text style={tipHeading}>Connect your meeting tools</Text>
-          <Text style={paragraph}>
-            Skip manual uploads entirely. Connect Google Meet, Zoom, or
-            Microsoft Teams and imeetly will pull in your recordings
-            automatically.
-          </Text>
-          <Text style={tipLink}>
-            <a href={`${appUrl}/settings/integrations`} style={link}>
-              Set up integrations →
-            </a>
-          </Text>
+          <Section style={content}>
+            <Heading style={heading}>Welcome, {name}</Heading>
+            <Text style={tagline}>
+              Never lose what happened in a meeting again
+            </Text>
+            <Text style={subTagline}>The memory layer for meetings.</Text>
+
+            <Text style={paragraph}>
+              Upload a recording or paste a transcript - imeetly generates a
+              summary, key decisions, blockers, follow-ups, and action items
+              automatically.
+            </Text>
+
+            <Section style={buttonSection}>
+              <Button href={`${appUrl}/meetings/new`} style={button}>
+                Create your first meeting
+              </Button>
+            </Section>
+
+            <Text style={tipHeading}>Connect your meeting tools</Text>
+            <Text style={paragraph}>
+              Skip manual uploads entirely. Connect Google Meet, Zoom, or
+              Microsoft Teams and imeetly will pull in your recordings
+              automatically.
+            </Text>
+            <Text style={tipLink}>
+              <a href={`${appUrl}/settings/integrations`} style={link}>
+                Set up integrations →
+              </a>
+            </Text>
+          </Section>
 
           <Hr style={divider} />
 
-          <Text style={footer}>
-            You're receiving this because you created an imeetly account.
-          </Text>
+          <Section style={footerSection}>
+            <Text style={footerText}>
+              imeetly - The memory layer for meetings.
+            </Text>
+            <Text style={footerSub}>
+              You're receiving this because you created an imeetly account.
+            </Text>
+          </Section>
         </Container>
       </Body>
     </Html>
@@ -83,9 +96,9 @@ export function WelcomeEmail({
 }
 
 const body: React.CSSProperties = {
-  backgroundColor: "#f9fafb",
+  backgroundColor: "#f5f5f5",
   fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   margin: 0,
   padding: 0,
 };
@@ -93,68 +106,82 @@ const body: React.CSSProperties = {
 const container: React.CSSProperties = {
   backgroundColor: "#ffffff",
   borderRadius: "12px",
-  border: "1px solid #e5e7eb",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
   margin: "40px auto",
-  maxWidth: "420px",
-  padding: "32px",
+  maxWidth: "540px",
+  padding: "0 0 24px",
 };
 
 const logoSection: React.CSSProperties = {
-  textAlign: "center" as const,
-  marginBottom: "8px",
+  padding: "24px 32px 20px",
 };
 
-const logo: React.CSSProperties = {
-  margin: "0 auto",
-};
-
-const heading: React.CSSProperties = {
-  color: "#111827",
-  fontSize: "20px",
-  fontWeight: 700,
-  margin: "0",
-  textAlign: "center" as const,
-};
-
-const tagline: React.CSSProperties = {
-  color: "#6b7280",
-  fontSize: "13px",
-  margin: "4px 0 0",
-  textAlign: "center" as const,
+const logoText: React.CSSProperties = {
+  color: "#111111",
+  display: "inline",
+  fontSize: "18px",
+  fontWeight: "700",
+  margin: "0 0 0 4px",
+  verticalAlign: "middle",
 };
 
 const divider: React.CSSProperties = {
-  borderColor: "#e5e7eb",
-  margin: "24px 0",
+  borderColor: "#ebebeb",
+  borderTopWidth: "1px",
+  margin: "0",
+};
+
+const content: React.CSSProperties = {
+  padding: "32px 32px 8px",
+};
+
+const heading: React.CSSProperties = {
+  color: "#111111",
+  fontSize: "22px",
+  fontWeight: "700",
+  letterSpacing: "-0.3px",
+  margin: "0 0 6px",
+};
+
+const tagline: React.CSSProperties = {
+  color: "#333333",
+  fontSize: "15px",
+  fontWeight: "500",
+  margin: "0 0 2px",
+};
+
+const subTagline: React.CSSProperties = {
+  color: "#888888",
+  fontSize: "13px",
+  margin: "0 0 24px",
 };
 
 const paragraph: React.CSSProperties = {
-  color: "#374151",
+  color: "#444444",
   fontSize: "15px",
   lineHeight: "1.6",
-  margin: "0 0 12px",
+  margin: "0 0 20px",
 };
 
 const buttonSection: React.CSSProperties = {
-  textAlign: "center" as const,
-  margin: "24px 0",
+  marginBottom: "28px",
 };
 
 const button: React.CSSProperties = {
-  backgroundColor: "#111827",
+  backgroundColor: "#6468f0",
   borderRadius: "8px",
   color: "#ffffff",
   display: "inline-block",
-  fontSize: "14px",
-  fontWeight: 600,
-  padding: "12px 24px",
+  fontSize: "15px",
+  fontWeight: "600",
+  padding: "12px 28px",
   textDecoration: "none",
 };
 
 const tipHeading: React.CSSProperties = {
-  color: "#111827",
+  color: "#111111",
   fontSize: "14px",
-  fontWeight: 600,
+  fontWeight: "600",
   margin: "0 0 6px",
 };
 
@@ -163,15 +190,23 @@ const tipLink: React.CSSProperties = {
 };
 
 const link: React.CSSProperties = {
-  color: "#111827",
-  fontWeight: 600,
+  color: "#6468f0",
+  fontWeight: "600",
   textDecoration: "underline",
 };
 
-const footer: React.CSSProperties = {
-  color: "#9ca3af",
-  fontSize: "12px",
-  lineHeight: "1.5",
-  margin: 0,
-  textAlign: "center" as const,
+const footerSection: React.CSSProperties = {
+  padding: "16px 32px 0",
+};
+
+const footerText: React.CSSProperties = {
+  color: "#888888",
+  fontSize: "13px",
+  margin: "0 0 4px",
+};
+
+const footerSub: React.CSSProperties = {
+  color: "#aaaaaa",
+  fontSize: "11px",
+  margin: "0",
 };

@@ -74,6 +74,9 @@ export const meetingModel = {
     meetingId: z.string(),
     fileId: z.string(),
   }),
+  byShareToken: z.object({
+    token: z.string(),
+  }),
 } as const;
 
 export type MeetingModel = {

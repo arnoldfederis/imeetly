@@ -20,10 +20,11 @@ export default function Page() {
         </div>
 
         <h1 className="mt-6 font-bold text-3xl tracking-tight">
-          Your meetings, summarized in seconds
+          Never lose what happened in a meeting again
         </h1>
-        <p className="mt-3 text-lg text-muted-foreground">
-          Connect your tools once. imeetly handles the rest.
+        <p className="mt-3 text-muted-foreground">
+          Decisions, action items, and follow-ups captured automatically. Your
+          entire meeting history, searchable from one place.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -50,24 +51,24 @@ export default function Page() {
         </p>
       </div>
 
-      <div className="mx-auto mt-16 grid w-full gap-4 lg:grid-cols-3">
+      <div className="mx-auto mt-16 grid w-full gap-4 xl:grid-cols-3">
         <StepCard
-          description="Upload an audio file, video recording, or paste your transcript or connect Zoom or Microsoft Teams to import recordings automatically."
+          description="Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly."
           icon={<UploadIcon className="size-5 text-primary" />}
           step="01"
-          title="Upload or connect your meeting tool"
+          title="Connect your meeting tools"
         />
         <StepCard
-          description="Our AI analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups and action items."
+          description="imeetly analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups, and action items."
           icon={<BrainCircuitIcon className="size-5 text-primary" />}
           step="02"
-          title="AI processes your meeting"
+          title="AI extracts the signal"
         />
         <StepCard
-          description="Get a clean summary with structured action items. Share with your team or export as needed."
+          description="Review a clean summary with structured action items and follow-ups. Search your entire meeting history anytime."
           icon={<ClipboardListIcon className="size-5 text-primary" />}
           step="03"
-          title="Review and take action"
+          title="Review and follow up"
         />
       </div>
     </div>

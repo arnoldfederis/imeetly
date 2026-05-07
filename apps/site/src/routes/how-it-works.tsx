@@ -7,7 +7,7 @@ import { ProblemSection } from "@/components/landing/problem-section";
 import { seo, webPageJsonLd } from "@/lib/seo";
 
 const HOW_IT_WORKS_DESCRIPTION =
-  "See how imeetly turns uploaded audio, video, pasted transcripts, or connected meeting recordings into transcripts, summaries, decisions, blockers, and action items.";
+  "See how imeetly turns a recording or transcript into a clean summary with decisions, action items, and follow-ups in seconds. Connect Zoom, Google Meet, or Microsoft Teams and never rewatch a recording again.";
 
 export const Route = createFileRoute("/how-it-works")({
   component: HowItWorksPage,
@@ -37,9 +37,9 @@ function HowItWorksPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Upload a meeting or connect your meeting tool once. imeetly handles transcription, analysis, and structured notes."
+          description="Connect your tools once. imeetly captures every meeting and gives you a searchable memory of every decision, action item, and follow-up automatically."
           eyebrow="How it works"
-          title="From raw conversation to clear next steps"
+          title="Your meeting memory, in three steps"
         />
         <HowItWorksSection />
         <ProblemSection />

@@ -85,6 +85,13 @@
       "when": 1778099890680,
       "tag": "0011_eager_nemesis",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778113141567,
+      "tag": "0012_fast_riptide",
+      "breakpoints": true
     }
   ]
 }

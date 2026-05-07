@@ -10,10 +10,9 @@
 
 const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
-const DEFAULT_TITLE =
-  "Your meetings, summarized in seconds. Start free - imeetly";
+const DEFAULT_TITLE = "The memory layer for meetings - imeetly";
 const DEFAULT_DESCRIPTION =
-  "AI meeting notes for fast-moving teams. Upload recordings or transcripts and instantly get summaries, decisions, blockers, and action items. Start free.";
+  "Never lose what happened in a meeting again. imeetly captures decisions, action items, and follow-ups automatically and makes your entire meeting history searchable. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SeoOptions {
@@ -92,7 +91,7 @@ export function organizationJsonLd() {
     url: SITE_URL,
     logo: `${SITE_URL}/icons/icon-256.png`,
     description:
-      "AI meeting notes for fast-moving teams. Upload recordings or transcripts and get summaries, decisions, and action items.",
+      "imeetly is the memory layer for meetings. Decisions, action items, and follow-ups captured automatically. Your entire meeting history, searchable forever.",
     sameAs: [],
   };
 }

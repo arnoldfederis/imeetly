@@ -2,17 +2,17 @@ import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
 
 const problems = [
-  "Meetings run long with no clear takeaways",
-  "Notes are scattered or never written",
-  "Action items get lost in chat threads",
-  "Nobody knows who owns what",
+  "You leave every meeting carrying decisions in your head",
+  "By Thursday you cannot remember what was agreed on Monday",
+  "Action items live in someone's notes that nobody reads",
+  "Teammates walk away with different versions of the same conversation",
 ];
 
 const solutions = [
-  "Automatic summaries in seconds",
-  "Key decisions captured clearly",
-  "Action items with assigned owners",
-  "Searchable, organized meeting history",
+  "Every decision logged and searchable the moment the call ends",
+  "Action items with owners extracted automatically, no notes required",
+  "One clear record of the meeting everyone can reference",
+  "Search months of past meetings in seconds from anywhere",
 ];
 
 export function ProblemSection() {
@@ -21,11 +21,12 @@ export function ProblemSection() {
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-            Meetings shouldn't create more work
+            Meetings end. The context should not.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Most teams lose hours every week to disorganized meeting follow-ups.
-            imeetly turns every meeting into structured, actionable output.
+            Most teams leave every meeting with decisions in their head and
+            action items in a chat thread nobody checks. imeetly captures all of
+            it the moment the call ends.
           </p>
         </FadeIn>
 

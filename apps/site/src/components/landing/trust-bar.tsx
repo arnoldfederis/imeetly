@@ -19,7 +19,7 @@ export function TrustBar() {
     <section className="border-b bg-muted/30 py-10">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-6 text-center text-muted-foreground text-sm">
-          Built for teams that run on meetings
+          Built for teams that cannot afford to forget
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           {audiences.map((a) => (

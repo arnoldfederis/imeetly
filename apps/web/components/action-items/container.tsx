@@ -10,10 +10,12 @@ import {
   CheckSquareIcon,
   ChevronDownIcon,
   ClockIcon,
+  EditIcon,
   ListChecksIcon,
   LoaderIcon,
+  PlusIcon,
   SearchIcon,
-  TrashIcon,
+  Trash2Icon,
   UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +33,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -44,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
 
 const PAGE_SIZE = 30;
@@ -111,16 +115,19 @@ export function ActionItemsContainer() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetching, fetchNextPage]);
 
-  const items = data?.pages.flatMap((p) => p.items) ?? [];
   const total = data?.pages[0]?.total ?? 0;
 
-  // Group by meeting (preserve server order, no client-side sort)
+  // Group by meeting, dedup by id to prevent duplicate keys after invalidation
   const grouped = useMemo(() => {
+    const allItems = data?.pages.flatMap((p) => p.items) ?? [];
+    const seenIds = new Set<string>();
     const map = new Map<
       string,
-      { meetingId: string; meetingTitle: string; items: typeof items }
+      { meetingId: string; meetingTitle: string; items: typeof allItems }
     >();
-    for (const item of items) {
+    for (const item of allItems) {
+      if (seenIds.has(item.id)) continue;
+      seenIds.add(item.id);
       const existing = map.get(item.meetingId);
       if (existing) {
         existing.items.push(item);
@@ -133,7 +140,7 @@ export function ActionItemsContainer() {
       }
     }
     return Array.from(map.values());
-  }, [items]);
+  }, [data]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -204,51 +211,9 @@ export function ActionItemsContainer() {
         </Empty>
       ) : (
         <div className="flex flex-col gap-3">
-          {grouped.map((group) => {
-            const openCount = group.items.filter(
-              (i) => i.status === "open",
-            ).length;
-            return (
-              <Collapsible key={group.meetingId}>
-                <div className="overflow-hidden rounded-xl border">
-                  <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:opacity-80">
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <ListChecksIcon className="size-4 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="truncate font-medium text-sm">
-                        {group.meetingTitle}
-                      </span>
-                      <div className="mt-0.5 flex items-center gap-2">
-                        {openCount > 0 && (
-                          <span className="inline-flex h-4 items-center rounded-full bg-orange-500/10 px-1.5 font-medium text-orange-600 text-xs dark:text-orange-400">
-                            {openCount} open
-                          </span>
-                        )}
-                        <span className="text-muted-foreground text-xs">
-                          {group.items.length} total
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronDownIcon className="size-4 shrink-0 in-data-panel-open:rotate-180 text-muted-foreground transition-transform duration-200" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="flex flex-col gap-1.5 border-t bg-muted/20 px-4 py-3">
-                      {group.items.map((item) => (
-                        <ActionItemCard item={item} key={item.id} />
-                      ))}
-                      <Link
-                        className="mt-2 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
-                        href={`/meetings/${group.meetingId}?sourceLink=action-items`}
-                      >
-                        View meeting →
-                      </Link>
-                    </div>
-                  </CollapsibleContent>
-                </div>
-              </Collapsible>
-            );
-          })}
+          {grouped.map((group) => (
+            <MeetingGroup group={group} key={group.meetingId} />
+          ))}
 
           <div ref={sentinelRef} />
           {isFetching && !isLoading && (
@@ -291,9 +256,165 @@ type ActionItem = {
   meetingTitle: string;
 };
 
+function MeetingGroup({
+  group,
+}: {
+  group: { meetingId: string; meetingTitle: string; items: ActionItem[] };
+}) {
+  const queryClient = useQueryClient();
+  const [addOpen, setAddOpen] = useState(false);
+  const [addTitle, setAddTitle] = useState("");
+  const [addOwner, setAddOwner] = useState("");
+
+  const openCount = group.items.filter((i) => i.status === "open").length;
+
+  const createMutation = useMutation(
+    client.actionItem.create.mutationOptions({
+      onSuccess: async () => {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: client.actionItem.list.key(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: client.meeting.list.key(),
+          }),
+        ]);
+        setAddTitle("");
+        setAddOwner("");
+        setAddOpen(false);
+      },
+      onError: () => toast.error("Failed to add action item"),
+    }),
+  );
+
+  return (
+    <Collapsible>
+      <div className="overflow-hidden rounded-xl border">
+        <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-3 p-4 text-left transition-colors hover:opacity-80">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <ListChecksIcon className="size-4 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="truncate font-medium text-sm">
+              {group.meetingTitle}
+            </span>
+            <div className="mt-0.5 flex items-center gap-2">
+              {openCount > 0 && (
+                <span className="inline-flex h-4 items-center rounded-full bg-orange-500/10 px-1.5 font-medium text-orange-600 text-xs dark:text-orange-400">
+                  {openCount} open
+                </span>
+              )}
+              <span className="text-muted-foreground text-xs">
+                {group.items.length} total
+              </span>
+            </div>
+          </div>
+          <ChevronDownIcon className="size-4 shrink-0 in-data-panel-open:rotate-180 text-muted-foreground transition-transform duration-200" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="flex flex-col gap-1.5 border-t bg-muted/20 px-4 py-3">
+            {group.items.map((item) => (
+              <ActionItemCard item={item} key={item.id} />
+            ))}
+
+            {addOpen ? (
+              <div className="mt-1 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    autoFocus
+                    className="flex-1 text-sm"
+                    disabled={createMutation.isPending}
+                    onChange={(e) => setAddTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setAddOpen(false);
+                        setAddTitle("");
+                        setAddOwner("");
+                      }
+                    }}
+                    placeholder="Action item title"
+                    value={addTitle}
+                  />
+                  <Input
+                    className="w-36 shrink-0 text-sm"
+                    disabled={createMutation.isPending}
+                    onChange={(e) => setAddOwner(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setAddOpen(false);
+                        setAddTitle("");
+                        setAddOwner("");
+                      }
+                    }}
+                    placeholder="Owner (optional)"
+                    value={addOwner}
+                  />
+                </div>
+                <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+                  <Button
+                    disabled={createMutation.isPending}
+                    onClick={() => {
+                      setAddOpen(false);
+                      setAddTitle("");
+                      setAddOwner("");
+                    }}
+                    variant="secondary"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={createMutation.isPending || !addTitle.trim()}
+                    onClick={() => {
+                      if (addTitle.trim()) {
+                        createMutation.mutate({
+                          meetingId: group.meetingId,
+                          title: addTitle.trim(),
+                          ownerName: addOwner.trim() || undefined,
+                        });
+                      }
+                    }}
+                  >
+                    {createMutation.isPending ? (
+                      <Spinner className="size-3.5" />
+                    ) : (
+                      "Add"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                className="mt-1 w-full"
+                onClick={() => setAddOpen(true)}
+                variant="secondary"
+              >
+                <PlusIcon className="size-3.5" />
+                Add item
+              </Button>
+            )}
+
+            <Link
+              className="mt-1 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
+              href={`/meetings/${group.meetingId}?sourceLink=action-items`}
+            >
+              View meeting →
+            </Link>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
 function ActionItemCard({ item }: { item: ActionItem }) {
   const queryClient = useQueryClient();
   const [optimisticDone, setOptimisticDone] = useState(item.status === "done");
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(item.title);
+  const [editOwner, setEditOwner] = useState(item.ownerName ?? "");
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const swipingRef = useRef(false);
 
   useEffect(() => {
     setOptimisticDone(item.status === "done");
@@ -308,7 +429,6 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     });
   };
 
-  // Update status in-place across all cached pages - no refetch, no reorder
   const updateStatusInCache = (id: string, status: string) => {
     type Page = { items: ActionItem[]; total: number };
     type CacheData = { pages: Page[]; pageParams: unknown[] };
@@ -339,6 +459,20 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     }),
   );
 
+  const editMutation = useMutation(
+    client.actionItem.update.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: client.actionItem.list.key(),
+        });
+        setEditing(false);
+      },
+      onError: () => {
+        toast.error("Failed to update action item");
+      },
+    }),
+  );
+
   const deleteMutation = useMutation(
     client.actionItem.remove.mutationOptions({
       onSuccess: async () => {
@@ -356,57 +490,184 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     toggleMutation.mutate({ id: item.id, status: newDone ? "done" : "open" });
   };
 
-  return (
-    <div
-      className={`group flex items-center gap-2 ${isDone ? "opacity-60" : ""}`}
-    >
-      <button
-        className={`flex w-full cursor-pointer items-center gap-2 rounded-md border p-2 text-left transition-colors hover:bg-muted/30 disabled:cursor-not-allowed`}
-        disabled={toggleMutation.isPending}
-        onClick={handleToggle}
-        type="button"
-      >
-        <div
-          className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${isDone ? "border-primary bg-primary" : "border-input"}`}
-        >
-          {isDone && <CheckIcon className="size-2.5 text-primary-foreground" />}
+  const openEdit = () => {
+    setEditTitle(item.title);
+    setEditOwner(item.ownerName ?? "");
+    setEditing(true);
+  };
+
+  const handleTouchEnd = () => {
+    const offset = swipeOffset;
+    if (offset < -60) {
+      deleteMutation.mutate({ id: item.id });
+    } else if (offset > 60) {
+      openEdit();
+    }
+    swipingRef.current = false;
+    setSwipeOffset(0);
+    touchStartX.current = null;
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+    setEditTitle(item.title);
+    setEditOwner(item.ownerName ?? "");
+  };
+
+  const saveEdit = () => {
+    const trimmedTitle = editTitle.trim();
+    if (!trimmedTitle) return;
+    editMutation.mutate({
+      id: item.id,
+      title: trimmedTitle,
+      ownerName: editOwner.trim() || undefined,
+    });
+  };
+
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-2 rounded-md border p-2">
+        <div className="flex items-center gap-2">
+          <Input
+            autoFocus
+            className="flex-1 text-sm"
+            disabled={editMutation.isPending}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveEdit();
+              if (e.key === "Escape") cancelEdit();
+            }}
+            placeholder="Action item title"
+            value={editTitle}
+          />
+          <Input
+            className="w-36 shrink-0 text-sm"
+            disabled={editMutation.isPending}
+            onChange={(e) => setEditOwner(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveEdit();
+              if (e.key === "Escape") cancelEdit();
+            }}
+            placeholder="Owner (optional)"
+            value={editOwner}
+          />
         </div>
-        <div className="min-w-0 flex-1">
-          <span
-            className={`text-xs leading-snug ${isDone ? "text-muted-foreground line-through" : "font-medium"}`}
+        <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+          <Button
+            disabled={editMutation.isPending}
+            onClick={cancelEdit}
+            variant="secondary"
           >
-            {item.title}
-          </span>
-          {(item.ownerName || item.dueDate) && (
-            <div className="mt-0.5 flex items-center gap-3 text-muted-foreground text-xs">
-              {item.ownerName && (
-                <span className="flex items-center gap-1">
-                  <UsersIcon className="size-3" />
-                  {item.ownerName}
-                </span>
-              )}
-              {item.dueDate && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon className="size-3" />
-                  {new Date(item.dueDate).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-          )}
+            Cancel
+          </Button>
+          <Button
+            disabled={editMutation.isPending || !editTitle.trim()}
+            onClick={saveEdit}
+          >
+            {editMutation.isPending ? <Spinner className="size-3.5" /> : "Save"}
+          </Button>
         </div>
-        <Button
-          className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-          disabled={deleteMutation.isPending}
-          nativeButton={false}
-          onClick={() => deleteMutation.mutate({ id: item.id })}
-          render={
-            <div>
-              <TrashIcon className="text-muted-foreground" data-icon />
-            </div>
-          }
-          variant="secondary"
-        />
-      </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-md">
+      {swipeOffset < 0 && (
+        <div className="absolute inset-y-0 right-0 flex w-16 items-center justify-center rounded-r-md bg-destructive">
+          <Trash2Icon className="size-4 text-destructive-foreground" />
+        </div>
+      )}
+      {swipeOffset > 0 && (
+        <div className="absolute inset-y-0 left-0 flex w-16 items-center justify-center rounded-l-md bg-primary">
+          <EditIcon className="size-4 text-primary-foreground" />
+        </div>
+      )}
+      <div
+        className={`group flex items-center gap-2 ${isDone ? "opacity-60" : ""}`}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={(e) => {
+          if (touchStartX.current === null) return;
+          const delta = e.touches[0].clientX - touchStartX.current;
+          swipingRef.current = true;
+          setSwipeOffset(Math.max(-80, Math.min(80, delta)));
+        }}
+        onTouchStart={(e) => {
+          touchStartX.current = e.touches[0].clientX;
+          swipingRef.current = false;
+        }}
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          transition: swipingRef.current ? "none" : "transform 0.25s ease",
+        }}
+      >
+        <button
+          className="flex w-full cursor-pointer items-center gap-2 rounded-md border p-2 text-left transition-colors hover:bg-muted/30 disabled:cursor-not-allowed"
+          disabled={toggleMutation.isPending || deleteMutation.isPending}
+          onClick={handleToggle}
+          type="button"
+        >
+          <div
+            className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${isDone ? "border-primary bg-primary" : "border-input"}`}
+          >
+            {isDone && (
+              <CheckIcon className="size-2.5 text-primary-foreground" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <span
+              className={`text-xs leading-snug ${isDone ? "text-muted-foreground line-through" : "font-medium"}`}
+            >
+              {item.title}
+            </span>
+            {(item.ownerName || item.dueDate) && (
+              <div className="mt-0.5 flex items-center gap-3 text-muted-foreground text-xs">
+                {item.ownerName && (
+                  <span className="flex items-center gap-1">
+                    <UsersIcon className="size-3" />
+                    {item.ownerName}
+                  </span>
+                )}
+                {item.dueDate && (
+                  <span className="flex items-center gap-1">
+                    <ClockIcon className="size-3" />
+                    {new Date(item.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <Button
+            className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+            nativeButton={false}
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit();
+            }}
+            render={
+              <div>
+                <EditIcon className="text-muted-foreground" data-icon />
+              </div>
+            }
+            variant="secondary"
+          />
+          <Button
+            className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+            disabled={deleteMutation.isPending}
+            nativeButton={false}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteMutation.mutate({ id: item.id });
+            }}
+            render={
+              <div>
+                <Trash2Icon data-icon />
+              </div>
+            }
+            variant="destructive"
+          />
+        </button>
+      </div>
     </div>
   );
 }

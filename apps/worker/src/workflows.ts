@@ -9,6 +9,7 @@ const {
   generateExtractionResult,
   saveProcessingResults,
   deleteSourceFile,
+  notifyMeetingReady,
 } = proxyActivities<typeof activities>({
   startToCloseTimeout: "10 minutes",
   retry: {
@@ -82,6 +83,7 @@ export async function processMeeting(meetingId: string): Promise<void> {
     });
 
     await updateMeetingStatus(meetingId, "completed", "completed", null);
+    await notifyMeetingReady(meetingId);
 
     // Clean up raw source file after successful processing
     try {

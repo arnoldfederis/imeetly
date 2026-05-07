@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CTASection } from "@/components/landing/cta-section";
+import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { PricingSection } from "@/components/landing/pricing-section";
-import { seo, softwareAppJsonLd, webPageJsonLd } from "@/lib/seo";
+import { faqJsonLd, seo, softwareAppJsonLd, webPageJsonLd } from "@/lib/seo";
 
 const PRICING_DESCRIPTION =
   "Compare imeetly pricing plans for AI meeting notes, including the free plan, Pro monthly and yearly options, Team limits, and custom enterprise support.";
+const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -31,6 +33,10 @@ export const Route = createFileRoute("/pricing")({
           }),
         ),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(faqJsonLd(FAQ_ITEMS)),
+      },
     ],
   }),
 });
@@ -45,6 +51,7 @@ function PricingPage() {
           title="Plans that scale with your meeting load"
         />
         <PricingSection />
+        <FAQSection />
         <CTASection />
       </main>
       <LandingFooter />

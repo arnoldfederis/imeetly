@@ -106,4 +106,14 @@ export const meetingController = base.router({
   usage: privateProcedure.handler(async ({ context }) =>
     MeetingService.getUsage(context.user.id),
   ),
+
+  generateShareToken: privateProcedure
+    .input(meetingModel.byId)
+    .handler(async ({ input, context }) =>
+      MeetingService.generateShareToken(context.user.id, input.id),
+    ),
+
+  getByShareToken: base
+    .input(meetingModel.byShareToken)
+    .handler(async ({ input }) => MeetingService.getByShareToken(input.token)),
 });

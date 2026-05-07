@@ -58,7 +58,7 @@ export function FeedbackFileDropzone({ files, onAdd, onRemove }: Props) {
         <div>
           <p className="font-medium text-sm">Drop files or click to browse</p>
           <p className="text-muted-foreground text-xs">
-            Images, videos, PDFs, text — up to {FEEDBACK_MAX_FILES} files,{" "}
+            Images, videos, PDFs, text - up to {FEEDBACK_MAX_FILES} files,{" "}
             {FEEDBACK_MAX_SIZE_MB}MB each
           </p>
         </div>

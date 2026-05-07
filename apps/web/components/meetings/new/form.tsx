@@ -6,7 +6,7 @@ import {
   meetingModel,
 } from "@repo/server/modules/meeting/model";
 import type { RouterOutputs } from "@repo/server/types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarIcon,
   FileAudioIcon,
@@ -82,6 +82,7 @@ export function NewMeetingForm({
   const [dragging, setDragging] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
+  const queryClient = useQueryClient();
   const multipartUpload = useMultipartUpload();
   const { state: uploadState, progress: uploadProgress } = multipartUpload;
 
@@ -136,6 +137,9 @@ export function NewMeetingForm({
         posthog.capture("meeting_created", {
           meeting_id: meeting.id,
           source_type: file ? sourceType : "text",
+        });
+        await queryClient.invalidateQueries({
+          queryKey: client.meeting.list.key(),
         });
         toast.success("Meeting created");
         router.replace(`/meetings/${meeting.id}`);
@@ -494,9 +498,10 @@ export function NewMeetingForm({
                   <Textarea
                     {...field}
                     aria-invalid={fieldState.invalid}
+                    className="h-56 resize-y"
                     id={field.name}
                     placeholder="Paste your meeting transcript here..."
-                    rows={8}
+                    rows={6}
                   />
                   {fieldState.invalid ? (
                     <FieldError errors={[fieldState.error]} />

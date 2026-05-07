@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "ignoreDeprecations": "6.0",
+    "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
       "@repo/worker/*": ["./src/*"],
@@ -16,5 +17,5 @@
       "@repo/db/relations/*": ["../../packages/db/src/relations/*"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

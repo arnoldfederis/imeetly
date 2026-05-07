@@ -683,4 +683,45 @@ export abstract class MeetingService {
       .orderBy(desc(meetings.createdAt))
       .limit(limit);
   }
+
+  static async generateShareToken(userId: string, meetingId: string) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(
+        eq(meetings.id, meetingId),
+        eq(meetings.userId, userId),
+        eq(meetings.status, "completed"),
+      ),
+      columns: { id: true, shareToken: true },
+    });
+    if (!meeting) return null;
+
+    if (meeting.shareToken) return meeting.shareToken;
+
+    const token = crypto.randomUUID();
+    await db
+      .update(meetings)
+      .set({ shareToken: token })
+      .where(eq(meetings.id, meetingId));
+
+    return token;
+  }
+
+  static async getByShareToken(token: string) {
+    const meeting = await db.query.meetings.findFirst({
+      where: and(
+        eq(meetings.shareToken, token),
+        eq(meetings.status, "completed"),
+      ),
+      with: {
+        summary: true,
+        actionItems: {
+          orderBy: [asc(actionItems.createdAt)],
+        },
+      },
+    });
+    if (!meeting) return null;
+
+    const { transcriptText, shareToken, ...rest } = meeting;
+    return rest;
+  }
 }

@@ -1,5 +1,6 @@
 import {
   Body,
+  Column,
   Container,
   Head,
   Heading,
@@ -7,6 +8,7 @@ import {
   Html,
   Img,
   Preview,
+  Row,
   Section,
   Text,
 } from "@react-email/components";
@@ -25,34 +27,49 @@ export function VerificationCodeEmail({
       <Body style={body}>
         <Container style={container}>
           <Section style={logoSection}>
-            <Img
-              alt="imeetly"
-              height={40}
-              src={`${siteUrl}/icons/icon-64.png`}
-              style={logo}
-              width={40}
-            />
+            <Row>
+              <Column style={{ width: "44px" }}>
+                <Img
+                  alt="imeetly"
+                  height={32}
+                  src={`${siteUrl}/imeetly-transparent.png`}
+                  width={32}
+                />
+              </Column>
+              <Column>
+                <Text style={logoText}>imeetly</Text>
+              </Column>
+            </Row>
           </Section>
-
-          <Heading style={heading}>imeetly</Heading>
-          <Text style={tagline}>Your meetings, summarized in seconds</Text>
-          <Text style={subTagline}>AI meeting notes for fast-moving teams</Text>
 
           <Hr style={divider} />
 
-          <Text style={paragraph}>Your verification code is:</Text>
+          <Section style={content}>
+            <Heading style={heading}>Verify your email</Heading>
+            <Text style={tagline}>
+              Never lose what happened in a meeting again
+            </Text>
+            <Text style={subTagline}>The memory layer for meetings.</Text>
 
-          <Section style={codeContainer}>
-            <Text style={codeText}>{code}</Text>
+            <Text style={paragraph}>Your verification code is:</Text>
+
+            <Section style={codeContainer}>
+              <Text style={codeText}>{code}</Text>
+            </Section>
+
+            <Text style={expiry}>This code expires in 5 minutes.</Text>
           </Section>
-
-          <Text style={expiry}>This code expires in 5 minutes.</Text>
 
           <Hr style={divider} />
 
-          <Text style={footer}>
-            If you didn't request this code, you can safely ignore this email.
-          </Text>
+          <Section style={footerSection}>
+            <Text style={footerText}>
+              imeetly - The memory layer for meetings.
+            </Text>
+            <Text style={footerSub}>
+              If you didn't request this code, you can safely ignore this email.
+            </Text>
+          </Section>
         </Container>
       </Body>
     </Html>
@@ -60,9 +77,9 @@ export function VerificationCodeEmail({
 }
 
 const body: React.CSSProperties = {
-  backgroundColor: "#f9fafb",
+  backgroundColor: "#f5f5f5",
   fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   margin: 0,
   padding: 0,
 };
@@ -70,51 +87,58 @@ const body: React.CSSProperties = {
 const container: React.CSSProperties = {
   backgroundColor: "#ffffff",
   borderRadius: "12px",
-  border: "1px solid #e5e7eb",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
   margin: "40px auto",
-  maxWidth: "420px",
-  padding: "32px",
+  maxWidth: "540px",
+  padding: "0 0 24px",
 };
 
 const logoSection: React.CSSProperties = {
-  textAlign: "center" as const,
-  marginBottom: "8px",
+  padding: "24px 32px 20px",
 };
 
-const logo: React.CSSProperties = {
-  margin: "0 auto",
-};
-
-const heading: React.CSSProperties = {
-  color: "#111827",
-  fontSize: "20px",
-  fontWeight: 700,
-  margin: "0",
-  textAlign: "center" as const,
-};
-
-const tagline: React.CSSProperties = {
-  color: "#374151",
-  fontSize: "14px",
-  fontWeight: 500,
-  margin: "4px 0 0",
-  textAlign: "center" as const,
-};
-
-const subTagline: React.CSSProperties = {
-  color: "#6b7280",
-  fontSize: "12px",
-  margin: "2px 0 0",
-  textAlign: "center" as const,
+const logoText: React.CSSProperties = {
+  color: "#111111",
+  display: "inline",
+  fontSize: "18px",
+  fontWeight: "700",
+  margin: "0 0 0 4px",
+  verticalAlign: "middle",
 };
 
 const divider: React.CSSProperties = {
-  borderColor: "#e5e7eb",
-  margin: "24px 0",
+  borderColor: "#ebebeb",
+  borderTopWidth: "1px",
+  margin: "0",
+};
+
+const content: React.CSSProperties = {
+  padding: "32px 32px 8px",
+};
+
+const heading: React.CSSProperties = {
+  color: "#111111",
+  fontSize: "22px",
+  fontWeight: "700",
+  letterSpacing: "-0.3px",
+  margin: "0 0 6px",
+};
+
+const tagline: React.CSSProperties = {
+  color: "#333333",
+  fontSize: "15px",
+  fontWeight: "500",
+  margin: "0 0 2px",
+};
+
+const subTagline: React.CSSProperties = {
+  color: "#888888",
+  fontSize: "13px",
+  margin: "0 0 24px",
 };
 
 const paragraph: React.CSSProperties = {
-  color: "#374151",
+  color: "#444444",
   fontSize: "15px",
   margin: "0 0 16px",
   textAlign: "center" as const,
@@ -129,25 +153,33 @@ const codeContainer: React.CSSProperties = {
 };
 
 const codeText: React.CSSProperties = {
-  color: "#111827",
+  color: "#111111",
   fontFamily: "monospace",
   fontSize: "32px",
-  fontWeight: 700,
+  fontWeight: "700",
   letterSpacing: "6px",
   margin: 0,
 };
 
 const expiry: React.CSSProperties = {
-  color: "#6b7280",
+  color: "#888888",
   fontSize: "13px",
   margin: "16px 0 0",
   textAlign: "center" as const,
 };
 
-const footer: React.CSSProperties = {
-  color: "#9ca3af",
-  fontSize: "12px",
-  lineHeight: "1.5",
-  margin: 0,
-  textAlign: "center" as const,
+const footerSection: React.CSSProperties = {
+  padding: "16px 32px 0",
+};
+
+const footerText: React.CSSProperties = {
+  color: "#888888",
+  fontSize: "13px",
+  margin: "0 0 4px",
+};
+
+const footerSub: React.CSSProperties = {
+  color: "#aaaaaa",
+  fontSize: "11px",
+  margin: "0",
 };

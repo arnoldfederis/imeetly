@@ -20,13 +20,13 @@ import {
 
 const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
 const HOME_DESCRIPTION =
-  "imeetly turns meeting recordings and transcripts into AI summaries, decisions, blockers, action items, and searchable meeting history for fast-moving teams.";
+  "imeetly is the memory layer for meetings. Never lose what happened in a meeting again. Decisions, action items, and follow-ups captured automatically and searchable forever.";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     ...seo({
-      title: "AI Meeting Notes and Summaries for Teams",
+      title: "The memory layer for meetings",
       description: HOME_DESCRIPTION,
       path: "/",
     }),
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify(
           webPageJsonLd({
             path: "/",
-            name: "imeetly AI Meeting Notes",
+            name: "imeetly: AI Meeting Notes",
             description: HOME_DESCRIPTION,
           }),
         ),
@@ -63,11 +63,11 @@ function LandingPage() {
       <main className="flex-1">
         <HeroSection />
         <TrustBar />
-        <ProblemSection />
-        <HowItWorksSection />
         <FeaturesSection />
-        <IntegrationsSection />
         <ProductPreviewSection />
+        <HowItWorksSection />
+        <ProblemSection />
+        <IntegrationsSection />
         <PricingSection />
         <FAQSection />
         <CTASection />

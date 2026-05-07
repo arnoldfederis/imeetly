@@ -16,6 +16,18 @@ export const actionItemController = base.router({
       ActionItemService.listForUser(context.user.id, input),
     ),
 
+  create: privateProcedure
+    .input(
+      z.object({
+        meetingId: z.string(),
+        title: z.string().min(1),
+        ownerName: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) =>
+      ActionItemService.create(context.user.id, input),
+    ),
+
   update: privateProcedure
     .input(
       z.object({

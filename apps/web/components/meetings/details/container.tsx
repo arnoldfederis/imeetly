@@ -10,8 +10,10 @@ import {
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  LinkIcon,
   ListChecksIcon,
   PlayIcon,
+  PlusIcon,
   PrinterIcon,
   Trash2Icon,
   UsersIcon,
@@ -52,6 +54,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
 import { downloadMeetingMarkdown, downloadMeetingPdf } from "@/lib/utils";
@@ -73,6 +76,9 @@ export function MeetingDetailsContainer(props: Props) {
       : `/${search.get("sourceLink")}`
     : "/meetings";
   const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
+  const [addItemTitle, setAddItemTitle] = useState("");
+  const [addItemOwner, setAddItemOwner] = useState("");
+  const [addItemOpen, setAddItemOpen] = useState(false);
 
   const { data: meeting } = useQuery({
     ...client.meeting.getById.queryOptions({
@@ -110,6 +116,36 @@ export function MeetingDetailsContainer(props: Props) {
     }
     prevStatus.current = meeting?.status;
   }, [meeting?.status, queryClient]);
+
+  const shareMutation = useMutation(
+    client.meeting.generateShareToken.mutationOptions({
+      onSuccess: (token) => {
+        if (!token) {
+          return;
+        }
+        posthog.capture("meeting_shared", { meeting_id: meetingId });
+        const url = `${window.location.origin}/s/${token}`;
+        navigator.clipboard.writeText(url).then(() => {
+          toast.success("Share link copied to clipboard");
+        });
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
+
+  const createActionItemMutation = useMutation(
+    client.actionItem.create.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+        });
+        setAddItemTitle("");
+        setAddItemOwner("");
+        setAddItemOpen(false);
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
 
   const retryMutation = useMutation(
     client.meeting.process.mutationOptions({
@@ -166,61 +202,100 @@ export function MeetingDetailsContainer(props: Props) {
     meeting.actionItems?.filter((i) => i.status === "done").length ?? 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* ── Header ── */}
-      <div className="flex items-start gap-3 sm:gap-4">
+    <div className="flex flex-col gap-4">
+      {/* ── Top bar: back + actions ── */}
+      <div className="flex items-center justify-between gap-2">
         <Button
-          className="mt-0.5 size-9 shrink-0"
           nativeButton={false}
           render={<Link href={sourceLink} />}
+          size="sm"
           variant="secondary"
         >
-          <ArrowLeftIcon data-icon />
+          <ArrowLeftIcon className="size-3.5" />
+          Back
         </Button>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <h1 className="font-semibold text-xl tracking-tight sm:text-2xl">
-              {meeting.title}
-            </h1>
-            <MeetingStatusBadge status={meeting.status} />
-          </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
-            <span className="flex items-center gap-1.5">
-              <CalendarIcon className="size-3.5" />
-              <FormattedDate date={meeting.meetingDate} />
-            </span>
-            {meeting.participantsText && (
-              <span className="flex items-center gap-1.5">
-                <UsersIcon className="size-3.5" />
-                {meeting.participantsText}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5 capitalize">
-              {meeting.sourceType === "video" ? (
-                <FileVideoIcon className="size-3.5" />
-              ) : meeting.sourceType === "audio" ? (
-                <FileAudioIcon className="size-3.5" />
+        <div className="flex items-center gap-2">
+          {meeting.status === "completed" && (
+            <Button
+              disabled={shareMutation.isPending}
+              onClick={() => shareMutation.mutate({ id: meetingId })}
+              size="sm"
+              variant="secondary"
+            >
+              {shareMutation.isPending ? (
+                <Spinner className="size-3.5" />
               ) : (
-                <FileTextIcon className="size-3.5" />
+                <LinkIcon className="size-3.5" />
               )}
-              {meeting.sourceType}
-            </span>
-          </div>
-        </div>
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+              <span className="hidden sm:inline">Share</span>
+            </Button>
+          )}
+          {meeting.status === "completed" &&
+            (props.canExport ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button size="sm" type="button" variant="secondary">
+                      <DownloadIcon className="size-3.5" />
+                      <span className="hidden sm:inline">Export</span>
+                      <ChevronDownIcon className="size-3 opacity-60" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      posthog.capture("meeting_exported", {
+                        meeting_id: meetingId,
+                        format: "markdown",
+                      });
+                      downloadMeetingMarkdown(meeting);
+                    }}
+                  >
+                    <FileTextIcon className="size-4" />
+                    Export Markdown
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      posthog.capture("meeting_exported", {
+                        meeting_id: meetingId,
+                        format: "pdf",
+                      });
+                      downloadMeetingPdf(meeting);
+                    }}
+                  >
+                    <PrinterIcon className="size-4" />
+                    Export PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                onClick={() => setExportUpgradeOpen(true)}
+                size="sm"
+                variant="secondary"
+              >
+                <DownloadIcon className="size-3.5" />
+                <span className="hidden sm:inline">Export</span>
+                <Badge className="ml-0.5" variant="default">
+                  Pro
+                </Badge>
+              </Button>
+            ))}
           <AlertDialog>
             <AlertDialogTrigger
               render={
                 <Button
-                  className="size-9"
+                  className="size-8"
                   disabled={deleteMutation.isPending}
+                  size="sm"
                   type="button"
-                  variant="secondary"
+                  variant="destructive"
                 >
                   {deleteMutation.isPending ? (
-                    <Spinner className="size-4" />
+                    <Spinner className="size-3.5" />
                   ) : (
-                    <Trash2Icon className="size-4 text-destructive" />
+                    <Trash2Icon className="size-3.5 text-destructive" />
                   )}
                 </Button>
               }
@@ -248,63 +323,42 @@ export function MeetingDetailsContainer(props: Props) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          {meeting.status === "completed" && (
-            <>
-              {props.canExport ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button type="button" variant="secondary">
-                        <DownloadIcon className="size-4" />
-                        <span className="hidden sm:inline">Export</span>
-                        <ChevronDownIcon className="size-3.5 opacity-60" />
-                      </Button>
-                    }
-                  ></DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        posthog.capture("meeting_exported", {
-                          meeting_id: meetingId,
-                          format: "markdown",
-                        });
-                        downloadMeetingMarkdown(meeting);
-                      }}
-                    >
-                      <FileTextIcon className="size-4" />
-                      Export Markdown
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        posthog.capture("meeting_exported", {
-                          meeting_id: meetingId,
-                          format: "pdf",
-                        });
-                        downloadMeetingPdf(meeting);
-                      }}
-                    >
-                      <PrinterIcon className="size-4" />
-                      Export PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button
-                  onClick={() => setExportUpgradeOpen(true)}
-                  variant="secondary"
-                >
-                  <DownloadIcon className="size-4" />
-                  <span className="hidden sm:inline">Export</span>
-                  <Badge className="ml-1" variant="default">
-                    Pro
-                  </Badge>
-                </Button>
-              )}
-            </>
-          )}
         </div>
       </div>
+
+      {/* ── Meeting info card ── */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle className="font-semibold text-xl tracking-tight sm:text-2xl">
+              {meeting.title}
+            </CardTitle>
+            <MeetingStatusBadge status={meeting.status} />
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
+            <span className="flex items-center gap-1.5">
+              <CalendarIcon className="size-3.5" />
+              <FormattedDate date={meeting.meetingDate} />
+            </span>
+            {meeting.participantsText && (
+              <span className="flex items-center gap-1.5">
+                <UsersIcon className="size-3.5" />
+                {meeting.participantsText}
+              </span>
+            )}
+            <span className="flex items-center gap-1.5 capitalize">
+              {meeting.sourceType === "video" ? (
+                <FileVideoIcon className="size-3.5" />
+              ) : meeting.sourceType === "audio" ? (
+                <FileAudioIcon className="size-3.5" />
+              ) : (
+                <FileTextIcon className="size-3.5" />
+              )}
+              {meeting.sourceType}
+            </span>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* ── Draft state ── */}
       {meeting.status === "draft" && (
@@ -429,6 +483,79 @@ export function MeetingDetailsContainer(props: Props) {
                 {meeting.actionItems.map((item) => (
                   <ActionItemRow item={item} key={item.id} />
                 ))}
+              </div>
+            )}
+
+            {addItemOpen ? (
+              <div className="mt-3 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    autoFocus
+                    className="flex-1 text-sm"
+                    disabled={createActionItemMutation.isPending}
+                    onChange={(e) => setAddItemTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setAddItemOpen(false);
+                        setAddItemTitle("");
+                        setAddItemOwner("");
+                      }
+                    }}
+                    placeholder="Action item title"
+                    value={addItemTitle}
+                  />
+                  <Input
+                    className="w-36 shrink-0 text-sm"
+                    disabled={createActionItemMutation.isPending}
+                    onChange={(e) => setAddItemOwner(e.target.value)}
+                    placeholder="Owner (optional)"
+                    value={addItemOwner}
+                  />
+                </div>
+                <div className="flex flex-col-reverse gap-2 lg:grid lg:grid-cols-2">
+                  <Button
+                    onClick={() => {
+                      setAddItemOpen(false);
+                      setAddItemTitle("");
+                      setAddItemOwner("");
+                    }}
+                    variant="secondary"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={
+                      createActionItemMutation.isPending || !addItemTitle.trim()
+                    }
+                    onClick={() => {
+                      if (addItemTitle.trim()) {
+                        createActionItemMutation.mutate({
+                          meetingId,
+                          title: addItemTitle.trim(),
+                          ownerName: addItemOwner.trim() || undefined,
+                        });
+                      }
+                    }}
+                  >
+                    {createActionItemMutation.isPending ? (
+                      <Spinner className="size-3.5" />
+                    ) : (
+                      "Add"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  className="w-full"
+                  onClick={() => setAddItemOpen(true)}
+                  type="button"
+                  variant="secondary"
+                >
+                  <PlusIcon className="size-3.5" />
+                  Add item
+                </Button>
               </div>
             )}
           </CardContent>

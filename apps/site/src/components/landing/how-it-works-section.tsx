@@ -5,23 +5,23 @@ const steps = [
   {
     step: "01",
     icon: UploadIcon,
-    title: "Upload or connect your meeting tool",
+    title: "Bring your meetings in",
     description:
-      "Upload an audio file, video recording, or paste your transcript. Connect Zoom or Google Meet to import recordings automatically, or use Microsoft Teams integration.",
+      "Connect Zoom or Google Meet for automatic import. Link Microsoft Teams for calendar sync and manual recording import. Or upload audio, video, or paste a transcript directly.",
   },
   {
     step: "02",
     icon: BrainCircuitIcon,
-    title: "AI processes your meeting",
+    title: "imeetly captures everything",
     description:
-      "Our AI analyzes the full conversation and extracts summaries, decisions, blockers, follow-ups and action items.",
+      "Every decision, action item, blocker, and follow-up extracted automatically. The full meeting distilled into a clear, structured record.",
   },
   {
     step: "03",
     icon: ClipboardListIcon,
-    title: "Review and take action",
+    title: "Search, recall, act",
     description:
-      "Get a clean summary with structured action items. Share with your team or export as needed.",
+      "Read the summary, check action items, and search across every meeting you have ever had. Your team's memory, always within reach.",
   },
 ];
 
@@ -31,14 +31,14 @@ export function HowItWorksSection() {
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-            Three steps to clarity
+            Your meeting memory, in three steps
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect your tools once. imeetly handles the rest.
+            Connect once. Every meeting after that is captured automatically.
           </p>
         </FadeIn>
 
-        <Stagger className="grid gap-4 md:grid-cols-3" staggerDelay={0.15}>
+        <Stagger className="grid gap-4 lg:grid-cols-3" staggerDelay={0.15}>
           {steps.map((s) => (
             <StaggerItem className="h-full" key={s.step}>
               <div className="relative flex h-full flex-col rounded-2xl border bg-card p-8 transition-shadow hover:shadow-lg hover:shadow-primary/5">

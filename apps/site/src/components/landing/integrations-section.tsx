@@ -8,7 +8,7 @@ const integrations = [
   {
     name: "Zoom",
     description:
-      "Sync Zoom cloud recordings automatically - no uploads needed.",
+      "Sync your Zoom calendar and import cloud recordings automatically. Your meetings and notes in one place.",
     icon: <ZoomIcon className="size-6" />,
     accent: "group-hover:border-blue-500/40",
     dot: "bg-blue-500",
@@ -17,7 +17,7 @@ const integrations = [
   {
     name: "Google Meet",
     description:
-      "Sync Google Calendar events and import Meet recordings automatically.",
+      "Sync Google Calendar events and import Meet recordings automatically. Notes and history organized alongside your schedule.",
     icon: <GoogleMeetIcon className="size-6" />,
     accent: "group-hover:border-green-500/40",
     dot: "bg-green-500",
@@ -25,7 +25,8 @@ const integrations = [
   },
   {
     name: "Microsoft Teams",
-    description: "Pull Teams meeting recordings directly via Microsoft Graph.",
+    description:
+      "Sync your Outlook calendar via Microsoft Graph and import Teams recordings manually. Keep your meeting notes organized alongside your schedule.",
     icon: <MicrosoftTeamsIcon className="size-6" />,
     accent: "group-hover:border-indigo-500/40",
     dot: "bg-indigo-500",
@@ -42,11 +43,12 @@ export function IntegrationsSection() {
             Integrations
           </span>
           <h2 className="mt-3 font-bold text-3xl tracking-tight sm:text-4xl">
-            Works with your favorite meeting tools
+            Works with the tools your team already uses
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect Zoom or Google Meet for automatic recording import.
-            Microsoft Teams integration available for manual import.
+            Connect Zoom, Google Meet, or Microsoft Teams. imeetly syncs your
+            calendar and imports recordings without replacing the tools you
+            already rely on.
           </p>
         </FadeIn>
 

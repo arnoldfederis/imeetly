@@ -8,7 +8,7 @@ import { ProductPreviewSection } from "@/components/landing/product-preview-sect
 import { seo, webPageJsonLd } from "@/lib/seo";
 
 const FEATURES_DESCRIPTION =
-  "Explore imeetly features for AI meeting summaries, action items, decisions, blockers, searchable history, upload processing, and Zoom, Google Meet, and Microsoft Teams imports.";
+  "imeetly captures decisions, action items, blockers, and follow-ups from every meeting automatically. Searchable meeting history, automatic recording import from Zoom and Google Meet, and more.";
 
 export const Route = createFileRoute("/features")({
   component: FeaturesPage,
@@ -38,9 +38,9 @@ function FeaturesPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Turn recordings and transcripts into structured meeting notes your team can search, review, and act on."
+          description="Every decision, action item, blocker, and follow-up captured automatically. Your meetings become a searchable record your team can rely on."
           eyebrow="Features"
-          title="Everything you need after the meeting ends"
+          title="What imeetly captures for you"
         />
         <FeaturesSection />
         <IntegrationsSection />
