@@ -5,7 +5,7 @@ import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
-import { seo, webPageJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, seo, webPageJsonLd } from "@/lib/seo";
 
 const FEATURES_DESCRIPTION =
   "imeetly captures decisions, action items, blockers, and follow-ups from every meeting automatically. Searchable meeting history, automatic recording import from Zoom and Google Meet, and more.";
@@ -28,6 +28,10 @@ export const Route = createFileRoute("/features")({
             description: FEATURES_DESCRIPTION,
           }),
         ),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbJsonLd([{ name: "Features", path: "/features" }])),
       },
     ],
   }),

@@ -4,7 +4,7 @@ import { Stagger, StaggerItem } from "@/components/common/motion";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
-import { seo, webPageJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, seo, webPageJsonLd } from "@/lib/seo";
 
 const CONTACT_DESCRIPTION =
   "Contact imeetly for enterprise AI meeting notes, Microsoft Teams admin setup, custom meeting limits, SSO, dedicated support, volume discounts, and onboarding.";
@@ -28,6 +28,10 @@ export const Route = createFileRoute("/contact")({
             type: "ContactPage",
           }),
         ),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbJsonLd([{ name: "Contact", path: "/contact" }])),
       },
     ],
   }),

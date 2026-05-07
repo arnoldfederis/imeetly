@@ -16,6 +16,7 @@ import {
   seo,
   softwareAppJsonLd,
   webPageJsonLd,
+  websiteJsonLd,
 } from "@/lib/seo";
 
 const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
@@ -31,6 +32,10 @@ export const Route = createFileRoute("/")({
       path: "/",
     }),
     scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(websiteJsonLd()),
+      },
       {
         type: "application/ld+json",
         children: JSON.stringify(organizationJsonLd()),

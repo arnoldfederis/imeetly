@@ -4,7 +4,7 @@ import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { PricingSection } from "@/components/landing/pricing-section";
-import { faqJsonLd, seo, softwareAppJsonLd, webPageJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, seo, softwareAppJsonLd, webPageJsonLd } from "@/lib/seo";
 
 const PRICING_DESCRIPTION =
   "Compare imeetly pricing plans for AI meeting notes, including the free plan, Pro monthly and yearly options, Team limits, and custom enterprise support.";
@@ -36,6 +36,10 @@ export const Route = createFileRoute("/pricing")({
       {
         type: "application/ld+json",
         children: JSON.stringify(faqJsonLd(FAQ_ITEMS)),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbJsonLd([{ name: "Pricing", path: "/pricing" }])),
       },
     ],
   }),

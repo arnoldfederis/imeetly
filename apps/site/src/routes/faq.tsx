@@ -3,7 +3,7 @@ import { CTASection } from "@/components/landing/cta-section";
 import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
-import { faqJsonLd, seo } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, seo } from "@/lib/seo";
 
 const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
 const FAQ_DESCRIPTION =
@@ -21,6 +21,10 @@ export const Route = createFileRoute("/faq")({
       {
         type: "application/ld+json",
         children: JSON.stringify(faqJsonLd(FAQ_ITEMS)),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbJsonLd([{ name: "FAQ", path: "/faq" }])),
       },
     ],
   }),
