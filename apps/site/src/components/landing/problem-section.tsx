@@ -30,9 +30,9 @@ export function ProblemSection() {
           </p>
         </FadeIn>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:gap-16">
+        <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
           <FadeIn delay={0.1} direction="left">
-            <div className="rounded-2xl border border-destructive/20 bg-destructive/[0.03] p-8">
+            <div className="flex h-full flex-col rounded-2xl border border-destructive/20 bg-destructive/3 p-8">
               <p className="mb-6 font-medium text-destructive text-sm">
                 Without imeetly
               </p>
@@ -48,7 +48,7 @@ export function ProblemSection() {
           </FadeIn>
 
           <FadeIn delay={0.2} direction="right">
-            <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-8">
+            <div className="flex h-full flex-col rounded-2xl border border-primary/20 bg-primary/3 p-8">
               <p className="mb-6 font-medium text-primary text-sm">
                 With imeetly
               </p>
