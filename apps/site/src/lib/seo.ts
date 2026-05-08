@@ -12,7 +12,7 @@ const SITE_NAME = "imeetly";
 const SITE_URL = "https://imeetly.app";
 const DEFAULT_TITLE = "The memory layer for meetings - imeetly";
 const DEFAULT_DESCRIPTION =
-  "Never lose what happened in a meeting again. imeetly captures decisions, action items, and follow-ups automatically and makes your entire meeting history searchable. Start free.";
+  "Never lose what happened in a meeting again. imeetly captures summary, decisions, action items, and follow-ups automatically and makes your entire meeting history searchable. Start free.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 const DEFAULT_OG_IMAGE_ALT = "imeetly - The memory layer for meetings";
 const DEFAULT_KEYWORDS =

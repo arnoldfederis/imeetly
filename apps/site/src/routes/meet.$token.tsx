@@ -327,7 +327,7 @@ function MeetPage() {
             Never lose what happened in a meeting again
           </p>
           <p className="mt-2 text-muted-foreground text-sm">
-            imeetly captures decisions, action items, and follow-ups
+            imeetly captures summary, decisions, action items, and follow-ups
             automatically. Start free.
           </p>
           <a
