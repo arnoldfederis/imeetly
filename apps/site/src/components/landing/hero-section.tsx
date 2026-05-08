@@ -39,9 +39,9 @@ export function HeroSection() {
 
           <FadeIn delay={0.2}>
             <p className="text-lg text-muted-foreground">
-              imeetly captures every decision, action item, and follow-up the
-              moment your meeting ends. Your entire meeting history, searchable
-              from one place.
+              imeetly turns recordings and transcripts into decisions, action
+              items, and follow-ups. Your meeting history, searchable from one
+              place.
             </p>
           </FadeIn>
 
@@ -52,7 +52,7 @@ export function HeroSection() {
               </a>
               <a
                 className={buttonVariants({ variant: "secondary", size: "lg" })}
-                href="/#how-it-works"
+                href="/how-it-works"
               >
                 See how it works
               </a>

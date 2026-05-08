@@ -9,10 +9,10 @@ const problems = [
 ];
 
 const solutions = [
-  "Every decision logged and searchable the moment the call ends",
-  "Action items with owners extracted automatically, no notes required",
+  "Decisions logged and searchable after processing",
+  "Action items with owners extracted from your meeting record",
   "One clear record of the meeting everyone can reference",
-  "Search months of past meetings in seconds from anywhere",
+  "Search past meetings from one dashboard",
 ];
 
 export function ProblemSection() {
@@ -25,8 +25,8 @@ export function ProblemSection() {
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Most teams leave every meeting with decisions in their head and
-            action items in a chat thread nobody checks. imeetly captures all of
-            it the moment the call ends.
+            action items in a chat thread nobody checks. imeetly gives those
+            details a searchable home after the meeting is processed.
           </p>
         </FadeIn>
 

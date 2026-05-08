@@ -10,8 +10,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,15 +18,14 @@ function isUUID(segment: string) {
   return UUID_RE.test(segment);
 }
 
-function formatSegment(segment: string) {
-  if (isUUID(segment)) return segment;
-  if (segment === "action-items") return segment.replace(/-/g, " ");
-  if (!isUUID(segment)) return segment;
+function formatSegment(segment: string): string {
+  if (isUUID(segment)) return "Meeting details";
+  if (segment === "action-items") return "action items";
+  return segment;
 }
 
 export function AppBreadcrumb() {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
   const segments = pathname.split("/").filter((s) => s);
 
   if (segments.length === 0) {
@@ -86,12 +83,7 @@ export function AppBreadcrumb() {
 
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage
-            className={cn(
-              "capitalize",
-              isUUID(last) && isMobile ? "max-w-30 truncate" : "",
-            )}
-          >
+          <BreadcrumbPage className="capitalize">
             {formatSegment(last)}
           </BreadcrumbPage>
         </BreadcrumbItem>

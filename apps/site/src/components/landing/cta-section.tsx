@@ -13,8 +13,9 @@ export function CTASection() {
             Stop carrying meetings in your head
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground">
-            Give your team a searchable memory of every decision ever made.
-            Start with 5 free meetings, no credit card needed.
+            Give your team a searchable record of the decisions and action items
+            that come out of meetings. Start with 5 free meetings, no credit
+            card needed.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a

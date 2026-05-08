@@ -20,8 +20,8 @@ export function ProductPreviewSection() {
             Your meeting memory, at a glance
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Every meeting, every decision, every open action item in one place.
-            Nothing buried. Nothing forgotten.
+            Meetings, decisions, and open action items in one place. Less
+            context buried in recordings or scattered notes.
           </p>
         </FadeIn>
 

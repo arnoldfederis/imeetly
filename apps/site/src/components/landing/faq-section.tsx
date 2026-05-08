@@ -9,15 +9,15 @@ import {
 export const faqs = [
   {
     q: "What is imeetly?",
-    a: "imeetly is the memory layer for meetings. It captures every decision, action item, blocker, and follow-up automatically the moment your meeting ends and makes your entire meeting history searchable. No more rewatching recordings. No more forgetting what was decided.",
+    a: "imeetly is the memory layer for meetings. It turns your recordings or transcripts into summaries, decisions, action items, blockers, and follow-ups, then makes your meeting history searchable. No more rewatching recordings. No more forgetting what was decided.",
   },
   {
     q: "How does imeetly work?",
-    a: "Connect your meeting tools once. imeetly syncs your calendar, imports recordings automatically, and uses AI to extract summaries, decisions, blockers, and action items after every meeting. You can also upload audio, video, or paste transcripts directly.",
+    a: "Connect your meeting tools, import available recordings, and use AI to extract summaries, decisions, blockers, and action items. You can also upload audio, video, or paste transcripts directly.",
   },
   {
     q: "Which meeting platforms does imeetly support?",
-    a: "imeetly integrates with Zoom, Google Meet, and Microsoft Teams. Zoom and Google Meet sync recordings automatically. Microsoft Teams supports calendar sync and manual recording import.",
+    a: "imeetly integrates with Zoom, Google Meet, and Microsoft Teams. Zoom and Google Meet support recording import, and Microsoft Teams supports calendar sync and manual recording import.",
   },
   {
     q: "What file types can I upload?",
@@ -25,11 +25,11 @@ export const faqs = [
   },
   {
     q: "Can I use imeetly for team meetings?",
-    a: "Yes. imeetly is built for teams. The Team plan adds shared meeting libraries, team-wide action item visibility, and collaborative workflows so everyone stays aligned.",
+    a: "Yes. imeetly is built for teams that need a shared record of summaries, decisions, action items, and follow-ups. The Team plan is planned for higher limits and team workflows.",
   },
   {
     q: "Does imeetly save meeting records automatically?",
-    a: "Yes. Once your meeting is processed, AI-generated notes, action items, and decisions are saved to your account automatically. Your full meeting history is searchable and always available.",
+    a: "Yes. Once your meeting is processed, AI-generated notes, action items, and decisions are saved to your account. Your meeting history is searchable from the dashboard.",
   },
   {
     q: "What happens on the free plan?",

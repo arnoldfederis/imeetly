@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { breadcrumbJsonLd, seo, webPageJsonLd } from "@/lib/seo";
 
 const CONTACT_DESCRIPTION =
-  "Contact imeetly for enterprise AI meeting notes, Microsoft Teams admin setup, custom meeting limits, SSO, dedicated support, volume discounts, and onboarding.";
+  "Contact imeetly for enterprise AI meeting notes, Microsoft Teams admin setup, custom meeting limits, SSO discussions, support requirements, volume discounts, and onboarding.";
 
 export const Route = createFileRoute("/contact")({
   component: ContactPage,
@@ -43,7 +43,7 @@ const ENTERPRISE_FEATURES = [
   "Unlimited meetings per month",
   "Microsoft Teams enterprise admin setup",
   "Data deletion on request",
-  "Dedicated support & SLA",
+  "Support requirements review",
   "Volume discounts",
   "Custom integrations on request",
   "Onboarding assistance",
@@ -54,7 +54,7 @@ function ContactPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Enterprise plans, MS Teams setup, SSO, or anything else reach out and we'll get back to you within one business day."
+          description="Enterprise plans, MS Teams setup, SSO discussions, or anything else. Reach out and we'll review the best setup for your team."
           eyebrow="Contact"
           title="Let's talk"
         />

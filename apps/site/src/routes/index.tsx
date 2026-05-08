@@ -21,7 +21,7 @@ import {
 
 const FAQ_ITEMS = faqs.map((faq) => ({ question: faq.q, answer: faq.a }));
 const HOME_DESCRIPTION =
-  "imeetly is the memory layer for meetings. Never lose what happened in a meeting again. Decisions, action items, and follow-ups captured automatically and searchable forever.";
+  "imeetly is the memory layer for meetings. Turn recordings and transcripts into decisions, action items, follow-ups, and searchable meeting history.";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,

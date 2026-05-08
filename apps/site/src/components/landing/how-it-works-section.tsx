@@ -7,12 +7,12 @@ const steps = [
     icon: UploadIcon,
     title: "Bring your meetings in",
     description:
-      "Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly.",
+      "Connect Zoom or Google Meet for recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly.",
   },
   {
     step: "02",
     icon: BrainCircuitIcon,
-    title: "imeetly captures everything",
+    title: "imeetly extracts the useful parts",
     description:
       "Every summary, decision, action item, blocker, and follow-up extracted automatically. The full meeting distilled into a clear, structured record.",
   },
@@ -34,7 +34,8 @@ export function HowItWorksSection() {
             Your meeting memory, in three steps
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Connect once. Every meeting after that is captured automatically.
+            Bring in a recording or transcript. imeetly turns it into a
+            searchable meeting record.
           </p>
         </FadeIn>
 

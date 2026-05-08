@@ -8,7 +8,7 @@ const integrations = [
   {
     name: "Zoom",
     description:
-      "Sync your Zoom calendar and import cloud recordings automatically. Your meetings and notes in one place.",
+      "Sync Zoom recordings and import cloud recordings into imeetly. Your meetings and notes in one place.",
     icon: <ZoomIcon className="size-6" />,
     accent: "group-hover:border-blue-500/40",
     dot: "bg-blue-500",
@@ -17,7 +17,7 @@ const integrations = [
   {
     name: "Google Meet",
     description:
-      "Sync Google Calendar events and import Meet recordings automatically. Notes and history organized alongside your schedule.",
+      "Sync Google Calendar events and import Meet recordings when they are available. Notes and history organized alongside your schedule.",
     icon: <GoogleMeetIcon className="size-6" />,
     accent: "group-hover:border-green-500/40",
     dot: "bg-green-500",
@@ -36,7 +36,7 @@ const integrations = [
 
 export function IntegrationsSection() {
   return (
-    <section className="pb-20" id="integrations">
+    <section className="py-20" id="integrations">
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
           <span className="mb-4 inline-block rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-medium text-primary text-xs uppercase tracking-wider">
@@ -47,8 +47,8 @@ export function IntegrationsSection() {
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Connect Zoom, Google Meet, or Microsoft Teams. imeetly syncs your
-            calendar and imports recordings without replacing the tools you
-            already rely on.
+            meetings and lets you import recordings without replacing the tools
+            you already rely on.
           </p>
         </FadeIn>
 
@@ -57,7 +57,7 @@ export function IntegrationsSection() {
           staggerDelay={0.1}
         >
           {integrations.map((integration) => (
-            <StaggerItem key={integration.name}>
+            <StaggerItem className="h-full" key={integration.name}>
               <div
                 className={`group relative flex h-full flex-col rounded-2xl border bg-card p-6 transition-all hover:shadow-lg hover:shadow-primary/5 ${integration.accent}`}
               >

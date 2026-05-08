@@ -16,7 +16,7 @@ const features = [
     icon: BrainCircuitIcon,
     title: "What was decided",
     description:
-      "Every decision captured clearly so there is no debate about what the team agreed. One source of truth, forever searchable.",
+      "Decisions captured clearly so there is less debate about what the team agreed. One source of truth for later search.",
   },
   {
     icon: ListChecksIcon,
@@ -46,13 +46,13 @@ const features = [
     icon: UploadCloudIcon,
     title: "Any format, any meeting",
     description:
-      "Upload audio or video, paste a transcript, or connect your tools for automatic import. imeetly processes whatever your meeting produces.",
+      "Upload audio or video, paste a transcript, or connect your tools to bring meeting recordings into imeetly.",
   },
   {
     icon: LinkIcon,
-    title: "Automatic from your tools",
+    title: "Connected to your tools",
     description:
-      "Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams for calendar sync and manual recording import.",
+      "Connect Zoom or Google Meet for recording import. Link Microsoft Teams for calendar sync and manual recording import.",
   },
   {
     icon: GlobeIcon,
@@ -78,7 +78,7 @@ export function FeaturesSection() {
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Everything said, decided, assigned, and committed in your meetings,
-            captured automatically and searchable forever.
+            organized into a searchable record after processing.
           </p>
         </FadeIn>
 

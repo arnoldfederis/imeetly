@@ -31,6 +31,7 @@ const plans: Plan[] = [
       "AI summaries & action items",
       "Audio and video upload",
       "Full meeting history",
+      "100 MB max file size",
     ],
     cta: "Start free",
   },
@@ -109,7 +110,7 @@ export function PricingSection() {
             const period = yearly ? plan.period.yearly : plan.period.monthly;
 
             return (
-              <StaggerItem key={plan.name}>
+              <StaggerItem className="h-full" key={plan.name}>
                 <div
                   className={`relative flex h-full flex-col rounded-2xl border transition-all ${
                     plan.highlighted
@@ -202,14 +203,14 @@ export function PricingSection() {
                 </div>
                 <p className="text-muted-foreground text-sm">
                   For organizations with advanced needs custom limits, MS Teams
-                  admin setup, SSO, and dedicated support.
+                  admin setup, SSO discussions, and support requirements.
                 </p>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                   {[
                     "Unlimited meetings",
                     "MS Teams enterprise setup",
                     "Data deletion on request",
-                    "SLA & dedicated support",
+                    "Support requirements review",
                     "Volume discounts",
                     "Custom integrations on request",
                   ].map((f) => (
