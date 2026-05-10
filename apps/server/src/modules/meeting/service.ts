@@ -18,7 +18,7 @@ import {
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { getPlanLimits } from "@repo/server/modules/billing/plans";
 import { BillingService } from "@repo/server/modules/billing/service";
-import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 
 export abstract class MeetingService {
   static async checkUsageLimit(userId: string) {
@@ -664,7 +664,10 @@ export abstract class MeetingService {
       .select({ count: sql<number>`count(*)::int` })
       .from(actionItems)
       .where(
-        and(eq(actionItems.userId, userId), eq(actionItems.status, "open")),
+        and(
+          eq(actionItems.userId, userId),
+          inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+        ),
       );
 
     return {

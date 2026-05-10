@@ -12,7 +12,7 @@ Return ONLY valid JSON in this exact shape:
   "decisions": ["string"],
   "blockers": ["string"],
   "followUps": ["string"],
-  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+  "actionItems": [{"title": "string", "ownerName": "string or null", "assigneeEmail": "string or null", "dueDate": "ISO date string or null", "priority": "low|normal|high|urgent", "status": "open", "confidence": 0.0}]
 }
 
 SECTION GUIDELINES:
@@ -43,6 +43,11 @@ actionItems:
 - Specific tasks with clear owners when identifiable
 - title: short task description
 - ownerName: person's name or null if unassigned
+- assigneeEmail: email address only when explicitly stated, otherwise null
+- dueDate: ISO date string when explicit or clearly inferable, otherwise null
+- priority: low, normal, high, or urgent; default normal
+- status: always open for newly extracted tasks
+- confidence: number from 0 to 1 based on how explicit the task, owner, and due date are
 
 TONE: Professional, clear, product-oriented. No phrases like "It was discussed that..." or "The meeting covered..." or "Participants mentioned..."
 

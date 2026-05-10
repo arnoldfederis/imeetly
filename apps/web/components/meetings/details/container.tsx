@@ -22,6 +22,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ActionItemDialog } from "@/components/action-items/action-item-dialog";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { ActionItemRow } from "@/components/meetings/details/action-item-row";
@@ -53,7 +54,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
@@ -80,9 +80,6 @@ export function MeetingDetailsContainer(props: Props) {
       : `/${search.get("sourceLink")}`
     : "/meetings";
   const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
-  const [addItemTitle, setAddItemTitle] = useState("");
-  const [addItemOwner, setAddItemOwner] = useState("");
-  const [addItemOpen, setAddItemOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const { data: planData } = useQuery(client.billing.getPlan.queryOptions());
@@ -150,9 +147,6 @@ export function MeetingDetailsContainer(props: Props) {
     client.actionItem.create.mutationOptions({
       onSuccess: async () => {
         await invalidateMeetingDetailsQuery();
-        setAddItemTitle("");
-        setAddItemOwner("");
-        setAddItemOpen(false);
       },
       onError: (err) => toast.error(err.message),
     }),
@@ -571,78 +565,29 @@ export function MeetingDetailsContainer(props: Props) {
               </div>
             )}
 
-            {addItemOpen ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
-                  <Input
-                    autoFocus
-                    className="w-full"
-                    disabled={createActionItemMutation.isPending}
-                    onChange={(e) => setAddItemTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        setAddItemOpen(false);
-                        setAddItemTitle("");
-                        setAddItemOwner("");
-                      }
-                    }}
-                    placeholder="Action item title"
-                    value={addItemTitle}
-                  />
-                  <Input
-                    className="w-full lg:w-56"
-                    disabled={createActionItemMutation.isPending}
-                    onChange={(e) => setAddItemOwner(e.target.value)}
-                    placeholder="Owner (optional)"
-                    value={addItemOwner}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    onClick={() => {
-                      setAddItemOpen(false);
-                      setAddItemTitle("");
-                      setAddItemOwner("");
-                    }}
-                    variant="secondary"
-                  >
-                    Cancel
+            <div className="mt-4 flex justify-center">
+              <ActionItemDialog
+                isPending={createActionItemMutation.isPending}
+                mode="create"
+                onSubmit={(values) =>
+                  createActionItemMutation.mutate({
+                    meetingId,
+                    title: values.title,
+                    ownerName: values.ownerName ?? undefined,
+                    assigneeEmail: values.assigneeEmail,
+                    dueDate: values.dueDate,
+                    priority: values.priority,
+                    reminderAt: values.reminderAt,
+                  })
+                }
+                trigger={
+                  <Button className="w-full" type="button" variant="secondary">
+                    <PlusIcon className="size-3.5" />
+                    Add item
                   </Button>
-                  <Button
-                    disabled={
-                      createActionItemMutation.isPending || !addItemTitle.trim()
-                    }
-                    onClick={() => {
-                      if (addItemTitle.trim()) {
-                        createActionItemMutation.mutate({
-                          meetingId,
-                          title: addItemTitle.trim(),
-                          ownerName: addItemOwner.trim() || undefined,
-                        });
-                      }
-                    }}
-                  >
-                    {createActionItemMutation.isPending ? (
-                      <Spinner className="size-3.5" />
-                    ) : (
-                      "Add"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  className="w-full"
-                  onClick={() => setAddItemOpen(true)}
-                  type="button"
-                  variant="secondary"
-                >
-                  <PlusIcon className="size-3.5" />
-                  Add item
-                </Button>
-              </div>
-            )}
+                }
+              />
+            </div>
           </CardContent>
         </Card>
       )}

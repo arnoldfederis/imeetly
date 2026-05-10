@@ -6,21 +6,19 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
-  CheckIcon,
   CheckSquareIcon,
   ChevronDownIcon,
-  ClockIcon,
-  EditIcon,
+  FilterIcon,
   ListChecksIcon,
   LoaderIcon,
   PlusIcon,
   SearchIcon,
-  Trash2Icon,
-  UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ActionItemDialog } from "@/components/action-items/action-item-dialog";
+import { ActionItemListItem } from "@/components/action-items/action-item-list-item";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -33,24 +31,39 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
 import { client } from "@/lib/orpc";
 
 const PAGE_SIZE = 30;
+
+type StatusFilter =
+  | "all"
+  | "open"
+  | "in_progress"
+  | "blocked"
+  | "done"
+  | "canceled";
+type DueFilter = "all" | "overdue" | "today" | "week" | "none";
+type PriorityFilter = "all" | "low" | "normal" | "high" | "urgent";
 
 export function ActionItemsContainer() {
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -58,7 +71,13 @@ export function ActionItemsContainer() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [dueFilter, setDueFilter] = useState<DueFilter>("all");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
+  const activeFilterCount =
+    Number(filter !== "all") +
+    Number(dueFilter !== "all") +
+    Number(priorityFilter !== "all");
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -75,6 +94,8 @@ export function ActionItemsContainer() {
         input: (pageParam) => ({
           search: debouncedSearch || undefined,
           status: filter === "all" ? undefined : filter,
+          due: dueFilter === "all" ? undefined : dueFilter,
+          priority: priorityFilter === "all" ? undefined : priorityFilter,
           limit: PAGE_SIZE,
           offset: pageParam as number,
         }),
@@ -159,7 +180,7 @@ export function ActionItemsContainer() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <InputGroup className="flex-1">
           <InputGroupAddon>
             <SearchIcon />
@@ -175,22 +196,98 @@ export function ActionItemsContainer() {
             value={search}
           />
         </InputGroup>
-        <Select onValueChange={(v) => setFilter(v ?? "all")} value={filter}>
-          <SelectTrigger className="w-full sm:w-50">
-            <SelectValue placeholder="All Items">
-              {filter === "all"
-                ? "All Items"
-                : filter === "open"
-                  ? "Open"
-                  : "Done"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Items</SelectItem>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="done">Done</SelectItem>
-          </SelectContent>
-        </Select>
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button className="w-full shrink-0 sm:w-auto" variant="secondary">
+                <FilterIcon data-icon="inline-start" />
+                Filters
+                {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+              </Button>
+            }
+          />
+          <PopoverContent align="end" className="w-80 p-4">
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Status</FieldLabel>
+                <Select
+                  onValueChange={(v) => setFilter((v ?? "all") as StatusFilter)}
+                  value={filter}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue>{statusFilterLabel(filter)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="all">All items</SelectItem>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="in_progress">In progress</SelectItem>
+                      <SelectItem value="blocked">Blocked</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                      <SelectItem value="canceled">Canceled</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <FieldLabel>Due</FieldLabel>
+                <Select
+                  onValueChange={(v) => setDueFilter((v ?? "all") as DueFilter)}
+                  value={dueFilter}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue>{dueFilterLabel(dueFilter)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="all">Any due date</SelectItem>
+                      <SelectItem value="overdue">Overdue</SelectItem>
+                      <SelectItem value="today">Due today</SelectItem>
+                      <SelectItem value="week">Due this week</SelectItem>
+                      <SelectItem value="none">No due date</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <FieldLabel>Priority</FieldLabel>
+                <Select
+                  onValueChange={(v) =>
+                    setPriorityFilter((v ?? "all") as PriorityFilter)
+                  }
+                  value={priorityFilter}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {priorityFilterLabel(priorityFilter)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="all">Any priority</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Button
+                disabled={activeFilterCount === 0}
+                onClick={() => {
+                  setFilter("all");
+                  setDueFilter("all");
+                  setPriorityFilter("all");
+                }}
+                type="button"
+                variant="secondary"
+              >
+                Reset filters
+              </Button>
+            </FieldGroup>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {isLoading ? (
@@ -203,7 +300,10 @@ export function ActionItemsContainer() {
             </div>
             <EmptyTitle>No action items</EmptyTitle>
             <EmptyDescription>
-              {search || filter !== "all"
+              {search ||
+              filter !== "all" ||
+              dueFilter !== "all" ||
+              priorityFilter !== "all"
                 ? "Try adjusting your search or filter."
                 : "Action items from your meetings will appear here."}
             </EmptyDescription>
@@ -225,6 +325,28 @@ export function ActionItemsContainer() {
       )}
     </div>
   );
+}
+
+function statusFilterLabel(filter: StatusFilter) {
+  if (filter === "in_progress") return "In progress";
+  if (filter === "all") return "All items";
+  return filter.charAt(0).toUpperCase() + filter.slice(1);
+}
+
+function dueFilterLabel(filter: DueFilter) {
+  if (filter === "all") return "Any due date";
+  if (filter === "today") return "Due today";
+  if (filter === "week") return "Due this week";
+  if (filter === "none") return "No due date";
+  return "Overdue";
+}
+
+function priorityFilterLabel(filter: PriorityFilter) {
+  if (filter === "all") return "Any priority";
+  if (filter === "urgent") return "Urgent";
+  if (filter === "high") return "High";
+  if (filter === "low") return "Low";
+  return "Normal";
 }
 
 function ActionItemsSkeleton() {
@@ -251,8 +373,15 @@ type ActionItem = {
   meetingId: string;
   title: string;
   ownerName: string | null;
+  assigneeUserId: string | null;
+  assigneeEmail: string | null;
   dueDate: Date | null;
   status: string;
+  priority: string;
+  reminderAt: Date | null;
+  completedAt: Date | null;
+  source: string;
+  aiConfidence: string | null;
   meetingTitle: string;
 };
 
@@ -262,9 +391,6 @@ function MeetingGroup({
   group: { meetingId: string; meetingTitle: string; items: ActionItem[] };
 }) {
   const queryClient = useQueryClient();
-  const [addOpen, setAddOpen] = useState(false);
-  const [addTitle, setAddTitle] = useState("");
-  const [addOwner, setAddOwner] = useState("");
 
   const openCount = group.items.filter((i) => i.status === "open").length;
 
@@ -279,9 +405,6 @@ function MeetingGroup({
             queryKey: client.meeting.list.key(),
           }),
         ]);
-        setAddTitle("");
-        setAddOwner("");
-        setAddOpen(false);
       },
       onError: () => toast.error("Failed to add action item"),
     }),
@@ -317,81 +440,27 @@ function MeetingGroup({
               <ActionItemCard item={item} key={item.id} />
             ))}
 
-            {addOpen ? (
-              <div className="mt-1 flex flex-col gap-2">
-                <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
-                  <Input
-                    autoFocus
-                    className="w-full"
-                    disabled={createMutation.isPending}
-                    onChange={(e) => setAddTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        setAddOpen(false);
-                        setAddTitle("");
-                        setAddOwner("");
-                      }
-                    }}
-                    placeholder="Action item title"
-                    value={addTitle}
-                  />
-                  <Input
-                    className="w-full lg:w-56"
-                    disabled={createMutation.isPending}
-                    onChange={(e) => setAddOwner(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        setAddOpen(false);
-                        setAddTitle("");
-                        setAddOwner("");
-                      }
-                    }}
-                    placeholder="Owner (optional)"
-                    value={addOwner}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    disabled={createMutation.isPending}
-                    onClick={() => {
-                      setAddOpen(false);
-                      setAddTitle("");
-                      setAddOwner("");
-                    }}
-                    variant="secondary"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    disabled={createMutation.isPending || !addTitle.trim()}
-                    onClick={() => {
-                      if (addTitle.trim()) {
-                        createMutation.mutate({
-                          meetingId: group.meetingId,
-                          title: addTitle.trim(),
-                          ownerName: addOwner.trim() || undefined,
-                        });
-                      }
-                    }}
-                  >
-                    {createMutation.isPending ? (
-                      <Spinner className="size-3.5" />
-                    ) : (
-                      "Add"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button
-                className="mt-1 w-full"
-                onClick={() => setAddOpen(true)}
-                variant="secondary"
-              >
-                <PlusIcon className="size-3.5" />
-                Add item
-              </Button>
-            )}
+            <ActionItemDialog
+              isPending={createMutation.isPending}
+              mode="create"
+              onSubmit={(values) =>
+                createMutation.mutate({
+                  meetingId: group.meetingId,
+                  title: values.title,
+                  ownerName: values.ownerName ?? undefined,
+                  assigneeEmail: values.assigneeEmail,
+                  dueDate: values.dueDate,
+                  priority: values.priority,
+                  reminderAt: values.reminderAt,
+                })
+              }
+              trigger={
+                <Button className="mt-1 w-full" variant="secondary">
+                  <PlusIcon className="size-3.5" />
+                  Add item
+                </Button>
+              }
+            />
 
             <Link
               className="mt-1 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
@@ -409,12 +478,6 @@ function MeetingGroup({
 function ActionItemCard({ item }: { item: ActionItem }) {
   const queryClient = useQueryClient();
   const [optimisticDone, setOptimisticDone] = useState(item.status === "done");
-  const [editing, setEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(item.title);
-  const [editOwner, setEditOwner] = useState(item.ownerName ?? "");
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const swipingRef = useRef(false);
 
   useEffect(() => {
     setOptimisticDone(item.status === "done");
@@ -465,7 +528,6 @@ function ActionItemCard({ item }: { item: ActionItem }) {
         await queryClient.invalidateQueries({
           queryKey: client.actionItem.list.key(),
         });
-        setEditing(false);
       },
       onError: () => {
         toast.error("Failed to update action item");
@@ -490,196 +552,27 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     toggleMutation.mutate({ id: item.id, status: newDone ? "done" : "open" });
   };
 
-  const openEdit = () => {
-    setEditTitle(item.title);
-    setEditOwner(item.ownerName ?? "");
-    setEditing(true);
-  };
-
-  const handleTouchEnd = () => {
-    const offset = swipeOffset;
-    if (offset < -60) {
-      deleteMutation.mutate({ id: item.id });
-    } else if (offset > 60) {
-      openEdit();
-    }
-    swipingRef.current = false;
-    setSwipeOffset(0);
-    touchStartX.current = null;
-  };
-
-  const cancelEdit = () => {
-    setEditing(false);
-    setEditTitle(item.title);
-    setEditOwner(item.ownerName ?? "");
-  };
-
-  const saveEdit = () => {
-    const trimmedTitle = editTitle.trim();
-    if (!trimmedTitle) return;
-    editMutation.mutate({
-      id: item.id,
-      title: trimmedTitle,
-      ownerName: editOwner.trim() || undefined,
-    });
-  };
-
-  if (editing) {
-    return (
-      <div className="flex flex-col gap-2 rounded-md border p-2">
-        <div className="flex flex-col gap-2 sm:items-center lg:flex-row">
-          <Input
-            autoFocus
-            className="w-full"
-            disabled={editMutation.isPending}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") saveEdit();
-              if (e.key === "Escape") cancelEdit();
-            }}
-            placeholder="Action item title"
-            value={editTitle}
-          />
-          <Input
-            className="w-full lg:w-56"
-            disabled={editMutation.isPending}
-            onChange={(e) => setEditOwner(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") saveEdit();
-              if (e.key === "Escape") cancelEdit();
-            }}
-            placeholder="Owner (optional)"
-            value={editOwner}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            disabled={editMutation.isPending}
-            onClick={cancelEdit}
-            variant="secondary"
-          >
-            Cancel
-          </Button>
-          <Button
-            disabled={editMutation.isPending || !editTitle.trim()}
-            onClick={saveEdit}
-          >
-            {editMutation.isPending ? <Spinner className="size-3.5" /> : "Save"}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const swipeTriggered = Math.abs(swipeOffset) >= 60;
-
   return (
-    <div className="relative overflow-hidden rounded-md">
-      {swipeOffset < -8 && (
-        <div
-          className={`absolute inset-y-0 right-0 flex w-16 items-center justify-center rounded-r-md transition-colors ${swipeTriggered ? "bg-destructive" : "bg-destructive/50"}`}
-        >
-          <Trash2Icon
-            className={`text-destructive-foreground transition-transform ${swipeTriggered ? "scale-110" : "scale-90"}`}
-            size={swipeTriggered ? 18 : 16}
-          />
-        </div>
-      )}
-      {swipeOffset > 8 && (
-        <div
-          className={`absolute inset-y-0 left-0 flex w-16 items-center justify-center rounded-l-md transition-colors ${swipeTriggered ? "bg-primary" : "bg-primary/50"}`}
-        >
-          <EditIcon
-            className={`text-primary-foreground transition-transform ${swipeTriggered ? "scale-110" : "scale-90"}`}
-            size={swipeTriggered ? 18 : 16}
-          />
-        </div>
-      )}
-      <div
-        className={`group flex items-center gap-2 ${isDone ? "opacity-60" : ""}`}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={(e) => {
-          if (touchStartX.current === null) return;
-          const delta = e.touches[0].clientX - touchStartX.current;
-          swipingRef.current = true;
-          setSwipeOffset(Math.max(-80, Math.min(80, delta)));
-        }}
-        onTouchStart={(e) => {
-          touchStartX.current = e.touches[0].clientX;
-          swipingRef.current = false;
-        }}
-        style={{
-          transform: `translateX(${swipeOffset}px)`,
-          transition: swipingRef.current ? "none" : "transform 0.25s ease",
-        }}
-      >
-        <button
-          className="flex w-full cursor-pointer items-center gap-2 rounded-md border p-2 text-left transition-colors hover:bg-muted/30 disabled:cursor-not-allowed"
-          disabled={toggleMutation.isPending || deleteMutation.isPending}
-          onClick={handleToggle}
-          type="button"
-        >
-          <div
-            className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${isDone ? "border-primary bg-primary" : "border-input"}`}
-          >
-            {isDone && (
-              <CheckIcon className="size-2.5 text-primary-foreground" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <span
-              className={`text-xs leading-snug ${isDone ? "text-muted-foreground line-through" : "font-medium"}`}
-            >
-              {item.title}
-            </span>
-            {(item.ownerName || item.dueDate) && (
-              <div className="mt-0.5 flex items-center gap-3 text-muted-foreground text-xs">
-                {item.ownerName && (
-                  <span className="flex items-center gap-1">
-                    <UsersIcon className="size-3" />
-                    {item.ownerName}
-                  </span>
-                )}
-                {item.dueDate && (
-                  <span className="flex items-center gap-1">
-                    <ClockIcon className="size-3" />
-                    {new Date(item.dueDate).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <Button
-            className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            nativeButton={false}
-            onClick={(e) => {
-              e.stopPropagation();
-              openEdit();
-            }}
-            render={
-              <div>
-                <EditIcon className="text-muted-foreground" data-icon />
-              </div>
-            }
-            variant="secondary"
-          />
-          <Button
-            className="size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            disabled={deleteMutation.isPending}
-            nativeButton={false}
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteMutation.mutate({ id: item.id });
-            }}
-            render={
-              <div>
-                <Trash2Icon data-icon />
-              </div>
-            }
-            variant="destructive"
-          />
-        </button>
-      </div>
-    </div>
+    <ActionItemListItem
+      isDeletePending={deleteMutation.isPending}
+      isDone={isDone}
+      isEditPending={editMutation.isPending}
+      isTogglePending={toggleMutation.isPending}
+      item={item}
+      onDelete={() => deleteMutation.mutate({ id: item.id })}
+      onEdit={(values) =>
+        editMutation.mutate({
+          id: item.id,
+          title: values.title,
+          ownerName: values.ownerName,
+          assigneeEmail: values.assigneeEmail,
+          dueDate: values.dueDate,
+          priority: values.priority,
+          reminderAt: values.reminderAt,
+          status: values.status,
+        })
+      }
+      onToggle={handleToggle}
+    />
   );
 }

@@ -10,6 +10,7 @@ import {
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  FlagIcon,
   ListChecksIcon,
   UsersIcon,
 } from "lucide-react";
@@ -27,6 +28,7 @@ interface ActionItem {
   ownerName: string | null;
   dueDate: string | null;
   status: string;
+  priority?: string | null;
 }
 
 interface MeetingSummary {
@@ -463,35 +465,60 @@ function ActionItemRow({ item }: { item: ActionItem }) {
   const done = item.status === "done";
   return (
     <div
-      className={`flex items-center gap-2 rounded-md border p-2 ${done ? "opacity-60" : ""}`}
+      className={`flex flex-col gap-1.5 rounded-md border p-2 ${done ? "opacity-60" : ""}`}
     >
-      <div
-        className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border ${done ? "border-primary bg-primary" : "border-input"}`}
-      >
-        {done && <CheckIcon className="size-2.5 text-primary-foreground" />}
-      </div>
-      <div className="min-w-0 flex-1">
-        <span
-          className={`text-xs leading-snug ${done ? "text-muted-foreground line-through" : "font-medium"}`}
+      <div className="flex items-start gap-2">
+        <div
+          className={`mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-sm border ${done ? "border-primary bg-primary" : "border-input"}`}
         >
-          {item.title}
-        </span>
-        {(item.ownerName || item.dueDate) && (
-          <div className="mt-0.5 flex items-center gap-3 text-muted-foreground text-xs">
-            {item.ownerName && (
-              <span className="flex items-center gap-1">
-                <UsersIcon className="size-3" />
-                {item.ownerName}
-              </span>
-            )}
+          {done && <CheckIcon className="size-2.5 text-primary-foreground" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <span
+            className={`block text-xs leading-snug ${done ? "text-muted-foreground line-through" : "font-medium"}`}
+          >
+            {item.title}
+          </span>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             {item.dueDate && (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 text-muted-foreground text-xs">
                 <ClockIcon className="size-3" />
                 {new Date(item.dueDate).toLocaleDateString()}
               </span>
             )}
+            {item.ownerName && (
+              <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                <UsersIcon className="size-3" />
+                {item.ownerName}
+              </span>
+            )}
+            {item.priority && item.priority !== "normal" && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium text-xs ${
+                  item.priority === "urgent"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                <FlagIcon className="size-2.5" />
+                {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
+              </span>
+            )}
+            <span
+              className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-medium text-xs ${
+                item.status === "done"
+                  ? "bg-secondary text-secondary-foreground"
+                  : item.status === "blocked" || item.status === "canceled"
+                    ? "bg-destructive/10 text-destructive"
+                    : "border border-border text-foreground"
+              }`}
+            >
+              {item.status === "in_progress"
+                ? "In progress"
+                : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+            </span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

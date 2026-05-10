@@ -136,8 +136,22 @@ export const actionItems = schema.table(
       .references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     ownerName: text("owner_name"),
+    assigneeUserId: text("assignee_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    assigneeEmail: text("assignee_email"),
     dueDate: timestamp("due_date", { withTimezone: true }),
-    status: text("status").notNull().default("open"), // open | done
+    status: text("status").notNull().default("open"), // open | in_progress | blocked | done | canceled
+    priority: text("priority").notNull().default("normal"), // low | normal | high | urgent
+    reminderAt: timestamp("reminder_at", { withTimezone: true }),
+    reminderSentAt: timestamp("reminder_sent_at", { withTimezone: true }),
+    overdueDigestSentAt: timestamp("overdue_digest_sent_at", {
+      withTimezone: true,
+    }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    source: text("source").notNull().default("ai"), // ai | manual
+    aiConfidence: numeric("ai_confidence", { precision: 4, scale: 3 }),
+    recurrenceRule: text("recurrence_rule"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -150,6 +164,22 @@ export const actionItems = schema.table(
     index("action_items_meeting_id_idx").on(table.meetingId),
     index("action_items_user_id_idx").on(table.userId),
     index("action_items_status_idx").on(table.status),
+    index("action_items_user_status_due_idx").on(
+      table.userId,
+      table.status,
+      table.dueDate,
+    ),
+    index("action_items_assignee_user_status_due_idx").on(
+      table.assigneeUserId,
+      table.status,
+      table.dueDate,
+    ),
+    index("action_items_due_date_idx").on(table.dueDate),
+    index("action_items_reminder_at_idx").on(table.reminderAt),
+    index("action_items_user_completed_at_idx").on(
+      table.userId,
+      table.completedAt,
+    ),
   ],
 );
 

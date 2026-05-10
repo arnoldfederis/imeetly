@@ -8,9 +8,14 @@ import {
 } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
 import { ApplicationFailure } from "@temporalio/activity";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, lte, or } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
+import {
+  ActionItemReminderEmail,
+  OverdueActionItemsDigestEmail,
+  WeeklyActionItemRecapEmail,
+} from "./emails/action-items";
 import { MeetingReadyEmail } from "./emails/meeting-ready";
 import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
@@ -20,6 +25,62 @@ import {
   ProviderError,
   type TranscriptionResult,
 } from "./services/ai/types";
+
+function normalizeEmail(email?: string | null) {
+  return email?.trim().toLowerCase() || null;
+}
+
+function normalizeTaskTitle(title: string) {
+  return title.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function formatDate(value: Date | null) {
+  if (!value) return "No due date";
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
+async function sendOperationalEmail(input: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  if (env.APP_ENV !== "production") {
+    const transport = nodemailer.createTransport({
+      host: env.SMTP_HOST ?? "localhost",
+      port: Number(env.SMTP_PORT ?? 1025),
+      auth:
+        env.SMTP_USER && env.SMTP_PASS
+          ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
+          : undefined,
+      tls: { rejectUnauthorized: false },
+    });
+    await transport.sendMail({
+      from: "imeetly <notifications@imeetly.app>",
+      to: input.to,
+      subject: input.subject,
+      html: input.html,
+    });
+    return;
+  }
+
+  if (!env.RESEND_API_KEY) return;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "imeetly <notifications@imeetly.app>",
+      to: [input.to],
+      subject: input.subject,
+      html: input.html,
+    }),
+  });
+}
 
 // --- Types ---
 
@@ -39,7 +100,15 @@ export interface ProcessingResult {
   decisions: string;
   blockers: string;
   followups: string;
-  actionItems: Array<{ title: string; ownerName?: string }>;
+  actionItems: Array<{
+    title: string;
+    ownerName?: string;
+    assigneeEmail?: string | null;
+    dueDate?: string | null;
+    priority?: "low" | "normal" | "high" | "urgent";
+    status?: "open" | "in_progress" | "blocked" | "done" | "canceled";
+    confidence?: number | null;
+  }>;
   transcriptionProvider?: string;
   extractionProvider?: string;
   extractionModel?: string;
@@ -171,14 +240,39 @@ export async function saveProcessingResults(
     }
 
     if (results.actionItems.length > 0) {
-      await tx.insert(actionItems).values(
-        results.actionItems.map((item) => ({
-          meetingId,
-          userId,
-          title: item.title,
-          ownerName: item.ownerName ?? null,
-        })),
+      const existingItems = await tx.query.actionItems.findMany({
+        where: eq(actionItems.meetingId, meetingId),
+        columns: { title: true },
+      });
+      const seenTitles = new Set(
+        existingItems.map((item) => normalizeTaskTitle(item.title)),
       );
+      const newItems = results.actionItems.filter((item) => {
+        const key = normalizeTaskTitle(item.title);
+        if (!key || seenTitles.has(key)) return false;
+        seenTitles.add(key);
+        return true;
+      });
+
+      if (newItems.length > 0) {
+        await tx.insert(actionItems).values(
+          newItems.map((item) => ({
+            meetingId,
+            userId,
+            title: item.title,
+            ownerName: item.ownerName ?? null,
+            assigneeEmail: normalizeEmail(item.assigneeEmail),
+            dueDate: item.dueDate ? new Date(item.dueDate) : null,
+            priority: item.priority ?? "normal",
+            status: item.status ?? "open",
+            source: "ai",
+            aiConfidence:
+              typeof item.confidence === "number"
+                ? String(Math.max(0, Math.min(1, item.confidence)))
+                : null,
+          })),
+        );
+      }
     }
   });
 
@@ -220,44 +314,219 @@ export async function notifyMeetingReady(meetingId: string): Promise<void> {
   );
 
   try {
-    if (env.APP_ENV !== "production") {
-      const transport = nodemailer.createTransport({
-        host: env.SMTP_HOST ?? "localhost",
-        port: Number(env.SMTP_PORT ?? 1025),
-        auth:
-          env.SMTP_USER && env.SMTP_PASS
-            ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
-            : undefined,
-        tls: { rejectUnauthorized: false },
-      });
-      await transport.sendMail({
-        from: "imeetly <notifications@imeetly.app>",
-        to: user.email,
-        subject,
-        html,
-      });
-    } else {
-      if (!env.RESEND_API_KEY) return;
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "imeetly <notifications@imeetly.app>",
-          to: [user.email],
-          subject,
-          html,
-        }),
-      });
-    }
+    await sendOperationalEmail({ to: user.email, subject, html });
     console.log(`[${meetingId}] Meeting ready email sent to ${user.email}`);
   } catch (err) {
     console.warn(
       `[${meetingId}] Failed to send meeting ready email:`,
       err instanceof Error ? err.message : err,
     );
+  }
+}
+
+export async function sendActionItemReminders(): Promise<void> {
+  const now = new Date();
+  const appUrl = env.APP_URL ?? "https://app.imeetly.app";
+  const pending = await db
+    .select({
+      id: actionItems.id,
+      title: actionItems.title,
+      userId: actionItems.userId,
+      assigneeEmail: actionItems.assigneeEmail,
+      dueDate: actionItems.dueDate,
+      priority: actionItems.priority,
+      meetingTitle: meetings.title,
+    })
+    .from(actionItems)
+    .innerJoin(meetings, eq(actionItems.meetingId, meetings.id))
+    .where(
+      and(
+        lte(actionItems.reminderAt, now),
+        isNull(actionItems.reminderSentAt),
+        inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+      ),
+    )
+    .limit(100);
+
+  for (const item of pending) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, item.userId),
+      columns: { email: true, name: true },
+    });
+    const to = item.assigneeEmail ?? user?.email;
+    if (!to) continue;
+
+    const taskUrl = `${appUrl}/action-items`;
+    const html = await render(
+      ActionItemReminderEmail({
+        userName: user?.name ?? null,
+        title: item.title,
+        meetingTitle: item.meetingTitle,
+        dueDate: formatDate(item.dueDate),
+        priority: item.priority,
+        taskUrl,
+      }),
+    );
+    await sendOperationalEmail({
+      to,
+      subject: `Action item reminder: ${item.title}`,
+      html,
+    });
+
+    await db
+      .update(actionItems)
+      .set({ reminderSentAt: new Date() })
+      .where(
+        and(eq(actionItems.id, item.id), isNull(actionItems.reminderSentAt)),
+      );
+  }
+}
+
+export async function sendOverdueActionItemDigests(): Promise<void> {
+  const now = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const appUrl = env.APP_URL ?? "https://app.imeetly.app";
+  const overdue = await db
+    .select({
+      id: actionItems.id,
+      title: actionItems.title,
+      userId: actionItems.userId,
+      dueDate: actionItems.dueDate,
+      priority: actionItems.priority,
+      meetingTitle: meetings.title,
+    })
+    .from(actionItems)
+    .innerJoin(meetings, eq(actionItems.meetingId, meetings.id))
+    .where(
+      and(
+        lt(actionItems.dueDate, now),
+        inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+        or(
+          isNull(actionItems.overdueDigestSentAt),
+          lt(actionItems.overdueDigestSentAt, today),
+        ),
+      ),
+    )
+    .orderBy(desc(actionItems.dueDate))
+    .limit(500);
+
+  const byUser = new Map<string, typeof overdue>();
+  for (const item of overdue) {
+    byUser.set(item.userId, [...(byUser.get(item.userId) ?? []), item]);
+  }
+
+  for (const [userId, items] of byUser) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { email: true, name: true },
+    });
+    if (!user?.email) continue;
+
+    const taskUrl = `${appUrl}/action-items?due=overdue`;
+    const html = await render(
+      OverdueActionItemsDigestEmail({
+        userName: user.name ?? null,
+        items: items.map((item) => ({
+          title: item.title,
+          meetingTitle: item.meetingTitle,
+          dueDate: formatDate(item.dueDate),
+          priority: item.priority,
+        })),
+        taskUrl,
+      }),
+    );
+    await sendOperationalEmail({
+      to: user.email,
+      subject: `${items.length} overdue action item${items.length === 1 ? "" : "s"}`,
+      html,
+    });
+
+    await db
+      .update(actionItems)
+      .set({ overdueDigestSentAt: new Date() })
+      .where(
+        and(
+          eq(actionItems.userId, userId),
+          lt(actionItems.dueDate, now),
+          inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+        ),
+      );
+  }
+}
+
+export async function sendWeeklyActionItemRecaps(): Promise<void> {
+  const now = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAhead = new Date();
+  weekAhead.setDate(weekAhead.getDate() + 7);
+  const appUrl = env.APP_URL ?? "https://app.imeetly.app";
+
+  const usersWithTasks = await db
+    .selectDistinct({ userId: actionItems.userId })
+    .from(actionItems)
+    .where(
+      or(
+        inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+        gte(actionItems.completedAt, weekAgo),
+      ),
+    );
+
+  for (const row of usersWithTasks) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, row.userId),
+      columns: { email: true, name: true },
+    });
+    if (!user?.email) continue;
+
+    const items = await db.query.actionItems.findMany({
+      where: eq(actionItems.userId, row.userId),
+      columns: {
+        title: true,
+        dueDate: true,
+        status: true,
+        completedAt: true,
+      },
+    });
+    const completed = items.filter(
+      (item) => item.completedAt && item.completedAt >= weekAgo,
+    );
+    const overdue = items.filter(
+      (item) =>
+        item.dueDate &&
+        item.dueDate < now &&
+        ["open", "in_progress", "blocked"].includes(item.status),
+    );
+    const upcoming = items.filter(
+      (item) =>
+        item.dueDate &&
+        item.dueDate >= now &&
+        item.dueDate <= weekAhead &&
+        ["open", "in_progress", "blocked"].includes(item.status),
+    );
+    if (
+      completed.length === 0 &&
+      overdue.length === 0 &&
+      upcoming.length === 0
+    ) {
+      continue;
+    }
+
+    const html = await render(
+      WeeklyActionItemRecapEmail({
+        userName: user.name ?? null,
+        completedCount: completed.length,
+        overdueCount: overdue.length,
+        upcomingCount: upcoming.length,
+        taskUrl: `${appUrl}/action-items`,
+      }),
+    );
+    await sendOperationalEmail({
+      to: user.email,
+      subject: "Your weekly imeetly task recap",
+      html,
+    });
   }
 }
 

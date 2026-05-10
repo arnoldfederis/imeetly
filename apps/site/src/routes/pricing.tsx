@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { CTASection } from "@/components/landing/cta-section";
-import { faqs, FAQSection } from "@/components/landing/faq-section";
+import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { PricingSection } from "@/components/landing/pricing-section";

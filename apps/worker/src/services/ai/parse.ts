@@ -29,16 +29,32 @@ export function parseActionItems(raw: string): ActionItem[] {
 
   return parsed.map((item: unknown) => {
     const obj = item as Record<string, unknown>;
+    const priority = String(obj.priority ?? "normal");
+    const status = String(obj.status ?? "open");
+    const confidence = Number(obj.confidence ?? obj.aiConfidence);
     return {
       title: String(obj.title ?? obj.task ?? "Untitled action item"),
       ownerName:
         obj.ownerName != null || obj.owner != null
           ? String(obj.ownerName ?? obj.owner)
           : undefined,
+      assigneeEmail:
+        obj.assigneeEmail != null || obj.assignee_email != null
+          ? String(obj.assigneeEmail ?? obj.assignee_email)
+          : undefined,
       dueDate:
         obj.dueDate != null || obj.due_date != null
           ? String(obj.dueDate ?? obj.due_date)
           : undefined,
+      priority: ["low", "normal", "high", "urgent"].includes(priority)
+        ? (priority as ActionItem["priority"])
+        : "normal",
+      status: ["open", "in_progress", "blocked", "done", "canceled"].includes(
+        status,
+      )
+        ? (status as ActionItem["status"])
+        : "open",
+      confidence: Number.isFinite(confidence) ? confidence : undefined,
     };
   });
 }

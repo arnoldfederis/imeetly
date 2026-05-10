@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ActionItemsSection } from "@/components/landing/action-items-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { FAQSection, faqs } from "@/components/landing/faq-section";
 import { FeaturesSection } from "@/components/landing/features-section";
@@ -69,6 +70,7 @@ function LandingPage() {
         <HeroSection />
         <TrustBar />
         <FeaturesSection />
+        <ActionItemsSection />
         <ProductPreviewSection />
         <HowItWorksSection />
         <ProblemSection />

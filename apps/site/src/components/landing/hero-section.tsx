@@ -4,8 +4,10 @@ import {
   CalendarIcon,
   CheckCircle2Icon,
   CheckIcon,
+  ClockIcon,
   FileAudioIcon,
   FileTextIcon,
+  FlagIcon,
   ListChecksIcon,
   SparklesIcon,
   UsersIcon,
@@ -180,10 +182,23 @@ export function HeroSection() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <ActionItem owner="Sarah" text="Finalize onboarding copy" />
-                  <ActionItem owner="Marcus" text="Search API spec" />
+                  <ActionItem
+                    dueDate="Jan 17, 2026"
+                    priority="high"
+                    status="in_progress"
+                    text="Finalize onboarding copy"
+                  />
+                  <ActionItem
+                    dueDate="Jan 20, 2026"
+                    priority="urgent"
+                    status="open"
+                    text="Search API spec"
+                  />
                   <ActionItem
                     done
+                    dueDate="Jan 20, 2026"
+                    priority="urgent"
+                    status="done"
                     text="Share Q1 scope doc with stakeholders"
                   />
                 </div>
@@ -198,32 +213,63 @@ export function HeroSection() {
 
 function ActionItem({
   text,
-  owner,
   done = false,
+  dueDate,
+  priority,
+  status = "open",
 }: {
   text: string;
-  owner?: string;
   done?: boolean;
+  dueDate?: string;
+  priority?: string;
+  status?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border p-2">
-      <div
-        className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${done ? "border-primary bg-primary" : "border-input"}`}
-      >
-        {done && <CheckIcon className="size-2.5 text-primary-foreground" />}
-      </div>
-      <div className="min-w-0 flex-1">
-        <span
-          className={`text-xs leading-snug ${done ? "text-muted-foreground line-through" : "font-medium"}`}
+    <div
+      className={`flex flex-col gap-1.5 rounded-md border p-2 ${done ? "opacity-60" : ""}`}
+    >
+      <div className="flex items-start gap-2">
+        <div
+          className={`mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${done ? "border-primary bg-primary" : "border-input"}`}
         >
-          {text}
-        </span>
-        {owner && (
-          <div className="mt-0.5 flex items-center gap-1 text-muted-foreground text-xs">
-            <UsersIcon className="size-3" />
-            {owner}
+          {done && <CheckIcon className="size-2.5 text-primary-foreground" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <span
+            className={`block text-xs leading-snug ${done ? "text-muted-foreground line-through" : "font-medium"}`}
+          >
+            {text}
+          </span>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            {dueDate && (
+              <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                <ClockIcon className="size-3" />
+                {dueDate}
+              </span>
+            )}
+            {priority && priority !== "normal" && (
+              <Badge
+                variant={priority === "urgent" ? "destructive" : "secondary"}
+              >
+                <FlagIcon data-icon="inline-start" />
+                {priority.charAt(0).toUpperCase() + priority.slice(1)}
+              </Badge>
+            )}
+            <Badge
+              variant={
+                status === "done"
+                  ? "secondary"
+                  : status === "blocked" || status === "canceled"
+                    ? "destructive"
+                    : "outline"
+              }
+            >
+              {status === "in_progress"
+                ? "In progress"
+                : status.charAt(0).toUpperCase() + status.slice(1)}
+            </Badge>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

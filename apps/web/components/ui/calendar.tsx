@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, } from "lucide-react";
 import * as React from "react";
-import {
-  type DayButton,
-  DayPicker,
-  getDefaultClassNames,
-  type Locale,
-} from "react-day-picker";
+import { type DayButton, DayPicker, getDefaultClassNames, type Locale, } from "react-day-picker";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -106,7 +97,7 @@ function Calendar({
           defaultClassNames.week_number,
         ),
         day: cn(
-          "group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none [&:last-child[data-selected=true]_button]:rounded-r-(--cell-radius)",
+          "group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none [&:last-child[data-selected=true]_button]:rounded-r-(--cell-radius) hover:bg-default",
           props.showWeekNumber
             ? "[&:nth-child(2)[data-selected=true]_button]:rounded-l-(--cell-radius)"
             : "[&:first-child[data-selected=true]_button]:rounded-l-(--cell-radius)",

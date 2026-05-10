@@ -19,6 +19,19 @@ const {
   },
 });
 
+const {
+  sendActionItemReminders: sendActionItemRemindersJob,
+  sendOverdueActionItemDigests: sendOverdueActionItemDigestsJob,
+  sendWeeklyActionItemRecaps: sendWeeklyActionItemRecapsJob,
+} = proxyActivities<typeof activities>({
+  startToCloseTimeout: "5 minutes",
+  retry: {
+    maximumAttempts: 3,
+    initialInterval: "10 seconds",
+    backoffCoefficient: 2,
+  },
+});
+
 export async function processMeeting(meetingId: string): Promise<void> {
   await updateMeetingStatus(meetingId, "processing", "queued", null);
   const input = await loadMeetingInput(meetingId);
@@ -101,4 +114,16 @@ export async function processMeeting(meetingId: string): Promise<void> {
     await updateMeetingStatus(meetingId, "failed", "failed", reason);
     throw err;
   }
+}
+
+export async function sendActionItemReminderBatch(): Promise<void> {
+  await sendActionItemRemindersJob();
+}
+
+export async function sendOverdueActionItemDigestBatch(): Promise<void> {
+  await sendOverdueActionItemDigestsJob();
+}
+
+export async function sendWeeklyActionItemRecapBatch(): Promise<void> {
+  await sendWeeklyActionItemRecapsJob();
 }

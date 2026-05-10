@@ -12,7 +12,7 @@ Return ONLY valid JSON:
   "decisions": ["string"],
   "blockers": ["string"],
   "followUps": ["string"],
-  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+  "actionItems": [{"title": "string", "ownerName": "string or null", "assigneeEmail": "string or null", "dueDate": "ISO date string or null", "priority": "low|normal|high|urgent", "status": "open", "confidence": 0.0}]
 }
 
 Rules:
@@ -33,7 +33,7 @@ Return ONLY valid JSON in this exact shape:
   "decisions": ["string"],
   "blockers": ["string"],
   "followUps": ["string"],
-  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+  "actionItems": [{"title": "string", "ownerName": "string or null", "assigneeEmail": "string or null", "dueDate": "ISO date string or null", "priority": "low|normal|high|urgent", "status": "open", "confidence": 0.0}]
 }
 
 SECTION GUIDELINES:
@@ -58,6 +58,11 @@ followUps:
 actionItems:
 - Deduplicated tasks with owners when identifiable
 - ownerName: person's name or null
+- assigneeEmail: email address only when explicitly stated, otherwise null
+- dueDate: ISO date string when explicit or clearly inferable, otherwise null
+- priority: low, normal, high, or urgent; default normal
+- status: always open for newly extracted tasks
+- confidence: number from 0 to 1 based on how explicit the task, owner, and due date are
 
 TONE: Professional, product-oriented. No "It was discussed that..." phrases.
 
@@ -72,7 +77,7 @@ Return ONLY valid JSON in this exact shape:
   "decisions": ["string"],
   "blockers": ["string"],
   "followUps": ["string"],
-  "actionItems": [{"title": "string", "ownerName": "string or null"}]
+  "actionItems": [{"title": "string", "ownerName": "string or null", "assigneeEmail": "string or null", "dueDate": "ISO date string or null", "priority": "low|normal|high|urgent", "status": "open", "confidence": 0.0}]
 }
 
 SECTION GUIDELINES:
@@ -103,6 +108,11 @@ actionItems:
 - Specific tasks with clear owners when identifiable
 - title: short task description
 - ownerName: person's name or null if unassigned
+- assigneeEmail: email address only when explicitly stated, otherwise null
+- dueDate: ISO date string when explicit or clearly inferable, otherwise null
+- priority: low, normal, high, or urgent; default normal
+- status: always open for newly extracted tasks
+- confidence: number from 0 to 1 based on how explicit the task, owner, and due date are
 
 TONE: Professional, clear, product-oriented. No phrases like "It was discussed that..." or "The meeting covered..."
 
@@ -117,7 +127,15 @@ interface ChunkResult {
   decisions: string[];
   blockers: string[];
   followups: string[];
-  actionItems: Array<{ title: string; ownerName: string | null }>;
+  actionItems: Array<{
+    title: string;
+    ownerName: string | null;
+    assigneeEmail?: string | null;
+    dueDate?: string | null;
+    priority?: "low" | "normal" | "high" | "urgent";
+    status?: "open";
+    confidence?: number | null;
+  }>;
 }
 
 export function createGroqChunkedExtraction(

@@ -1,49 +1,28 @@
+import { actionItemModel } from "@repo/server/modules/action-item/model";
 import { ActionItemService } from "@repo/server/modules/action-item/service";
 import { base, privateProcedure } from "@repo/server/procedure";
-import { z } from "zod";
 
 export const actionItemController = base.router({
   list: privateProcedure
-    .input(
-      z.object({
-        status: z.string().optional(),
-        search: z.string().optional(),
-        limit: z.number().optional(),
-        offset: z.number().optional(),
-      }),
-    )
+    .input(actionItemModel.listQuery)
     .handler(async ({ input, context }) =>
       ActionItemService.listForUser(context.user.id, input),
     ),
 
   create: privateProcedure
-    .input(
-      z.object({
-        meetingId: z.string(),
-        title: z.string().min(1),
-        ownerName: z.string().optional(),
-      }),
-    )
+    .input(actionItemModel.createRequest)
     .handler(async ({ input, context }) =>
       ActionItemService.create(context.user.id, input),
     ),
 
   update: privateProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        title: z.string().optional(),
-        ownerName: z.string().optional(),
-        dueDate: z.string().nullable().optional(),
-        status: z.enum(["open", "done"]).optional(),
-      }),
-    )
+    .input(actionItemModel.updateRequest)
     .handler(async ({ input, context }) =>
       ActionItemService.update(context.user.id, input),
     ),
 
   remove: privateProcedure
-    .input(z.object({ id: z.string() }))
+    .input(actionItemModel.removeRequest)
     .handler(async ({ input, context }) =>
       ActionItemService.remove(context.user.id, input.id),
     ),

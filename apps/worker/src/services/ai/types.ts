@@ -23,7 +23,11 @@ export interface TranscriptionResult {
 export interface ActionItem {
   title: string;
   ownerName?: string;
+  assigneeEmail?: string | null;
   dueDate?: string | null;
+  priority?: "low" | "normal" | "high" | "urgent";
+  status?: "open" | "in_progress" | "blocked" | "done" | "canceled";
+  confidence?: number | null;
 }
 
 export interface ExtractionResult {
