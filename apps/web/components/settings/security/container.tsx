@@ -5,8 +5,10 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 export function SecurityContainer({
+  email,
   children,
 }: Readonly<{
+  email: string;
   children: React.ReactNode;
 }>) {
   const router = useRouter();
@@ -20,14 +22,14 @@ export function SecurityContainer({
 
     if (error === "account_not_linked") {
       toast.error(
-        "Email mismatch: the Google account email doesn't match your account email.",
+        `Google account mismatch. Sign in with the Google account that uses ${email}.`,
       );
     } else {
       toast.error("Failed to connect Google account.");
     }
 
     router.replace("/settings/security");
-  }, [error, router]);
+  }, [email, error, router]);
 
   return children;
 }

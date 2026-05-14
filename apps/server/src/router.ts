@@ -7,6 +7,7 @@ import { feedbackController } from "./modules/feedback";
 import { healthController } from "./modules/health";
 import { integrationController } from "./modules/integration";
 import { meetingController } from "./modules/meeting";
+import { memoryController } from "./modules/memory";
 import { userController } from "./modules/user";
 
 export const appRouter = {
@@ -19,5 +20,6 @@ export const appRouter = {
   health: healthController,
   integration: integrationController,
   meeting: meetingController,
+  memory: memoryController,
   user: userController,
 };

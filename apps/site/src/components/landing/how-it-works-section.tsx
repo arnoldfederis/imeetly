@@ -1,4 +1,4 @@
-import { BrainCircuitIcon, ClipboardListIcon, UploadIcon } from "lucide-react";
+import { BotIcon, BrainCircuitIcon, UploadIcon } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 
 const steps = [
@@ -18,10 +18,10 @@ const steps = [
   },
   {
     step: "03",
-    icon: ClipboardListIcon,
-    title: "Search, recall, act",
+    icon: BotIcon,
+    title: "Ask Meetly, act on answers",
     description:
-      "Read the summary, check action items, and search across every meeting you have ever had. Your team's memory, always within reach.",
+      "Read the summary, check action items, and ask Meetly anything about your meeting history in plain language. Your AI meeting assistant recalls decisions, blockers, and commitments across every meeting you have ever processed.",
   },
 ];
 

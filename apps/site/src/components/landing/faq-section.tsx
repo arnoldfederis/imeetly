@@ -47,6 +47,18 @@ export const faqs = [
     q: "Who is imeetly for?",
     a: "imeetly is for any team that runs on meetings: product teams, startups, agencies, founders, and recruiters. If you want to reduce tool-switching and make every meeting actionable, imeetly is built for you.",
   },
+  {
+    q: "What is AI Memory Search?",
+    a: 'AI Memory Search lets you ask natural language questions across your entire meeting history. Ask things like "What decisions did we make about onboarding?" or "Show blockers from this week" and imeetly finds the relevant context from your processed meetings.',
+  },
+  {
+    q: "What is the difference between Free snippets and Pro full answers?",
+    a: "Free users see matching text snippets from their meeting history - useful for finding the right meeting fast. Pro and Team users get a full AI-generated answer grounded in their meeting content, with citations to the exact meeting and date. No invented context.",
+  },
+  {
+    q: "What are the fair-use limits on AI Memory Search?",
+    a: "Free users get 5 AI memory searches per day. Pro users get 100 searches per day. Team users get 500 per day. Enterprise users have no fixed cap but are subject to fair-use and abuse prevention. Limits reset at midnight UTC.",
+  },
 ];
 
 export function FAQSection() {

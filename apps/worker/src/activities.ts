@@ -19,6 +19,7 @@ import {
 import { MeetingReadyEmail } from "./emails/meeting-ready";
 import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
+import { indexMeetingMemory } from "./services/ai/memory-indexer";
 import { transcribeMeeting } from "./services/ai/transcription";
 import {
   type ExtractionResult,
@@ -279,6 +280,10 @@ export async function saveProcessingResults(
   console.log(
     `[${meetingId}] Saved results (${results.actionItems.length} action items, extraction: ${results.extractionProvider ?? "unknown"}, transcription: ${results.transcriptionProvider ?? "n/a"})`,
   );
+
+  indexMeetingMemory(meetingId, userId).catch((err) => {
+    console.error(`[${meetingId}] Memory indexing failed (non-fatal):`, err);
+  });
 }
 
 // --- Notifications ---

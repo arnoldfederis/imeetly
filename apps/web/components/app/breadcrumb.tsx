@@ -19,6 +19,7 @@ function isUUID(segment: string) {
 }
 
 function formatSegment(segment: string): string {
+  if (segment === "memory") return "imeetly Memory";
   if (isUUID(segment)) return "Meeting details";
   if (segment === "action-items") return "action items";
   return segment;

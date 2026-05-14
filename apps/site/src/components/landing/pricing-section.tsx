@@ -32,6 +32,8 @@ const plans: Plan[] = [
       "Audio and video upload",
       "Full meeting history",
       "100 MB max file size",
+      "5 AI memory searches/day",
+      "Search matching meeting snippets",
     ],
     cta: "Start free",
   },
@@ -48,6 +50,8 @@ const plans: Plan[] = [
       "Priority processing",
       "Export to PDF & Markdown",
       "500 MB max file size",
+      "Unlimited AI memory search*",
+      "Full AI answers across past meetings",
     ],
     cta: "Start free",
     highlighted: true,
@@ -63,6 +67,8 @@ const plans: Plan[] = [
       "150 meetings per month",
       "Everything in Pro",
       "1 GB max file size",
+      "Unlimited team AI memory search*",
+      "Shared meeting knowledge base",
     ],
     cta: "Coming Soon",
     comingSoon: true,
@@ -172,7 +178,7 @@ export function PricingSection() {
                   ) : (
                     <a
                       className={buttonVariants({
-                        variant: plan.highlighted ? "default" : "outline",
+                        variant: plan.highlighted ? "default" : "secondary",
                         className: "w-full gap-1.5",
                       })}
                       href={APP_URL}
@@ -235,6 +241,11 @@ export function PricingSection() {
               </div>
             </div>
           </div>
+        </FadeIn>
+        <FadeIn className="mt-10 text-center">
+          <p className="text-muted-foreground text-xs">
+            *Subject to fair use and abuse prevention.
+          </p>
         </FadeIn>
       </div>
     </section>

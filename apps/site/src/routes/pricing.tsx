@@ -64,6 +64,13 @@ const comparisonRows = [
   ["AI summaries and action items", "Included", "Included", "Included"],
   ["Priority processing", "-", "Included", "Included"],
   ["PDF and Markdown export", "-", "Included", "Included"],
+  ["AI memory searches/day", "5", "100", "500"],
+  [
+    "AI memory answer mode",
+    "Snippets only",
+    "Full AI answers",
+    "Full AI answers",
+  ],
   ["Team workflows", "-", "-", "Planned"],
 ];
 

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  BotIcon,
   CheckSquareIcon,
   ChevronRight,
   LayoutDashboardIcon,
@@ -16,11 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
 import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,6 +94,12 @@ const primaryNavs: SidebarNav[] = [
     url: "/action-items",
     icon: <CheckSquareIcon size={14} />,
     rootPath: "/action-items",
+  },
+  {
+    title: "imeetly Memory",
+    url: "/memory",
+    icon: <BotIcon size={14} />,
+    rootPath: "/memory",
   },
   {
     title: "Settings",

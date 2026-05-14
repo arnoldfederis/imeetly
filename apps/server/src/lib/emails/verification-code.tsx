@@ -15,15 +15,21 @@ import {
 
 export function VerificationCodeEmail({
   code,
+  description,
+  preview,
   siteUrl,
+  title,
 }: {
   code: string;
+  description: string;
+  preview: string;
   siteUrl: string;
+  title: string;
 }) {
   return (
     <Html>
       <Head />
-      <Preview>Your imeetly verification code: {code}</Preview>
+      <Preview>{preview}</Preview>
       <Body style={body}>
         <Container style={container}>
           <Section style={logoSection}>
@@ -45,13 +51,13 @@ export function VerificationCodeEmail({
           <Hr style={divider} />
 
           <Section style={content}>
-            <Heading style={heading}>Verify your email</Heading>
+            <Heading style={heading}>{title}</Heading>
             <Text style={tagline}>
               Never lose what happened in a meeting again
             </Text>
             <Text style={subTagline}>The memory layer for meetings.</Text>
 
-            <Text style={paragraph}>Your verification code is:</Text>
+            <Text style={paragraph}>{description}</Text>
 
             <Section style={codeContainer}>
               <Text style={codeText}>{code}</Text>

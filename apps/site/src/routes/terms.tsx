@@ -23,7 +23,7 @@ function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 28, 2026
+            Last updated: May 14, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -52,7 +52,9 @@ function TermsPage() {
                 automatically, or connect Microsoft Teams to manually import
                 recordings. The Service uses artificial intelligence to generate
                 structured outputs including transcripts, summaries, decisions,
-                blockers, and action items.
+                blockers, and action items. The Service also provides searchable
+                meeting history and memory features built from those saved
+                outputs.
               </p>
               <p className="mt-3">
                 The Service is provided on a best-effort basis. Features and
@@ -87,6 +89,12 @@ function TermsPage() {
                 liable for losses caused by unauthorized use of your account.
               </p>
               <p className="mt-3">
+                If you use email and password sign-in, you are responsible for
+                maintaining the confidentiality of your password. If you use
+                passkeys, you are responsible for securing the devices,
+                browsers, or password managers where those passkeys are stored.
+              </p>
+              <p className="mt-3">
                 You are responsible for ensuring that any information you
                 provide to us is accurate and kept up to date.
               </p>
@@ -107,6 +115,11 @@ function TermsPage() {
                 <li>
                   Review AI-generated outputs for accuracy before relying on
                   them or sharing them with others.
+                </li>
+                <li>
+                  Use memory, search, and cross-meeting recall features only
+                  with content you are authorized to upload, process, retain,
+                  and retrieve through the Service.
                 </li>
                 <li>
                   Ensure you have the necessary rights and permissions for any
@@ -158,7 +171,9 @@ function TermsPage() {
               <p className="mt-3">
                 Uploaded or imported source files are processed and then deleted
                 from our systems. Generated outputs are stored in your account
-                until you delete them or your account is terminated.
+                until you delete them or your account is terminated. Those
+                stored outputs may also be used to power searchable meeting
+                history and memory features within the Service.
               </p>
             </section>
 

@@ -48,7 +48,7 @@ export default async function Layout({
           </div>
         </header>
         <Container
-          className="flex w-full flex-1 flex-col gap-4 p-4 pt-6"
+          className="flex w-full flex-1 flex-col gap-4 p-4 pt-6 has-[>[data-memory-page]]:max-w-full has-[>[data-memory-page]]:px-0 has-[>[data-memory-page]]:pb-0"
           variant="constrainedPadded"
         >
           {children}

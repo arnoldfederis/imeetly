@@ -99,7 +99,7 @@ export function ConnectedAccountsCard({ accounts }: Props) {
               }
               onClick={() => handleUnlink("google")}
               size="sm"
-              variant="outline"
+              variant="secondary"
             >
               {unlinking === "google" ? (
                 <LoaderCircleIcon className="animate-spin" />
@@ -109,7 +109,7 @@ export function ConnectedAccountsCard({ accounts }: Props) {
               Disconnect
             </Button>
           ) : (
-            <Button onClick={handleLinkGoogle} size="sm" variant="outline">
+            <Button onClick={handleLinkGoogle} size="sm" variant="secondary">
               <PlusIcon data-icon="inline-start" />
               Connect
             </Button>

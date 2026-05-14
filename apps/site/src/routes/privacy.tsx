@@ -21,7 +21,7 @@ function PrivacyPage() {
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: April 28, 2026
+            Last updated: May 14, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -49,9 +49,11 @@ function PrivacyPage() {
               <ul className="mt-3">
                 <li>
                   <strong>Account information:</strong> your name, email
-                  address, and authentication credentials when you sign up. If
-                  you authenticate via Google OAuth, we receive your name, email
-                  address, and profile picture from Google.
+                  address, and authentication credentials when you sign up,
+                  including password credentials if you choose email and
+                  password sign-in. If you authenticate via Google OAuth, we
+                  receive your name, email address, and profile picture from
+                  Google.
                 </li>
                 <li>
                   <strong>Uploaded content:</strong> audio, video, or text files
@@ -59,8 +61,13 @@ function PrivacyPage() {
                 </li>
                 <li>
                   <strong>Generated outputs:</strong> transcripts, summaries,
-                  decisions, blockers, and action items produced by our AI
-                  pipeline.
+                  decisions, blockers, action items, and related structured
+                  meeting outputs produced by our AI pipeline.
+                </li>
+                <li>
+                  <strong>Memory and search data:</strong> meeting outputs and
+                  related metadata that power searchable meeting history,
+                  cross-meeting recall, and in-product memory features.
                 </li>
                 <li>
                   <strong>Meeting metadata:</strong> meeting titles, dates,
@@ -91,8 +98,10 @@ function PrivacyPage() {
                 </li>
                 <li>
                   <strong>Session and authentication data:</strong> session
-                  tokens, device identifiers, and passkey credentials used to
-                  keep you securely signed in.
+                  tokens, device identifiers, passkey credentials, and records
+                  related to password reset, verification, and account security
+                  events used to keep you securely signed in and protect your
+                  account.
                 </li>
                 <li>
                   <strong>Technical and log data:</strong> IP address, browser
@@ -116,15 +125,20 @@ function PrivacyPage() {
                   and action items using AI.
                 </li>
                 <li>
+                  Store and organize generated meeting outputs so they can be
+                  used in searchable history and memory features inside the
+                  product.
+                </li>
+                <li>
                   Access your calendar and cloud recordings through connected
                   integrations, solely to import the meetings you choose to
                   process.
                 </li>
                 <li>Manage your subscription and process billing.</li>
                 <li>
-                  Send transactional emails such as verification codes and
-                  account notices. We do not send marketing emails without your
-                  consent.
+                  Send transactional emails such as verification codes, password
+                  reset links, password change confirmations, and account
+                  notices. We do not send marketing emails without your consent.
                 </li>
                 <li>
                   Monitor service performance, investigate errors, and improve
@@ -157,6 +171,12 @@ function PrivacyPage() {
                   and summaries are generated automatically and may contain
                   errors, omissions, or misattributions. You should review all
                   outputs before relying on them or sharing them.
+                </li>
+                <li>
+                  <strong>Memory features depend on saved outputs.</strong> If
+                  you use imeetly memory or search features, those experiences
+                  rely on meeting transcripts, summaries, and related structured
+                  outputs retained in your account.
                 </li>
                 <li>
                   <strong>
@@ -310,6 +330,12 @@ function PrivacyPage() {
                 you authenticate. This cookie does not contain personal data
                 beyond an opaque session identifier. We do not use third-party
                 advertising cookies or tracking pixels.
+              </p>
+              <p className="mt-3">
+                Depending on how you sign in, we may also process password
+                credentials, passkey credentials, verification codes, reset
+                tokens, and related security events in order to authenticate
+                you, protect your account, and manage your active sessions.
               </p>
               <p className="mt-3">
                 We also use cookies set by PostHog for product analytics

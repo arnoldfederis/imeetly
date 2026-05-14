@@ -17,33 +17,6 @@ export const actionItemPrioritySchema = z.enum([
   "urgent",
 ]);
 
-const _meridiemSchema = z.enum(["AM", "PM"]);
-const _hourSchema = z.string().regex(/^(0?[1-9]|1[0-2])$/, "Invalid hour.");
-const _minuteSchema = z.string().regex(/^([0-5][0-9])$/, "Invalid minute.");
-
-function _composeDateTimeParts(input: {
-  date: string;
-  hour: string;
-  minute: string;
-  meridiem: "AM" | "PM";
-}) {
-  if (!input.date) return null;
-
-  const [year, month, day] = input.date.split("-").map(Number);
-  if (!year || !month || !day) return null;
-
-  let hours = Number(input.hour);
-  const minutes = Number(input.minute);
-
-  if (input.meridiem === "AM") {
-    if (hours === 12) hours = 0;
-  } else if (hours !== 12) {
-    hours += 12;
-  }
-
-  return new Date(year, month - 1, day, hours, minutes, 0, 0);
-}
-
 export const actionItemModel = {
   listQuery: z.object({
     status: actionItemStatusSchema.optional(),

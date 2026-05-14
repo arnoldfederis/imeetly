@@ -1,11 +1,10 @@
 import { db, schema } from "@repo/db";
-import { users } from "@repo/db/schemas/auth";
+import type { users } from "@repo/db/schemas/auth";
 import { env } from "@repo/env";
 import { authPlugins } from "@repo/server/lib/auth-plugins";
 import { emailService } from "@repo/server/lib/mailer";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
-import { eq } from "drizzle-orm";
 
 function resolveAuthBaseUrl() {
   const candidates = [
@@ -75,36 +74,53 @@ export const auth = betterAuth({
     provider: "pg",
     usePlural: true,
   }),
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: false,
+    maxPasswordLength: 24,
+    minPasswordLength: 10,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, token }) =>
+      emailService.sendResetPasswordEmail(user.email, token),
+    onPasswordReset: async ({ user }) =>
+      void emailService.sendPasswordResetSuccessEmail(user.email),
+  },
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendOnSignIn: true,
+    sendOnSignUp: true,
+  },
   plugins: authPlugins,
   secret: resolveAuthSecret(),
   socialProviders: resolveGoogleProvider(),
   trustedOrigins: [env.CORS_ORIGIN],
   databaseHooks: {
     user: {
+      update: {
+        after: createOrUpdateHook,
+      },
       create: {
-        after: async (user) => {
-          const createdUser = await db.query.users.findFirst({
-            where: eq(users.id, user.id),
-          });
-
-          if (!createdUser) {
-            return;
-          }
-
-          if (createdUser.isAnonymous) {
-            return;
-          }
-
-          emailService
-            .sendWelcomeEmail(createdUser.email, createdUser.name)
-            .catch((err) => {
-              console.error(
-                "[auth] Welcome email failed:",
-                err instanceof Error ? err.message : err,
-              );
-            });
-        },
+        after: createOrUpdateHook,
       },
     },
   },
 });
+
+async function createOrUpdateHook(user: typeof users.$inferInsert) {
+  if (!user) {
+    return;
+  }
+
+  if (user.isAnonymous) {
+    return;
+  }
+
+  if (user.emailVerified) {
+    emailService.sendWelcomeEmail(user.email, user.name).catch((err) => {
+      console.error(
+        "[auth] Welcome email failed:",
+        err instanceof Error ? err.message : err,
+      );
+    });
+  }
+}

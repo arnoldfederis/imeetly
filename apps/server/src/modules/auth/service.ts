@@ -17,6 +17,17 @@ type ResolvePasskeyUser = {
 };
 
 export abstract class AuthService {
+  static async checkEmailStatus(
+    email: string,
+  ): Promise<AuthModel["checkEmailStatusResponse"]> {
+    const { exists, user } = await UserService.checkIfEmailExists({ email });
+
+    return {
+      exists,
+      isVerified: !!user?.emailVerified,
+    };
+  }
+
   static async signInSimple(
     { email, signInMethod }: AuthModel["signInSimpleRequest"],
     headers: Headers,
@@ -70,9 +81,13 @@ export abstract class AuthService {
     ]);
   }
 
-  static async sendVerificationOTP({ email, otp }: SendVerificationOTP[0]) {
+  static async sendVerificationOTP({
+    email,
+    otp,
+    type,
+  }: SendVerificationOTP[0]) {
     console.log(`[auth] Verification code requested for email=${email}`);
-    await emailService.sendVerificationCode(email, otp);
+    await emailService.sendVerificationCode(email, otp, type);
     console.log(`[auth] Verification code sent for email=${email}`);
   }
 

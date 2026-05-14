@@ -21,6 +21,7 @@
     "redis@latest",
     "nodejs@latest",
     "cloudflared@latest",
-    "docker@latest"
+    "docker@latest",
+    "postgresql17Packages.pgvector@latest"
   ]
 }

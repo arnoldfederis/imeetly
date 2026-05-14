@@ -38,6 +38,8 @@ const UPGRADE_PLANS = [
       "Priority processing",
       "Export to PDF & Markdown",
       "500 MB max file size",
+      "Unlimited AI memory search*",
+      "Full AI answers across past meetings",
     ],
   },
   {
@@ -49,12 +51,21 @@ const UPGRADE_PLANS = [
     yearlySlug: "team-yearly" as const,
     icon: <UsersIcon className="size-5" />,
     meetings: "150 meetings / month",
-    highlights: ["Everything in Pro", "1 GB max file size"],
+    highlights: [
+      "Everything in Pro",
+      "1 GB max file size",
+      "Unlimited team AI memory search*",
+    ],
     comingSoon: true,
   },
 ] as const;
 
-type UpgradeReason = "default" | "limit-reached" | "export" | "near-limit";
+type UpgradeReason =
+  | "default"
+  | "limit-reached"
+  | "export"
+  | "near-limit"
+  | "ai-memory-limit";
 
 const REASON_COPY: Record<
   UpgradeReason,
@@ -76,6 +87,11 @@ const REASON_COPY: Record<
   export: {
     title: "Export is a Pro feature",
     description: "Upgrade to Pro to export your meetings as PDF or Markdown.",
+  },
+  "ai-memory-limit": {
+    title: "Daily AI Memory limit reached",
+    description:
+      "Free plan includes 5 AI memory searches per day. Upgrade to Pro for 100 searches/day with full AI answers.",
   },
 };
 
@@ -230,6 +246,9 @@ export function UpgradeDialog({
           <Separator />
           <p className="text-center text-muted-foreground text-xs">
             You can cancel or change plans anytime from billing settings.
+          </p>
+          <p className="text-center text-muted-foreground text-xs">
+            *Subject to fair use and abuse prevention.
           </p>
         </div>
       </DialogContent>

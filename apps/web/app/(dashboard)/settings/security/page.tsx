@@ -2,16 +2,25 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Security" };
 export const dynamic = "force-dynamic";
 
+import { ConnectedAccountsCard } from "@/components/settings/security/connected-account-card";
+import { PasswordCard } from "@/components/settings/security/password-card";
 import { SecurityContainer } from "@/components/settings/security/container";
 import { PasskeysCard } from "@/components/settings/security/passkey-card";
 import { server } from "@/lib/orpc";
 import { requireAuth } from "@/lib/server-auth";
 
 export default async function Page() {
-  const passkeys = await requireAuth(() => server.user.listPasskeys());
+  const [accounts, passkeys, user] = await Promise.all([
+    requireAuth(() => server.user.listUserAccounts()),
+    requireAuth(() => server.user.listPasskeys()),
+    requireAuth(() => server.user.me()),
+  ]);
+  const hasCredential = accounts.some(
+    (account) => account.providerId === "credential",
+  );
 
   return (
-    <SecurityContainer>
+    <SecurityContainer email={user.email}>
       <div className="flex flex-col gap-6">
         <div className="flex h-14 items-center gap-3">
           <div className="flex min-w-0 flex-col justify-between gap-1">
@@ -22,6 +31,8 @@ export default async function Page() {
           </div>
         </div>
 
+        <ConnectedAccountsCard accounts={accounts} />
+        <PasswordCard email={user.email} hasCredential={hasCredential} />
         <PasskeysCard passkeys={passkeys} />
       </div>
     </SecurityContainer>

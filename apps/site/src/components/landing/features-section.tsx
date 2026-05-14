@@ -1,12 +1,13 @@
 import {
+  BotIcon,
   BrainCircuitIcon,
   CalendarCheckIcon,
   GlobeIcon,
-  HistoryIcon,
   LinkIcon,
   ListChecksIcon,
   Share2Icon,
   ShieldAlertIcon,
+  SparklesIcon,
   UploadCloudIcon,
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
@@ -37,12 +38,6 @@ const features = [
       "Follow-up items from every meeting organized in one place. Nothing promised in the room gets forgotten by morning.",
   },
   {
-    icon: HistoryIcon,
-    title: "Searchable meeting memory",
-    description:
-      "Find any decision, action item, or conversation from any past meeting instantly. Ask a question, get an answer from your history.",
-  },
-  {
     icon: UploadCloudIcon,
     title: "Any format, any meeting",
     description:
@@ -64,7 +59,7 @@ const features = [
     icon: Share2Icon,
     title: "Shareable meeting pages",
     description:
-      "Share any meeting summary as a public page anyone can read without logging in. Optionally allow search engines to index it so stakeholders can find it later.",
+      "Share any meeting summary as a public page anyone can read without logging in. Optionally allow search engines to index it.",
   },
 ];
 
@@ -80,6 +75,50 @@ export function FeaturesSection() {
             Everything said, decided, assigned, and committed in your meetings,
             organized into a searchable record after processing.
           </p>
+        </FadeIn>
+
+        {/* imeetly Memory featured card */}
+        <FadeIn className="mb-6">
+          <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-8">
+            <div className="absolute top-6 right-6 opacity-10">
+              <BotIcon className="size-24 text-primary" />
+            </div>
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-8">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <BotIcon className="size-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <h3 className="font-bold text-xl">imeetly Memory</h3>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs">
+                    <SparklesIcon className="size-3" />
+                    Powered by Meetly
+                  </span>
+                </div>
+                <p className="mb-4 max-w-xl text-muted-foreground text-sm leading-relaxed">
+                  Ask Meetly - your AI meeting assistant - anything about your
+                  meeting history in plain language. "What did we decide about
+                  pricing last quarter?" or "Show me all blockers from this
+                  week." Meetly searches across every meeting you have ever
+                  processed and answers with full citations.
+                </p>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <span className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5">
+                    <SparklesIcon className="size-3.5 text-primary" />
+                    Natural language search
+                  </span>
+                  <span className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5">
+                    <BrainCircuitIcon className="size-3.5 text-primary" />
+                    Full AI-generated answers
+                  </span>
+                  <span className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5">
+                    <ListChecksIcon className="size-3.5 text-primary" />
+                    Source citations from meetings
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </FadeIn>
 
         <Stagger

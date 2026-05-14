@@ -20,6 +20,8 @@ export const PLANS = [
       "Audio and video upload",
       "Full meeting history",
       "100 MB max file size",
+      "5 AI memory searches / day",
+      "Search matching meeting snippets",
     ],
   },
   {
@@ -39,6 +41,8 @@ export const PLANS = [
       "Priority processing",
       "Export to PDF & Markdown",
       "500 MB max file size",
+      "Unlimited AI memory search*",
+      "Full AI answers across past meetings",
     ],
   },
   {
@@ -55,6 +59,8 @@ export const PLANS = [
       "150 meetings per month",
       "Everything in Pro",
       "1 GB max file size",
+      "Unlimited team AI memory search*",
+      "Shared meeting knowledge base",
     ],
   },
 ];
@@ -103,6 +109,9 @@ export function BillingPlan({ currentPlan }: Props) {
           />
         ))}
       </div>
+      <p className="mt-4 text-muted-foreground text-xs">
+        *Subject to fair use and abuse prevention.
+      </p>
     </div>
   );
 }

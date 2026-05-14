@@ -1,9 +1,12 @@
 import {
   actionItems,
+  aiMemoryMessages,
+  aiMemoryThreads,
   externalMeetings,
   externalParticipants,
   integrations,
   meetingFiles,
+  meetingMemoryChunks,
   meetingSummaries,
   meetings,
   subscriptions,
@@ -20,6 +23,7 @@ export const meetingRelations = relations(meetings, ({ one, many }) => ({
   files: many(meetingFiles),
   summary: one(meetingSummaries),
   actionItems: many(actionItems),
+  memoryChunks: many(meetingMemoryChunks),
 }));
 
 export const meetingFileRelations = relations(meetingFiles, ({ one }) => ({
@@ -100,6 +104,45 @@ export const externalParticipantRelations = relations(
   }),
 );
 
+export const meetingMemoryChunkRelations = relations(
+  meetingMemoryChunks,
+  ({ one }) => ({
+    meeting: one(meetings, {
+      fields: [meetingMemoryChunks.meetingId],
+      references: [meetings.id],
+    }),
+    user: one(users, {
+      fields: [meetingMemoryChunks.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
+export const aiMemoryThreadRelations = relations(
+  aiMemoryThreads,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [aiMemoryThreads.userId],
+      references: [users.id],
+    }),
+    messages: many(aiMemoryMessages),
+  }),
+);
+
+export const aiMemoryMessageRelations = relations(
+  aiMemoryMessages,
+  ({ one }) => ({
+    thread: one(aiMemoryThreads, {
+      fields: [aiMemoryMessages.threadId],
+      references: [aiMemoryThreads.id],
+    }),
+    user: one(users, {
+      fields: [aiMemoryMessages.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
 export const appRelations = {
   meetingRelations,
   meetingFileRelations,
@@ -110,4 +153,7 @@ export const appRelations = {
   integrationRelations,
   externalMeetingRelations,
   externalParticipantRelations,
+  meetingMemoryChunkRelations,
+  aiMemoryThreadRelations,
+  aiMemoryMessageRelations,
 };

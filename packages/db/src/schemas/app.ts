@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  vector,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
@@ -437,6 +438,125 @@ export const integrationWatchChannels = schema.table(
   ],
 );
 
+// --- ai_memory_threads ---
+
+export const aiMemoryThreads = schema.table(
+  "ai_memory_threads",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull().default("New conversation"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ai_memory_threads_user_id_idx").on(table.userId),
+    index("ai_memory_threads_user_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  ],
+);
+
+// --- ai_memory_messages ---
+
+export const aiMemoryMessages = schema.table(
+  "ai_memory_messages",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => aiMemoryThreads.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").notNull(), // user | assistant
+    content: text("content").notNull(),
+    sources: jsonb("sources")
+      .$type<
+        Array<{
+          meetingId: string;
+          meetingTitle: string;
+          meetingDate: string;
+          snippet: string;
+          sourceType: string;
+          score: number;
+        }>
+      >()
+      .default([]),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("ai_memory_messages_thread_id_idx").on(table.threadId),
+    index("ai_memory_messages_user_id_idx").on(table.userId),
+    index("ai_memory_messages_thread_created_at_idx").on(
+      table.threadId,
+      table.createdAt,
+    ),
+  ],
+);
+
+// --- meeting_memory_chunks ---
+
+export const meetingMemoryChunks = schema.table(
+  "meeting_memory_chunks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    meetingId: text("meeting_id")
+      .notNull()
+      .references(() => meetings.id, { onDelete: "cascade" }),
+    sourceType: text("source_type").notNull(), // transcript | summary | decisions | blockers | followups | action_item
+    content: text("content").notNull(),
+    contentHash: text("content_hash").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+    tokenCount: integer("token_count"),
+    charCount: integer("char_count").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("meeting_memory_chunks_user_id_idx").on(table.userId),
+    index("meeting_memory_chunks_meeting_id_idx").on(table.meetingId),
+    index("meeting_memory_chunks_source_type_idx").on(table.sourceType),
+    index("meeting_memory_chunks_created_at_idx").on(table.createdAt),
+    uniqueIndex("meeting_memory_chunks_meeting_source_hash_idx").on(
+      table.meetingId,
+      table.sourceType,
+      table.contentHash,
+    ),
+    index("meeting_memory_chunks_embedding_hnsw_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+  ],
+);
+
 export const appSchema = {
   feedback,
   meetings,
@@ -450,4 +570,7 @@ export const appSchema = {
   externalParticipants,
   integrationWebhookEvents,
   integrationWatchChannels,
+  meetingMemoryChunks,
+  aiMemoryThreads,
+  aiMemoryMessages,
 };

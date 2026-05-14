@@ -1,3 +1,4 @@
+import { BotIcon } from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -13,9 +14,9 @@ export function CTASection() {
             Stop carrying meetings in your head
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground">
-            Give your team a searchable record of the decisions and action items
-            that come out of meetings. Start with 5 free meetings, no credit
-            card needed.
+            Give your team a searchable record of every decision and action item
+            - then ask Meetly anything about your meeting history. Start with 5
+            free meetings, no credit card needed.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
@@ -28,11 +29,17 @@ export function CTASection() {
             </a>
             <a
               className={buttonVariants({ variant: "secondary", size: "lg" })}
-              href="/how-it-works"
+              href={APP_URL}
+              rel="noopener noreferrer"
+              target="_blank"
             >
-              See how it works
+              <BotIcon className="size-4" />
+              Ask Meetly
             </a>
           </div>
+          <p className="mt-4 text-muted-foreground text-xs">
+            imeetly Memory included on all plans · Pro unlocks full AI answers
+          </p>
         </FadeIn>
       </div>
     </section>

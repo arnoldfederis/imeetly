@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
+  BotIcon,
   BrainCircuitIcon,
   CheckCircle2Icon,
+  FlagIcon,
   HistoryIcon,
   ListChecksIcon,
   SearchIcon,
   Share2Icon,
   ShieldAlertIcon,
+  SparklesIcon,
   UploadCloudIcon,
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
@@ -35,20 +38,34 @@ const featurePillars = [
     icon: ListChecksIcon,
     title: "Turn talk into ownership",
     description:
-      "Action items are pulled out with owners and status-friendly wording, so the next step is clear before the next meeting starts.",
+      "Action items are pulled out with owners, priorities, and due dates so the next step is clear before the next meeting starts.",
     details: [
-      "Owner-aware action items",
-      "Open and completed work grouped clearly",
-      "Export-friendly wording for team updates",
+      "Owner-aware action items with assignees",
+      "Priority levels: low, normal, high, urgent",
+      "Due dates, reminders, and overdue digests",
+      "Track open, in-progress, blocked, and done work",
     ],
   },
   {
+    icon: BotIcon,
+    title: "Ask Meetly about your meetings",
+    description:
+      "imeetly Memory lets you ask Meetly your AI meeting assistant anything about your entire meeting history in plain language.",
+    details: [
+      "Natural language questions across all meetings",
+      "Full AI-generated answers on Pro and Team",
+      "Source citations linking back to the original meeting",
+      "Durable conversation threads saved to your account",
+    ],
+    featured: true,
+  },
+  {
     icon: HistoryIcon,
-    title: "Build meeting memory",
+    title: "Build a searchable archive",
     description:
       "Every meeting becomes part of a searchable archive, making old commitments and decisions easy to recover later.",
     details: [
-      "Search across historical meetings",
+      "Search across all historical meetings",
       "Reusable public meeting pages",
       "Full meeting history kept in one place",
     ],
@@ -64,6 +81,26 @@ const capabilityGroups = [
       "Transcript paste",
       "Zoom and Google Meet recording import",
       "Microsoft Teams calendar sync and manual imports",
+    ],
+  },
+  {
+    icon: BotIcon,
+    label: "imeetly Memory",
+    items: [
+      "Ask Meetly in natural language",
+      "Full AI answers on Pro and Team",
+      "Source citations from meetings",
+      "Durable chat history threads",
+    ],
+  },
+  {
+    icon: ListChecksIcon,
+    label: "Action Items",
+    items: [
+      "AI-extracted with owner detection",
+      "Priority and due date tracking",
+      "Reminders and overdue digests",
+      "Manual creation and assignment",
     ],
   },
   {
@@ -99,7 +136,7 @@ const capabilityGroups = [
 ];
 
 const FEATURES_DESCRIPTION =
-  "imeetly turns meeting recordings and transcripts into decisions, action items, blockers, and follow-ups. Searchable meeting history, Zoom and Google Meet recording import, and more.";
+  "imeetly turns meeting recordings and transcripts into decisions, action items, blockers, and follow-ups. Ask Meetly your AI meeting assistant anything about your meeting history.";
 
 export const Route = createFileRoute("/features")({
   component: FeaturesPage,
@@ -135,7 +172,7 @@ function FeaturesPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Summary, decisions, action items, blockers, and follow-ups extracted from your meetings. Your meetings become a searchable record your team can rely on."
+          description="Summary, decisions, action items, blockers, and follow-ups extracted from every meeting then ask Meetly anything about your history in plain language."
           eyebrow="Features"
           title="What imeetly captures for you"
         />
@@ -159,33 +196,69 @@ function FeatureDeepDive() {
             Built around the moments teams lose track of
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            imeetly is not a transcript viewer. It turns the meeting into the
-            durable parts people actually need afterward.
+            imeetly is not a transcript viewer. It turns every meeting into the
+            durable parts people actually need afterward and lets you ask Meetly
+            about all of it.
           </p>
         </FadeIn>
 
-        <Stagger className="grid gap-5 lg:grid-cols-3" staggerDelay={0.12}>
-          {featurePillars.map((pillar) => (
-            <StaggerItem className="h-full" key={pillar.title}>
-              <div className="flex h-full flex-col rounded-2xl border bg-card p-6">
-                <div className="mb-5 flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                  <pillar.icon className="size-5 text-primary" />
+        <Stagger className="grid gap-5 lg:grid-cols-2" staggerDelay={0.1}>
+          {featurePillars.map((pillar) =>
+            pillar.featured ? (
+              <StaggerItem className="lg:col-span-2" key={pillar.title}>
+                <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-8">
+                  <div className="absolute top-8 right-8 opacity-[0.07]">
+                    <BotIcon className="size-28 text-primary" />
+                  </div>
+                  <div className="relative grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+                    <div>
+                      <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary/10">
+                        <pillar.icon className="size-6 text-primary" />
+                      </div>
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="font-bold text-xl">{pillar.title}</h3>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary text-xs">
+                          <SparklesIcon className="size-3" />
+                          imeetly Memory
+                        </span>
+                      </div>
+                      <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                        {pillar.description}
+                      </p>
+                    </div>
+                    <ul className="flex flex-col justify-center gap-3 border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+                      {pillar.details.map((detail) => (
+                        <li className="flex gap-2.5 text-sm" key={detail}>
+                          <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <h3 className="font-semibold">{pillar.title}</h3>
-                <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                  {pillar.description}
-                </p>
-                <ul className="mt-5 space-y-2 border-t pt-4">
-                  {pillar.details.map((detail) => (
-                    <li className="flex gap-2 text-sm" key={detail}>
-                      <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
-                      <span>{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </StaggerItem>
-          ))}
+              </StaggerItem>
+            ) : (
+              <StaggerItem className="h-full" key={pillar.title}>
+                <div className="flex h-full flex-col rounded-2xl border bg-card p-6">
+                  <div className="mb-5 flex size-10 items-center justify-center rounded-xl bg-primary/10">
+                    <pillar.icon className="size-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold">{pillar.title}</h3>
+                  <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                    {pillar.description}
+                  </p>
+                  <ul className="mt-5 space-y-2 border-t pt-4">
+                    {pillar.details.map((detail) => (
+                      <li className="flex gap-2 text-sm" key={detail}>
+                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </StaggerItem>
+            ),
+          )}
         </Stagger>
       </div>
     </section>
@@ -203,40 +276,53 @@ function CapabilityMatrix() {
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
               The feature set is organized around one job: make meeting context
-              easy to import, understand, find, and share.
+              easy to import, understand, find, and share with Meetly always
+              ready to answer questions about your history.
             </p>
-            <a
-              className={buttonVariants({
-                className: "mt-6 gap-1.5",
-                variant: "secondary",
-              })}
-              href="/how-it-works"
-            >
-              See the workflow
-              <ArrowRightIcon className="size-4" />
-            </a>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                className={buttonVariants({
+                  className: "gap-1.5",
+                  variant: "secondary",
+                })}
+                href="/how-it-works"
+              >
+                See the workflow
+                <ArrowRightIcon className="size-4" />
+              </a>
+              <a
+                className={buttonVariants({
+                  className: "gap-1.5",
+                })}
+                href={`${import.meta.env.VITE_APP_BASE_URL}/login`}
+              >
+                <BotIcon className="size-4" />
+                Ask Meetly
+              </a>
+            </div>
           </FadeIn>
 
-          <Stagger className="grid gap-4 sm:grid-cols-2" staggerDelay={0.08}>
+          <Stagger className="grid gap-4 sm:grid-cols-2" staggerDelay={0.06}>
             {capabilityGroups.map((group) => (
               <StaggerItem className="h-full" key={group.label}>
-                <div className="h-full rounded-2xl border bg-background p-6">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                <div className="h-full rounded-2xl border bg-background p-5">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
                       <group.icon className="size-4 text-primary" />
                     </div>
-                    <h3 className="font-semibold">{group.label}</h3>
+                    <h3 className="font-semibold text-sm">{group.label}</h3>
                   </div>
-                  <div className="pl-4">
+                  <ul className="space-y-1.5 pl-1">
                     {group.items.map((item) => (
                       <li
-                        className="text-muted-foreground text-sm leading-relaxed"
+                        className="flex items-start gap-1.5 text-muted-foreground text-sm leading-relaxed"
                         key={item}
                       >
+                        <FlagIcon className="mt-1 size-2.5 shrink-0 text-primary/60" />
                         {item}
                       </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </StaggerItem>
             ))}

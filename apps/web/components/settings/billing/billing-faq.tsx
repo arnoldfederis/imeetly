@@ -35,6 +35,11 @@ export function BillingFaq() {
             answer="Yes. Cancel through the billing portal and your plan remains active until the end of the current billing period."
             question="Can I cancel anytime?"
           />
+          <Separator />
+          <FaqItem
+            answer="Free users get 5 AI memory searches per day. Pro users get 100 per day and receive full AI-generated answers with source citations. Team users get 500 per day. Limits reset at midnight UTC. All plans are subject to fair-use and abuse prevention."
+            question="How does AI Memory Search work across plans?"
+          />
         </div>
       </CardContent>
     </Card>

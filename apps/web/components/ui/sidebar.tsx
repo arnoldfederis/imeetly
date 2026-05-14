@@ -670,10 +670,7 @@ function SidebarMenuSubButton({
     defaultTagName: "a",
     props: mergeProps<"a">(
       {
-        className: cn(
-          "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-xl px-3 text-sidebar-foreground ring-sidebar-ring outline-hidden group-data-[collapsible=icon]:hidden hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 active:bg-primary active:text-primary-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[size=md]:text-sm data-[size=sm]:text-xs data-active:bg-primary data-active:text-primary-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-primary-foreground",
-          className,
-        ),
+        className: cn(sidebarMenuButtonVariants({ variant: "default", size: "default" }), className),
       },
       props,
     ),
