@@ -1,14 +1,9 @@
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client, } from "@aws-sdk/client-s3";
 import { render } from "@react-email/components";
-import {
-  actionItems,
-  meetingFiles,
-  meetingSummaries,
-  meetings,
-} from "@repo/db/schemas/app";
+import { actionItems, externalMeetings, meetingFiles, meetings, meetingSummaries, } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
 import { ApplicationFailure } from "@temporalio/activity";
-import { and, desc, eq, gte, inArray, isNull, lt, lte, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, lte, or, sql, } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
 import {
@@ -21,11 +16,7 @@ import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { indexMeetingMemory } from "./services/ai/memory-indexer";
 import { transcribeMeeting } from "./services/ai/transcription";
-import {
-  type ExtractionResult,
-  ProviderError,
-  type TranscriptionResult,
-} from "./services/ai/types";
+import { type ExtractionResult, ProviderError, type TranscriptionResult, } from "./services/ai/types";
 
 function normalizeEmail(email?: string | null) {
   return email?.trim().toLowerCase() || null;
@@ -156,6 +147,76 @@ export async function loadMeetingInput(
     bucketName: file?.bucketName ?? null,
     language: meeting.language ?? null,
   };
+}
+
+export async function downloadIntegrationRecordingIfNeeded(
+  meetingId: string,
+): Promise<void> {
+  const [extMeeting] = await db
+    .select()
+    .from(externalMeetings)
+    .where(
+      sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+    )
+    .limit(1);
+
+  if (!extMeeting) return;
+
+  const meta = extMeeting.metadata as Record<string, unknown>;
+  const pending = meta.pendingDownload as
+    | {
+        downloadUrl: string;
+        downloadHeaders: Record<string, string>;
+        mimeType: string;
+        sizeBytes: number | null;
+        durationSeconds: number | null;
+      }
+    | undefined;
+
+  if (!pending) return;
+
+  const { downloadUrl, downloadHeaders, mimeType, sizeBytes, durationSeconds } =
+    pending;
+
+  const downloadRes = await fetch(downloadUrl, { headers: downloadHeaders });
+  if (!downloadRes.ok) {
+    throw new Error(
+      `Failed to download recording: ${downloadRes.status} ${downloadRes.statusText}`,
+    );
+  }
+
+  const fileBuffer = Buffer.from(await downloadRes.arrayBuffer());
+  const storageKey = `${meetingId}/recording${mimeType === "audio/mp4" ? ".m4a" : ".mp4"}`;
+  const [, fileName = storageKey] = storageKey.split("/");
+
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: env.S3_BUCKET,
+      Key: storageKey,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    }),
+  );
+
+  await db.insert(meetingFiles).values({
+    meetingId,
+    bucketName: env.S3_BUCKET,
+    storageKey,
+    fileName,
+    mimeType,
+    fileSize: sizeBytes ?? fileBuffer.byteLength,
+    durationSeconds: durationSeconds ?? null,
+    uploadStatus: "completed",
+    processingStatus: "queued",
+  });
+
+  const { pendingDownload: _pd, ...restMeta } = meta;
+  await db
+    .update(externalMeetings)
+    .set({ metadata: restMeta })
+    .where(
+      sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+    );
 }
 
 // --- AI activities (thin wrappers around provider layer) ---

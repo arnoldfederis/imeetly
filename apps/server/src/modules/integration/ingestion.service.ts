@@ -1,8 +1,5 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@repo/db";
-import { externalMeetings, meetingFiles, meetings } from "@repo/db/schemas/app";
-import { env } from "@repo/env";
-import { s3 } from "@repo/server/lib/s3";
+import { externalMeetings, meetings } from "@repo/db/schemas/app";
 import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { eq } from "drizzle-orm";
 import { OAuthService } from "./oauth.service";
@@ -58,22 +55,7 @@ export class MeetingRecordingIngestionService {
       throw new Error("No recording available for this meeting");
     }
 
-    await db
-      .update(externalMeetings)
-      .set({ status: "processing", recordingUrl: recording.downloadUrl })
-      .where(eq(externalMeetings.id, externalMeetingDbId));
-
-    // Download recording server-to-server
-    const downloadRes = await fetch(recording.downloadUrl, {
-      headers: recording.downloadHeaders,
-    });
-    if (!downloadRes.ok) {
-      throw new Error(`Failed to download recording: ${downloadRes.status}`);
-    }
-    // TODO: Use streaming multipart upload for recordings larger than ~500MB
-    const fileBuffer = Buffer.from(await downloadRes.arrayBuffer());
-
-    // Create imeetly meeting record
+    // Create meeting record immediately — no download here
     const [meeting] = await db
       .insert(meetings)
       .values({
@@ -86,52 +68,30 @@ export class MeetingRecordingIngestionService {
       })
       .returning({ id: meetings.id });
 
-    if (!meeting) {
-      throw new Error("Failed to create meeting record");
-    }
-
+    if (!meeting) throw new Error("Failed to create meeting record");
     const meetingId = meeting.id;
 
-    // Upload to R2
-    const storageKey = `${meetingId}/recording${recording.mimeType === "audio/mp4" ? ".m4a" : ".mp4"}`;
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: env.S3_BUCKET,
-        Key: storageKey,
-        Body: fileBuffer,
-        ContentType: recording.mimeType,
-      }),
-    );
-
-    const [, fileName = storageKey] = storageKey.split("/");
-
-    // Track file
-    await db.insert(meetingFiles).values({
-      meetingId,
-      bucketName: env.S3_BUCKET,
-      storageKey,
-      fileName,
-      mimeType: recording.mimeType,
-      fileSize: recording.sizeBytes ?? fileBuffer.byteLength,
-      durationSeconds: recording.durationSeconds,
-      uploadStatus: "completed",
-      processingStatus: "queued",
-    });
-
-    // Reuse existing Temporal pipeline
-    await startMeetingProcessing(meetingId);
-
-    // Link back to the external meeting
+    // Store download info so the Temporal activity can fetch and upload
     await db
       .update(externalMeetings)
       .set({
         status: "processing",
+        recordingUrl: recording.downloadUrl,
         metadata: {
           ...externalMeetingMetadata,
           imeetlyMeetingId: meetingId,
+          pendingDownload: {
+            downloadUrl: recording.downloadUrl,
+            downloadHeaders: recording.downloadHeaders ?? {},
+            mimeType: recording.mimeType,
+            sizeBytes: recording.sizeBytes ?? null,
+            durationSeconds: recording.durationSeconds ?? null,
+          },
         },
       })
       .where(eq(externalMeetings.id, externalMeetingDbId));
+
+    await startMeetingProcessing(meetingId);
 
     return { meetingId };
   }

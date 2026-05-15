@@ -2,6 +2,17 @@ import { proxyActivities } from "@temporalio/workflow";
 import type * as activities from "./activities";
 
 const {
+  downloadIntegrationRecordingIfNeeded,
+} = proxyActivities<typeof activities>({
+  startToCloseTimeout: "30 minutes",
+  retry: {
+    maximumAttempts: 2,
+    initialInterval: "5 seconds",
+    backoffCoefficient: 2,
+  },
+});
+
+const {
   loadMeetingInput,
   updateMeetingStatus,
   extractAudioFromVideo,
@@ -33,6 +44,9 @@ const {
 });
 
 export async function processMeeting(meetingId: string): Promise<void> {
+  // Download integration recording to S3 before processing (no-op for manual uploads)
+  await downloadIntegrationRecordingIfNeeded(meetingId);
+
   await updateMeetingStatus(meetingId, "processing", "queued", null);
   const input = await loadMeetingInput(meetingId);
 
