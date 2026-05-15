@@ -81,8 +81,9 @@ export class MeetingRecordingIngestionService {
           ...externalMeetingMetadata,
           imeetlyMeetingId: meetingId,
           pendingDownload: {
+            integrationId,
+            provider,
             downloadUrl: recording.downloadUrl,
-            downloadHeaders: recording.downloadHeaders ?? {},
             mimeType: recording.mimeType,
             sizeBytes: recording.sizeBytes ?? null,
             durationSeconds: recording.durationSeconds ?? null,

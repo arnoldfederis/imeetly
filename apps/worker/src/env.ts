@@ -37,6 +37,15 @@ export const env = createEnv({
     SMTP_USER: optional(string()),
     SMTP_PASS: optional(string()),
 
+    // Integration OAuth credentials (for token refresh in download activity)
+    INTEGRATION_ENCRYPTION_KEY: optional(string()),
+    GOOGLE_CLIENT_ID: optional(string()),
+    GOOGLE_CLIENT_SECRET: optional(string()),
+    ZOOM_CLIENT_ID: optional(string()),
+    ZOOM_CLIENT_SECRET: optional(string()),
+    MICROSOFT_CLIENT_ID: optional(string()),
+    MICROSOFT_CLIENT_SECRET: optional(string()),
+
     // AI provider keys - all optional so missing keys don't crash startup
     OPENAI_API_KEY: optional(string()),
     ANTHROPIC_API_KEY: optional(string()),

@@ -27,6 +27,7 @@ import {
 } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
+import { getWorkerAccessToken } from "./services/oauth";
 import {
   ActionItemReminderEmail,
   OverdueActionItemsDigestEmail,
@@ -190,8 +191,8 @@ export async function downloadIntegrationRecordingIfNeeded(
   const meta = extMeeting.metadata as Record<string, unknown>;
   const pending = meta.pendingDownload as
     | {
+        integrationId: string;
         downloadUrl: string;
-        downloadHeaders: Record<string, string>;
         mimeType: string;
         sizeBytes: number | null;
         durationSeconds: number | null;
@@ -200,26 +201,60 @@ export async function downloadIntegrationRecordingIfNeeded(
 
   if (!pending) return;
 
-  const { downloadUrl, downloadHeaders, mimeType, sizeBytes, durationSeconds } =
+  const { integrationId, downloadUrl, mimeType, sizeBytes, durationSeconds } =
     pending;
 
-  const downloadRes = await fetch(downloadUrl, { headers: downloadHeaders });
+  // Always get a fresh token — refreshes automatically if within 5 min of expiry
+  const accessToken = await getWorkerAccessToken(integrationId);
+
+  // Abort the download if it stalls (25 min cap, safely under the 30 min activity timeout)
+  const controller = new AbortController();
+  const abortTimer = setTimeout(() => controller.abort(), 25 * 60 * 1000);
+
+  let downloadRes: Response;
+  try {
+    downloadRes = await fetch(downloadUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(abortTimer);
+  }
+
+  if (downloadRes.status === 401 || downloadRes.status === 403) {
+    throw ApplicationFailure.nonRetryable(
+      `Recording download rejected (${downloadRes.status}). Re-import the meeting.`,
+      "DOWNLOAD_AUTH_FAILED",
+    );
+  }
   if (!downloadRes.ok) {
     throw new Error(
       `Failed to download recording: ${downloadRes.status} ${downloadRes.statusText}`,
     );
   }
 
-  const fileBuffer = Buffer.from(await downloadRes.arrayBuffer());
   const storageKey = `${meetingId}/recording${mimeType === "audio/mp4" ? ".m4a" : ".mp4"}`;
   const [, fileName = storageKey] = storageKey.split("/");
+
+  // Stream body directly to S3 when size is known; buffer otherwise
+  let body: Buffer | ReadableStream;
+  let fileSize: number;
+  if (sizeBytes != null && downloadRes.body) {
+    body = downloadRes.body;
+    fileSize = sizeBytes;
+  } else {
+    const buf = Buffer.from(await downloadRes.arrayBuffer());
+    body = buf;
+    fileSize = buf.byteLength;
+  }
 
   await s3.send(
     new PutObjectCommand({
       Bucket: env.S3_BUCKET,
       Key: storageKey,
-      Body: fileBuffer,
+      Body: body,
       ContentType: mimeType,
+      ...(sizeBytes != null ? { ContentLength: sizeBytes } : {}),
     }),
   );
 
@@ -229,7 +264,7 @@ export async function downloadIntegrationRecordingIfNeeded(
     storageKey,
     fileName,
     mimeType,
-    fileSize: sizeBytes ?? fileBuffer.byteLength,
+    fileSize,
     durationSeconds: durationSeconds ?? null,
     uploadStatus: "completed",
     processingStatus: "queued",
