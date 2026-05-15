@@ -1,9 +1,30 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client, } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { render } from "@react-email/components";
-import { actionItems, externalMeetings, meetingFiles, meetings, meetingSummaries, } from "@repo/db/schemas/app";
+import {
+  actionItems,
+  externalMeetings,
+  meetingFiles,
+  meetingSummaries,
+  meetings,
+} from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
 import { ApplicationFailure } from "@temporalio/activity";
-import { and, desc, eq, gte, inArray, isNull, lt, lte, or, sql, } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
 import {
@@ -16,7 +37,11 @@ import { env } from "./env";
 import { extractMeetingData } from "./services/ai/extraction";
 import { indexMeetingMemory } from "./services/ai/memory-indexer";
 import { transcribeMeeting } from "./services/ai/transcription";
-import { type ExtractionResult, ProviderError, type TranscriptionResult, } from "./services/ai/types";
+import {
+  type ExtractionResult,
+  ProviderError,
+  type TranscriptionResult,
+} from "./services/ai/types";
 
 function normalizeEmail(email?: string | null) {
   return email?.trim().toLowerCase() || null;

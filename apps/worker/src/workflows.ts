@@ -1,9 +1,9 @@
 import { proxyActivities } from "@temporalio/workflow";
 import type * as activities from "./activities";
 
-const {
-  downloadIntegrationRecordingIfNeeded,
-} = proxyActivities<typeof activities>({
+const { downloadIntegrationRecordingIfNeeded } = proxyActivities<
+  typeof activities
+>({
   startToCloseTimeout: "30 minutes",
   retry: {
     maximumAttempts: 2,
