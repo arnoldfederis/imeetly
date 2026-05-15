@@ -1,4 +1,10 @@
-import { CheckIcon, ChevronDownIcon, ClockIcon, FlagIcon, ListChecksIcon, } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  FlagIcon,
+  ListChecksIcon,
+} from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
 import { Badge } from "@/components/ui/badge";
 
@@ -140,7 +146,8 @@ function MockMeetingGroup({ group }: { group: (typeof MOCK_GROUPS)[0] }) {
         ))}
         <a
           className="mt-1 inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
-          href="#"
+          href="/"
+          onClick={(e) => e.preventDefault()}
         >
           View meeting →
         </a>
@@ -172,7 +179,7 @@ export function ActionItemsSection() {
             </h2>
             <p className="text-lg text-muted-foreground">
               imeetly pulls action items out of every meeting and lets you
-              assign owners, set due dates, and track priority — no manual entry
+              assign owners, set due dates, and track priority - no manual entry
               needed.
             </p>
             <ul className="flex flex-col gap-3">

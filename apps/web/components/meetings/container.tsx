@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { LoaderIcon, PlusIcon, ProjectorIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
@@ -39,12 +40,24 @@ const STATUS_OPTIONS = [
 const PAGE_SIZE = 20;
 
 export function MeetingsContainer() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shouldRestoreFocusRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const initialStatus = searchParams.get("status") ?? "all";
+  const [statusFilter, setStatusFilter] = useState(
+    STATUS_OPTIONS.some((o) => o.value === initialStatus)
+      ? initialStatus
+      : "all",
+  );
+
+  function handleStatusChange(value: string | null) {
+    setStatusFilter(value ?? "all");
+    router.replace("/meetings", { scroll: false });
+  }
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -147,10 +160,7 @@ export function MeetingsContainer() {
             value={search}
           />
         </InputGroup>
-        <Select
-          onValueChange={(v) => setStatusFilter(v ?? "all")}
-          value={statusFilter}
-        >
+        <Select onValueChange={handleStatusChange} value={statusFilter}>
           <SelectTrigger className="w-full sm:w-50">
             <SelectValue placeholder="All Statuses">
               {STATUS_OPTIONS.find((s) => s.value === statusFilter)?.label}

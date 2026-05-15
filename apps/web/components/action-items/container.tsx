@@ -15,6 +15,7 @@ import {
   SearchIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionItemDialog } from "@/components/action-items/action-item-dialog";
@@ -65,19 +66,53 @@ type StatusFilter =
 type DueFilter = "all" | "overdue" | "today" | "week" | "none";
 type PriorityFilter = "all" | "low" | "normal" | "high" | "urgent";
 
+const STATUS_VALUES: StatusFilter[] = [
+  "all",
+  "open",
+  "in_progress",
+  "blocked",
+  "done",
+  "canceled",
+];
+const DUE_VALUES: DueFilter[] = ["all", "overdue", "today", "week", "none"];
+const PRIORITY_VALUES: PriorityFilter[] = [
+  "all",
+  "low",
+  "normal",
+  "high",
+  "urgent",
+];
+
 export function ActionItemsContainer() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const shouldRestoreFocusRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filter, setFilter] = useState<StatusFilter>("all");
-  const [dueFilter, setDueFilter] = useState<DueFilter>("all");
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
+  const rawStatus = searchParams.get("status") as StatusFilter | null;
+  const rawDue = searchParams.get("due") as DueFilter | null;
+  const rawPriority = searchParams.get("priority") as PriorityFilter | null;
+  const [filter, setFilter] = useState<StatusFilter>(
+    rawStatus && STATUS_VALUES.includes(rawStatus) ? rawStatus : "all",
+  );
+  const [dueFilter, setDueFilter] = useState<DueFilter>(
+    rawDue && DUE_VALUES.includes(rawDue) ? rawDue : "all",
+  );
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>(
+    rawPriority && PRIORITY_VALUES.includes(rawPriority) ? rawPriority : "all",
+  );
   const activeFilterCount =
     Number(filter !== "all") +
     Number(dueFilter !== "all") +
     Number(priorityFilter !== "all");
+
+  function clearUrlParams() {
+    if (searchParams.toString()) {
+      router.replace("/action-items", { scroll: false });
+    }
+  }
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -211,7 +246,10 @@ export function ActionItemsContainer() {
               <Field>
                 <FieldLabel>Status</FieldLabel>
                 <Select
-                  onValueChange={(v) => setFilter((v ?? "all") as StatusFilter)}
+                  onValueChange={(v) => {
+                    setFilter((v ?? "all") as StatusFilter);
+                    clearUrlParams();
+                  }}
                   value={filter}
                 >
                   <SelectTrigger className="w-full">
@@ -232,7 +270,10 @@ export function ActionItemsContainer() {
               <Field>
                 <FieldLabel>Due</FieldLabel>
                 <Select
-                  onValueChange={(v) => setDueFilter((v ?? "all") as DueFilter)}
+                  onValueChange={(v) => {
+                    setDueFilter((v ?? "all") as DueFilter);
+                    clearUrlParams();
+                  }}
                   value={dueFilter}
                 >
                   <SelectTrigger className="w-full">
@@ -252,9 +293,10 @@ export function ActionItemsContainer() {
               <Field>
                 <FieldLabel>Priority</FieldLabel>
                 <Select
-                  onValueChange={(v) =>
-                    setPriorityFilter((v ?? "all") as PriorityFilter)
-                  }
+                  onValueChange={(v) => {
+                    setPriorityFilter((v ?? "all") as PriorityFilter);
+                    clearUrlParams();
+                  }}
                   value={priorityFilter}
                 >
                   <SelectTrigger className="w-full">
@@ -279,6 +321,7 @@ export function ActionItemsContainer() {
                   setFilter("all");
                   setDueFilter("all");
                   setPriorityFilter("all");
+                  clearUrlParams();
                 }}
                 type="button"
                 variant="secondary"
@@ -489,6 +532,9 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     });
     await queryClient.invalidateQueries({
       queryKey: client.meeting.list.key(),
+    });
+    void queryClient.invalidateQueries({
+      queryKey: client.meeting.dashboard.key(),
     });
   };
 

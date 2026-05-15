@@ -6,8 +6,10 @@ import {
   CalendarIcon,
   CornerDownLeftIcon,
   MoreHorizontalIcon,
+  PanelLeftIcon,
 } from "lucide-react";
 import { FadeIn } from "@/components/common/motion";
+import { Button } from "@/components/ui/button";
 
 // ── Demo data ──
 
@@ -203,9 +205,15 @@ export function MemoryChatSection() {
 
                 {/* Main chat area — exact replica of ChatAreaV2 */}
                 <div className="flex flex-1 flex-col overflow-hidden">
+                  <div className="z-10 flex items-center gap-2 border-b bg-background px-4 py-3 lg:hidden">
+                    <Button size="sm" type="button" variant="secondary">
+                      <PanelLeftIcon className="size-4" />
+                      Conversations
+                    </Button>
+                  </div>
                   {/* Messages area */}
-                  <div className="flex-1 overflow-y-auto">
-                    <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-6 p-6">
+                  <div className="flex-1 overflow-y-auto px-4">
+                    <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-6 py-6">
                       {/* User message — exact replica: ml-auto rounded-lg bg-secondary px-4 py-3 */}
                       <motion.div
                         animate={{ opacity: 1, y: 0 }}
@@ -268,8 +276,8 @@ export function MemoryChatSection() {
 
                   {/* Input area — exact replica of PromptInput + InputGroup */}
                   <div className="p-4">
-                    <div className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-input/50">
-                      <div className="flex min-h-[52px] items-center px-4 py-3 pr-12 text-muted-foreground text-sm">
+                    <div className="relative mx-auto w-full max-w-2xl overflow-hidden rounded-2xl bg-input/50">
+                      <div className="flex min-h-[64px] select-none items-start px-4 py-3 pr-12 text-muted-foreground text-sm">
                         Ask Meetly anything about your meetings…
                       </div>
                       <div className="absolute right-1.5 bottom-1.5 flex size-8 items-center justify-center rounded-full bg-primary">

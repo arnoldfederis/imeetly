@@ -83,8 +83,8 @@ export const memoryController = base.router({
   deleteThread: privateProcedure
     .input(memoryModel.deleteThread)
     .handler(async ({ input, context }) => {
-      await deleteThread(context.user.id, input.threadId);
-      return { success: true };
+      const deleted = await deleteThread(context.user.id, input.threadId);
+      return { success: true, deleted };
     }),
 
   // ── Memory ask (with optional thread persistence) ──

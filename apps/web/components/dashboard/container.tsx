@@ -13,6 +13,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   PromptInput,
@@ -24,10 +25,12 @@ import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { FormattedDate } from "@/components/common/formatted-date";
 import { DashboardSkeleton } from "@/components/dashboard/loader";
 import { MeetingProviderIcon } from "@/components/meetings/provider-icon";
+import { memoryChatRuntime } from "@/components/memory/chat-runtime";
+import { getMemoryHref } from "@/components/memory/paths";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
 import { client } from "@/lib/orpc";
+import { cn } from "@/lib/utils";
 
 const EXAMPLE_PROMPTS = [
   "What decisions came out of my meetings?",
@@ -38,6 +41,8 @@ const EXAMPLE_PROMPTS = [
 
 export function DashboardContainer() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const router = useRouter();
 
   const { data, isLoading: isDashboardLoading } = useQuery(
     client.meeting.dashboard.queryOptions({
@@ -85,6 +90,21 @@ export function DashboardContainer() {
   const isUnlimited = limit === -1;
 
   const usagePercent = isUnlimited ? 0 : Math.min((used / limit) * 100, 100);
+
+  async function handlePromptSubmit(question: string) {
+    const q = question.trim();
+    if (!q || isNavigating) return;
+    setIsNavigating(true);
+    try {
+      const result = await memoryChatRuntime.submit({
+        question: q,
+        threadId: null,
+      });
+      router.push(getMemoryHref(result.threadId));
+    } catch {
+      setIsNavigating(false);
+    }
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -203,10 +223,15 @@ export function DashboardContainer() {
                 </Link>
               )}
             </div>
-            <div className="divide-y px-4 py-3">
-              {recent.map((m) => (
+            <div className={cn("px-4 py-3", recent.length > 1 && "divide-y")}>
+              {recent.slice(0, 3).map((m) => (
                 <MeetingRow key={m.id} meeting={m} />
               ))}
+              {Array.from({ length: Math.max(0, 3 - recent.length) }).map(
+                (_, i) => (
+                  <MeetingRowPlaceholder key={`ph-${i}`} />
+                ),
+              )}
             </div>
           </div>
 
@@ -225,11 +250,11 @@ export function DashboardContainer() {
               </div>
             </div>
             <Suggestions className="w-full items-center">
-              {EXAMPLE_PROMPTS.map((prompt) => (
+              {EXAMPLE_PROMPTS.map((p) => (
                 <Suggestion
-                  key={prompt}
-                  onClick={(suggestion) => {}}
-                  suggestion={prompt}
+                  key={p}
+                  onClick={(suggestion) => void handlePromptSubmit(suggestion)}
+                  suggestion={p}
                   variant="secondary"
                 />
               ))}
@@ -238,15 +263,15 @@ export function DashboardContainer() {
             <PromptInput
               autoFocus
               className="mx-auto w-full max-w-3xl"
-              onSubmit={() => {}}
+              onSubmit={(msg) => void handlePromptSubmit(msg.text)}
             >
               <PromptInputTextarea
                 className="min-h-9 pr-12"
-                placeholder="Enter your prompt here..."
+                placeholder="Ask Meetly anything about your meetings..."
               />
               <PromptInputSubmit
                 className="absolute right-1.5 bottom-1"
-                status={"ready"}
+                status={isNavigating ? "submitted" : "ready"}
               />
             </PromptInput>
           </div>
@@ -265,17 +290,20 @@ export function DashboardContainer() {
               )}
             </div>
             {!actionItemsData || actionItemsData.items.length === 0 ? (
-              <div className="px-4 py-6">
-                <Empty className="border py-6">
-                  <EmptyHeader>
-                    <EmptyDescription>No open action items</EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+              <div className="divide-y px-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <ActionItemPlaceholder key={`ai-empty-${i}`} />
+                ))}
               </div>
             ) : (
               <>
-                <div className="divide-y px-4">
-                  {actionItemsData.items.map((item) => (
+                <div
+                  className={cn(
+                    "px-4",
+                    actionItemsData.items.length > 1 && "divide-y",
+                  )}
+                >
+                  {actionItemsData.items.slice(0, 3).map((item) => (
                     <div
                       className="flex items-start gap-2.5 py-2.5"
                       key={item.id}
@@ -294,6 +322,11 @@ export function DashboardContainer() {
                       </div>
                     </div>
                   ))}
+                  {Array.from({
+                    length: Math.max(0, 3 - actionItemsData.items.length),
+                  }).map((_, i) => (
+                    <ActionItemPlaceholder key={`ai-ph-${i}`} />
+                  ))}
                 </div>
                 <div className="flex items-center justify-center border-t px-4 py-2.5">
                   <Link
@@ -310,7 +343,10 @@ export function DashboardContainer() {
 
           {/* Quick stats */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+            <Link
+              className="flex flex-col gap-1.75 rounded-xl border p-4 transition-colors hover:bg-muted/40"
+              href="/meetings?status=completed"
+            >
               <p className="line-clamp-1 font-semibold text-sm">
                 Completed Meetings
               </p>
@@ -318,30 +354,39 @@ export function DashboardContainer() {
                 {stats?.completedMeetings ?? 0}
                 <CheckSquareIcon className="size-4 text-emerald-500" />
               </div>
-            </div>
-            <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+            </Link>
+            <Link
+              className="flex flex-col gap-1.75 rounded-xl border p-4 transition-colors hover:bg-muted/40"
+              href="/action-items?status=open"
+            >
               <p className="line-clamp-1 font-semibold text-sm">Open tasks</p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                 {stats?.openActionItems ?? 0}
                 <CircleDotIcon className="size-4 text-orange-500" />
               </div>
-            </div>
-            <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+            </Link>
+            <Link
+              className="flex flex-col gap-1.75 rounded-xl border p-4 transition-colors hover:bg-muted/40"
+              href="/action-items?priority=urgent"
+            >
               <p className="line-clamp-1 font-semibold text-sm">
                 Urgent Action Items
               </p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
-                {stats?.completedMeetings ?? 0}
+                {stats?.urgentActionItems ?? 0}
                 <FlagIcon className="size-4 text-destructive" />
               </div>
-            </div>
-            <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+            </Link>
+            <Link
+              className="flex flex-col gap-1.75 rounded-xl border p-4 transition-colors hover:bg-muted/40"
+              href="/action-items?due=today"
+            >
               <p className="line-clamp-1 font-semibold text-sm">Due Today</p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
-                {stats?.openActionItems ?? 0}
+                {stats?.dueTodayActionItems ?? 0}
                 <ClockIcon className="size-4 text-yellow-500" />
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -353,6 +398,16 @@ export function DashboardContainer() {
       />
     </div>
   );
+}
+
+// ── Placeholder rows ──
+
+function MeetingRowPlaceholder() {
+  return <div className="h-15.25 w-full" />;
+}
+
+function ActionItemPlaceholder() {
+  return <div className="h-[59.5px] w-full" />;
 }
 
 // ── Meeting Row ──

@@ -85,6 +85,7 @@ export function ThreadSidebar({ className, onNavigate }: Props) {
             <Button
               onClick={() => {
                 router.push("/memory");
+                onNavigate?.();
               }}
               size="sm"
               type="button"

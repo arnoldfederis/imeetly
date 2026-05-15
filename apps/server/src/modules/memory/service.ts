@@ -615,11 +615,14 @@ export async function unarchiveThread(userId: string, threadId: string) {
 }
 
 export async function deleteThread(userId: string, threadId: string) {
-  await db
+  const [deleted] = await db
     .delete(aiMemoryThreads)
     .where(
       and(eq(aiMemoryThreads.id, threadId), eq(aiMemoryThreads.userId, userId)),
-    );
+    )
+    .returning();
+
+  return deleted ?? null;
 }
 
 export async function saveMessages(

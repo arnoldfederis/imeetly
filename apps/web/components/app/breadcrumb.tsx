@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { client } from "@/lib/orpc";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,9 +22,65 @@ function isUUID(segment: string) {
 
 function formatSegment(segment: string): string {
   if (segment === "memory") return "imeetly Memory";
-  if (isUUID(segment)) return "Meeting details";
-  if (segment === "action-items") return "action items";
+  if (segment === "action-items") return "Action Items";
+  if (segment === "settings") return "Settings";
+  if (segment === "meetings") return "Meetings";
   return segment;
+}
+
+function useDynamicLabel(segments: string[], index: number): string | null {
+  const segment = segments[index];
+  const parent = segments[index - 1];
+  const isMeetingId = isUUID(segment) && parent === "meetings";
+  const isThreadId = isUUID(segment) && parent === "memory";
+  const isFeedbacks = isUUID(segment) && parent === "feedbacks";
+
+  const { data: meeting } = useQuery({
+    ...client.meeting.getById.queryOptions({ input: { id: segment } }),
+    enabled: isMeetingId,
+    staleTime: 60_000,
+  });
+
+  const { data: thread } = useQuery({
+    ...client.memory.getThread.queryOptions({ input: { threadId: segment } }),
+    enabled: isThreadId,
+    staleTime: 60_000,
+  });
+
+  if (isMeetingId) return meeting?.title ?? null;
+  if (isThreadId) return thread?.thread.title ?? null;
+  if (isFeedbacks) return "Feedbacks Details";
+  return null;
+}
+
+function BreadcrumbSegment({
+  segments,
+  index,
+  href,
+  isLast,
+}: {
+  segments: string[];
+  index: number;
+  href: string;
+  isLast: boolean;
+}) {
+  const segment = segments[index];
+  const dynamic = useDynamicLabel(segments, index);
+  const label = dynamic ?? (isUUID(segment) ? "" : formatSegment(segment));
+
+  if (isLast) {
+    return (
+      <BreadcrumbPage className="line-clamp-1 capitalize">
+        {label}
+      </BreadcrumbPage>
+    );
+  }
+
+  return (
+    <BreadcrumbLink className="capitalize" href={href}>
+      {label}
+    </BreadcrumbLink>
+  );
 }
 
 export function AppBreadcrumb() {
@@ -55,39 +113,26 @@ export function AppBreadcrumb() {
     );
   }
 
-  const first = segments[0];
-  const last = segments[segments.length - 1];
-  const middle = segments.slice(1, -1);
-
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink className="capitalize" href={`/${first}`}>
-            {formatSegment(first)}
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-
-        {middle.map((segment, i) => {
-          const href = `/${segments.slice(0, i + 2).join("/")}`;
+        {segments.map((segment, i) => {
+          const href = `/${segments.slice(0, i + 1).join("/")}`;
+          const isLast = i === segments.length - 1;
           return (
-            <Fragment key={segment}>
-              <BreadcrumbSeparator />
+            <Fragment key={`${segment}-${i}`}>
+              {i > 0 && <BreadcrumbSeparator />}
               <BreadcrumbItem>
-                <BreadcrumbLink className="capitalize" href={href}>
-                  {formatSegment(segment)}
-                </BreadcrumbLink>
+                <BreadcrumbSegment
+                  href={href}
+                  index={i}
+                  isLast={isLast}
+                  segments={segments}
+                />
               </BreadcrumbItem>
             </Fragment>
           );
         })}
-
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage className="capitalize">
-            {formatSegment(last)}
-          </BreadcrumbPage>
-        </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );

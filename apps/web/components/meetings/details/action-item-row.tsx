@@ -74,6 +74,9 @@ export function ActionItemRow({
     client.actionItem.update.mutationOptions({
       onSuccess: (_, vars) => {
         updateStatusInCache(vars.id, vars.status ?? item.status);
+        void queryClient.invalidateQueries({
+          queryKey: client.meeting.dashboard.key(),
+        });
       },
       onError: () => {
         setOptimisticDone(item.status === "done");

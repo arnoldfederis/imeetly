@@ -408,6 +408,14 @@ export const usePromptInputReferencedSources = () => {
   return ctx;
 };
 
+type DropdownMenuItemSelectEvent = Parameters<
+  NonNullable<ComponentProps<typeof DropdownMenuItem>["onSelect"]>
+>[0];
+
+type InputGroupButtonClickEvent = Parameters<
+  NonNullable<ComponentProps<typeof InputGroupButton>["onClick"]>
+>[0];
+
 export type PromptInputActionAddAttachmentsProps = ComponentProps<
   typeof DropdownMenuItem
 > & {
@@ -421,8 +429,9 @@ export const PromptInputActionAddAttachments = ({
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
-    (e: Event) => {
-      e.preventDefault();
+    (event: DropdownMenuItemSelectEvent) => {
+      event.preventDefault();
+      event.preventBaseUIHandler();
       attachments.openFileDialog();
     },
     [attachments]
@@ -449,26 +458,28 @@ export const PromptInputActionAddScreenshot = ({
   const attachments = usePromptInputAttachments();
 
   const handleSelect = useCallback(
-    async (event: Event) => {
+    (event: DropdownMenuItemSelectEvent) => {
       onSelect?.(event);
       if (event.defaultPrevented) {
         return;
       }
 
-      try {
-        const screenshot = await captureScreenshot();
-        if (screenshot) {
-          attachments.add([screenshot]);
+      void (async () => {
+        try {
+          const screenshot = await captureScreenshot();
+          if (screenshot) {
+            attachments.add([screenshot]);
+          }
+        } catch (error) {
+          if (
+            error instanceof DOMException &&
+            (error.name === "NotAllowedError" || error.name === "AbortError")
+          ) {
+            return;
+          }
+          throw error;
         }
-      } catch (error) {
-        if (
-          error instanceof DOMException &&
-          (error.name === "NotAllowedError" || error.name === "AbortError")
-        ) {
-          return;
-        }
-        throw error;
-      }
+      })();
     },
     [onSelect, attachments]
   );
@@ -1232,13 +1243,13 @@ export const PromptInputSubmit = ({
   }
 
   const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+    (event: InputGroupButtonClickEvent) => {
       if (isGenerating && onStop) {
-        e.preventDefault();
+        event.preventDefault();
         onStop();
         return;
       }
-      onClick?.(e);
+      onClick?.(event);
     },
     [isGenerating, onStop, onClick]
   );
@@ -1313,12 +1324,8 @@ export const PromptInputSelectValue = ({
 
 export type PromptInputHoverCardProps = ComponentProps<typeof HoverCard>;
 
-export const PromptInputHoverCard = ({
-  openDelay = 0,
-  closeDelay = 0,
-  ...props
-}: PromptInputHoverCardProps) => (
-  <HoverCard closeDelay={closeDelay} openDelay={openDelay} {...props} />
+export const PromptInputHoverCard = (props: PromptInputHoverCardProps) => (
+  <HoverCard {...props} />
 );
 
 export type PromptInputHoverCardTriggerProps = ComponentProps<

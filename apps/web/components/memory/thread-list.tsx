@@ -49,6 +49,7 @@ export function ThreadList({
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const isArchived = tab === "archive";
+  const threadId = path.split("/").pop();
 
   const renameThread = useMutation(
     client.memory.updateThread.mutationOptions({
@@ -83,7 +84,7 @@ export function ThreadList({
           }),
         ]);
 
-        if (updated.id === path.split("/").pop()) {
+        if (updated.id === threadId) {
           router.push("/memory");
         }
       },
@@ -102,7 +103,7 @@ export function ThreadList({
           }),
         ]);
 
-        if (updated.id === path.split("/").pop()) {
+        if (updated.id === threadId) {
           router.push("/memory");
         }
       },
@@ -111,15 +112,19 @@ export function ThreadList({
 
   const deleteThread = useMutation(
     client.memory.deleteThread.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async ({ deleted }) => {
         await Promise.all([
-          await queryClient.invalidateQueries({
+          queryClient.invalidateQueries({
             queryKey: getMemoryThreadListInfiniteOptions().queryKey,
           }),
           queryClient.invalidateQueries({
             queryKey: getArchivedMemoryThreadListInfiniteOptions().queryKey,
           }),
         ]);
+
+        if (deleted.id === threadId) {
+          router.push("/memory");
+        }
       },
     }),
   );
@@ -128,7 +133,7 @@ export function ThreadList({
     <>
       <div className="flex flex-col gap-2 p-3">
         {threads.map((thread) => {
-          const isActive = thread.id === path.split("/").pop();
+          const isActive = thread.id === threadId;
 
           return (
             <div

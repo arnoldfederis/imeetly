@@ -4,6 +4,7 @@ import {
   CheckSquareIcon,
   CircleDotIcon,
   ClockIcon,
+  CornerDownLeftIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
@@ -11,7 +12,6 @@ import {
   PlusIcon,
   SparklesIcon,
 } from "lucide-react";
-import { PromptInput, PromptInputSubmit, PromptInputTextarea, } from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { FadeIn } from "@/components/common/motion";
 import { Button } from "@/components/ui/button";
@@ -107,16 +107,16 @@ export function ProductPreviewSection() {
                     </div>
                     <div className="divide-y px-4">
                       <MeetingRow
-                        date="Today, 2:30 PM"
-                        status="completed"
-                        title="Q4 Planning - Product Sync"
-                        type="audio"
-                      />
-                      <MeetingRow
                         date="Yesterday, 11:00 AM"
                         status="processing"
                         title="Design Review: Dashboard v2"
                         type="video"
+                      />
+                      <MeetingRow
+                        date="Today, 2:30 PM"
+                        status="completed"
+                        title="Q4 Planning - Product Sync"
+                        type="audio"
                       />
                       <MeetingRow
                         date="Mon, 3:00 PM"
@@ -150,22 +150,14 @@ export function ProductPreviewSection() {
                       ))}
                     </Suggestions>
 
-                    <PromptInput
-                      autoFocus
-                      className="mx-auto w-full max-w-3xl"
-                      onSubmit={() => {}}
-                    >
-                      <PromptInputTextarea
-                        className="min-h-9 cursor-default pr-12"
-                        disabled
-                        placeholder="Enter your prompt here..."
-                      />
-                      <PromptInputSubmit
-                        className="absolute right-1.5 bottom-1"
-                        disabled
-                        status={"ready"}
-                      />
-                    </PromptInput>
+                    <div className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-input/50">
+                      <div className="flex h-10.5 select-none items-start px-4 py-3 pr-12 text-muted-foreground text-sm">
+                        Ask Meetly anything about your meetings…
+                      </div>
+                      <div className="absolute right-1.5 bottom-1.5 flex size-[30px] items-center justify-center rounded-full bg-primary">
+                        <CornerDownLeftIcon className="size-4 text-primary-foreground" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

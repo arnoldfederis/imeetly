@@ -25,8 +25,8 @@ import {
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import {
   type MemoryChatMessage,
-  memoryChatRuntime,
   type MemorySource,
+  memoryChatRuntime,
   type PendingExchange,
   useMemoryChatExchange,
 } from "@/components/memory/chat-runtime";
@@ -176,6 +176,7 @@ function EmptyState({
             key={prompt}
             onClick={(suggestion) => onPromptClick(suggestion)}
             suggestion={prompt}
+            variant="secondary"
           />
         ))}
       </Suggestions>
@@ -384,15 +385,19 @@ export function ChatArea({ threadId }: Props) {
   const isEmpty =
     visibleMessages.length === 0 && !isSubmitting && !isLoadingThread;
 
-  // Feature 5: fade in on mount (hides content until scrolled to bottom)
+  // Fade in on mount, but skip entirely when exchange is already streaming
+  // (navigating from /memory to /memory/[threadId] while stream is active).
+  const skipFade = !!exchange;
   const showDelay = threadId && !exchange ? 0.12 : 0;
 
   return (
     <motion.div
       animate={{ opacity: 1 }}
       className="flex flex-1 flex-col overflow-hidden"
-      initial={{ opacity: 0 }}
-      transition={{ duration: 0.18, delay: showDelay }}
+      initial={{ opacity: skipFade ? 1 : 0 }}
+      transition={
+        skipFade ? { duration: 0 } : { duration: 0.18, delay: showDelay }
+      }
     >
       <div className="relative flex flex-1 overflow-hidden">
         <Conversation className="size-full" key={threadId ?? "memory-new"}>

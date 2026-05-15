@@ -19,7 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { type UploadedFile, useFeedbackFiles, } from "@/hooks/use-feedback-files";
+import {
+  type UploadedFile,
+  useFeedbackFiles,
+} from "@/hooks/use-feedback-files";
 import { client, server } from "@/lib/orpc";
 
 type FeedbackType = "feedback" | "bug" | "feature";

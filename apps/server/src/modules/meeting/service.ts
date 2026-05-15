@@ -670,11 +670,40 @@ export abstract class MeetingService {
         ),
       );
 
+    const [urgentActions] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(actionItems)
+      .where(
+        and(
+          eq(actionItems.userId, userId),
+          eq(actionItems.priority, "urgent"),
+          inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+        ),
+      );
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const [dueTodayActions] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(actionItems)
+      .where(
+        and(
+          eq(actionItems.userId, userId),
+          inArray(actionItems.status, ["open", "in_progress", "blocked"]),
+          sql`${actionItems.dueDate} >= ${todayStart} AND ${actionItems.dueDate} <= ${todayEnd}`,
+        ),
+      );
+
     return {
       meetingsThisMonth: meetingsThisMonth.count,
       processingNow: processingNow.count,
       completedMeetings: completedMeetings.count,
       openActionItems: openActions.count,
+      urgentActionItems: urgentActions.count,
+      dueTodayActionItems: dueTodayActions.count,
     };
   }
 
