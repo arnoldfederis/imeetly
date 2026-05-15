@@ -3,9 +3,9 @@ import {
   getQueryClient,
   HydrateClient,
 } from "@/components/common/hydrate-client";
+import { ChatArea } from "@/components/memory/chat-area";
 import { client, server } from "@/lib/orpc";
 import { requireAuth } from "@/lib/server-auth";
-import { MemoryWorkspace } from "./workspace";
 
 export async function MemoryContainer({
   threadId,
@@ -14,23 +14,11 @@ export async function MemoryContainer({
 }) {
   const queryClient = getQueryClient();
 
-  const [archivedThreads, usage, threads] = await Promise.all([
-    requireAuth(() => server.memory.listArchivedThreads()),
-    requireAuth(() => server.memory.getMemoryUsage()),
-    requireAuth(() => server.memory.listThreads()),
-  ]);
+  const usage = await requireAuth(() => server.memory.getMemoryUsage());
 
-  queryClient.setQueryData(
-    client.memory.listArchivedThreads.queryOptions().queryKey,
-    archivedThreads,
-  );
   queryClient.setQueryData(
     client.memory.getMemoryUsage.queryOptions().queryKey,
     usage,
-  );
-  queryClient.setQueryData(
-    client.memory.listThreads.queryOptions().queryKey,
-    threads,
   );
 
   if (threadId) {
@@ -61,7 +49,7 @@ export async function MemoryContainer({
 
   return (
     <HydrateClient client={queryClient}>
-      <MemoryWorkspace threadId={threadId} />
+      <ChatArea threadId={threadId ?? undefined} />
     </HydrateClient>
   );
 }

@@ -298,7 +298,7 @@ The server never proxies large media uploads.
 |---------|-------|-------|
 | web | `vite build` | `bun run dist/server/server.js` |
 | server | `bun build --compile ...` | `./server` (standalone binary) |
-| worker | `tsc --project tsconfig.json` | `node -r tsconfig-paths/register lib/worker.js` |
+| worker | `bunx tsc --project tsconfig.json` | `dotenv -e ../../.env -- tsx src/worker.ts` |
 
 ### Deploy with Dokploy
 

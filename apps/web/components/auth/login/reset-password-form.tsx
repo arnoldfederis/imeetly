@@ -2,9 +2,19 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@repo/server/lib/auth-client";
-import { getViolations, isPasswordValid, PASSWORD_CRITERIA, } from "@repo/server/modules/auth/utils";
+import {
+  getViolations,
+  isPasswordValid,
+  PASSWORD_CRITERIA,
+} from "@repo/server/modules/auth/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { CircleAlertIcon, CircleCheckIcon, EyeIcon, EyeOffIcon, LoaderCircleIcon, } from "lucide-react";
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -12,7 +22,12 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel, } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 

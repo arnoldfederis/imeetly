@@ -74,10 +74,13 @@ export function MeetingDetailsContainer(props: Props) {
   const router = useRouter();
   const meetingId = props.meetingId;
   const search = useSearchParams();
-  const sourceLink = search.get("sourceLink")
-    ? search.get("sourceLink") === "/"
+  const sourceLinkParam = search.get("sourceLink");
+  const sourceLink = sourceLinkParam
+    ? sourceLinkParam === "/"
       ? "/"
-      : `/${search.get("sourceLink")}`
+      : sourceLinkParam.startsWith("/")
+        ? sourceLinkParam
+        : `/${sourceLinkParam}`
     : "/meetings";
   const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
   const isMobile = useIsMobile();

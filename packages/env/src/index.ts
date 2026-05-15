@@ -76,6 +76,13 @@ export const env = createEnv({
     AI_EXTRACTION_PROVIDER: optional(string()),
     AI_TRANSCRIPTION_FALLBACK: optional(string()),
     AI_EXTRACTION_FALLBACK: optional(string()),
+    // AI Memory chat/embedding provider
+    CHAT_PROVIDER: optional(string()),
+    EMBEDDING_PROVIDER: optional(string()),
+    OLLAMA_BASE_URL: optional(string()),
+    AI_CHAT_MODEL: optional(string()),
+    AI_EMBEDDING_MODEL: optional(string()),
+    AI_EMBEDDING_DIMENSIONS: optional(string()),
     SMTP_HOST: optional(string()),
     SMTP_PORT: optional(string()),
     SMTP_USER: optional(string()),

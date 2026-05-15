@@ -1,6 +1,5 @@
 import {
   AlertTriangleIcon,
-  BotIcon,
   CalendarClockIcon,
   CalendarIcon,
   CheckCircle2Icon,
@@ -205,30 +204,6 @@ export function HeroSection() {
                     status="done"
                     text="Share Q1 scope doc with stakeholders"
                   />
-                </div>
-              </div>
-
-              {/* Meetly chat preview */}
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                    <BotIcon className="size-3.5 text-primary" />
-                  </div>
-                  <p className="font-semibold text-sm">Ask Meetly</p>
-                  <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
-                    imeetly Memory
-                  </span>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-end">
-                    <span className="ml-auto rounded-lg bg-secondary px-4 py-3 text-foreground text-xs">
-                      What did we decide about the payments refactor?
-                    </span>
-                  </div>
-                  <div className="flex justify-start text-xs leading-relaxed">
-                    In the Q1 Roadmap Planning (Jan 14), the team decided to
-                    push the payments refactor to Q2 to reduce scope risk.
-                  </div>
                 </div>
               </div>
             </div>

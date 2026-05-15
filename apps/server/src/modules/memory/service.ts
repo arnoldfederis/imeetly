@@ -1,11 +1,21 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
-import { aiMemoryMessages, aiMemoryThreads } from "@repo/db/schemas/app";
-import { env } from "@repo/env";
+import {
+  aiMemoryMessages,
+  aiMemoryThreads,
+  meetingMemoryChunks,
+  meetings,
+} from "@repo/db/schemas/app";
+import { embed, generateText, streamText } from "ai";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { MemoryAnswerMode } from "../billing/plans";
 import { getPlanLimits } from "../billing/plans";
 import { BillingService } from "../billing/service";
+import {
+  getChatModel,
+  getEmbeddingDimensions,
+  getEmbeddingModel,
+} from "./provider";
 
 const ALLOWED_SOURCE_TYPES = new Set([
   "transcript",
@@ -52,55 +62,28 @@ function getDailyPeriod() {
 // ── Embedding ──
 
 async function embedQuestion(question: string): Promise<number[] | null> {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.warn("[memory] OPENAI_API_KEY not set — embedding unavailable.");
-    return null;
-  }
-
-  const response = await fetch("https://api.openai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "text-embedding-3-small",
-      input: question,
-      dimensions: 1536,
-    }),
-  });
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as {
-      error?: { code?: string };
-    };
-    const code = body?.error?.code;
-    if (
-      response.status === 429 ||
-      code === "insufficient_quota" ||
-      code === "rate_limit_exceeded"
-    ) {
+  try {
+    const { embedding } = await embed({
+      model: getEmbeddingModel(),
+      value: question,
+      providerOptions: {
+        openai: { dimensions: getEmbeddingDimensions() },
+      },
+    });
+    return embedding;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/quota|rate.?limit|insufficient|no api key/i.test(msg)) {
       console.warn(
-        "[memory] OpenAI quota/rate limit hit — returning no results.",
+        "[memory] Embedding unavailable — returning no results.",
+        msg,
       );
       return null;
     }
-    const text = JSON.stringify(body);
     throw new ORPCError("INTERNAL_SERVER_ERROR", {
-      message: `Embedding failed: ${text}`,
+      message: `Embedding failed: ${msg}`,
     });
   }
-
-  const data = (await response.json()) as {
-    data: Array<{ embedding: number[] }>;
-  };
-  const embedding = data.data[0]?.embedding;
-  if (!embedding) {
-    console.warn("[memory] Empty embedding response.");
-    return null;
-  }
-  return embedding;
 }
 
 // ── Light query routing ──
@@ -243,61 +226,162 @@ export async function retrieveChunks(
   }));
 }
 
-// ── Answer generation (Pro/Team only) ──
+// ── Shared answer generation helpers ──
 
-export async function generateAnswer(
-  question: string,
-  chunks: MemoryChunkResult[],
-): Promise<string> {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey || chunks.length === 0) {
-    return "I couldn't find enough meeting context to answer that.";
+const MEMORY_SYSTEM_PROMPT = `You are an assistant that answers questions strictly based on meeting notes provided as context.
+Do not invent decisions, quotes, owners, or due dates that are not in the context.
+If the context does not contain enough information to answer, say exactly: "I couldn't find enough meeting context to answer that."
+Always cite the source meeting title and date when referencing specific information.`;
+
+// ── No-context response constants ──
+
+export type NoContextReason =
+  | "no_meetings"
+  | "processing"
+  | "no_relevant_context"
+  | "unknown";
+
+export const NO_MEETINGS_RESPONSE = `I don't have any meeting memory yet.
+
+Process your first meeting, and I'll be able to answer questions about decisions, action items, blockers, follow-ups, and what people discussed.`;
+
+export const MEETINGS_PROCESSING_RESPONSE = `Your meeting memory is still being prepared.
+
+Once processing finishes, I'll be able to answer questions from the transcript, summary, decisions, blockers, follow-ups, and action items.`;
+
+export const NO_RELEVANT_CONTEXT_RESPONSE = `I couldn't find anything relevant in your meeting memory for that question.
+
+Try asking about a specific meeting, person, customer, project, or date range.`;
+
+export const GENERIC_NO_CONTEXT_RESPONSE = `I don't have enough meeting memory to answer that yet.
+
+Once your meetings are processed, I can help you find decisions, action items, blockers, follow-ups, and important discussion points across your meeting history.`;
+
+// ── Memory state ──
+
+export interface MeetingMemoryState {
+  processedMeetingCount: number;
+  processingMeetingCount: number;
+  memoryChunkCount: number;
+  hasProcessedMeetings: boolean;
+  hasProcessingMeetings: boolean;
+  hasMemoryChunks: boolean;
+}
+
+export async function getMeetingMemoryState(
+  userId: string,
+): Promise<MeetingMemoryState> {
+  const [meetingCounts, [chunkRow]] = await Promise.all([
+    db
+      .select({
+        status: meetings.status,
+        cnt: sql<number>`count(*)::int`,
+      })
+      .from(meetings)
+      .where(eq(meetings.userId, userId))
+      .groupBy(meetings.status),
+    db
+      .select({ cnt: sql<number>`count(*)::int` })
+      .from(meetingMemoryChunks)
+      .where(eq(meetingMemoryChunks.userId, userId)),
+  ]);
+
+  const processedMeetingCount = meetingCounts
+    .filter((r) => r.status === "completed")
+    .reduce((sum, r) => sum + r.cnt, 0);
+
+  const processingMeetingCount = meetingCounts
+    .filter((r) => r.status === "processing" || r.status === "pending")
+    .reduce((sum, r) => sum + r.cnt, 0);
+
+  const memoryChunkCount = chunkRow?.cnt ?? 0;
+
+  return {
+    processedMeetingCount,
+    processingMeetingCount,
+    memoryChunkCount,
+    hasProcessedMeetings: processedMeetingCount > 0,
+    hasProcessingMeetings: processingMeetingCount > 0,
+    hasMemoryChunks: memoryChunkCount > 0,
+  };
+}
+
+export function getMeetlyNoContextResponse(params: {
+  memoryState: MeetingMemoryState;
+  retrievedChunkCount: number;
+}): { text: string; reason: NoContextReason } {
+  const { memoryState, retrievedChunkCount } = params;
+
+  if (!memoryState.hasMemoryChunks) {
+    if (memoryState.hasProcessingMeetings) {
+      return { text: MEETINGS_PROCESSING_RESPONSE, reason: "processing" };
+    }
+    return { text: NO_MEETINGS_RESPONSE, reason: "no_meetings" };
   }
 
-  const contextBlocks = chunks
+  if (retrievedChunkCount === 0) {
+    return {
+      text: NO_RELEVANT_CONTEXT_RESPONSE,
+      reason: "no_relevant_context",
+    };
+  }
+
+  return { text: GENERIC_NO_CONTEXT_RESPONSE, reason: "unknown" };
+}
+
+function buildContextBlocks(chunks: MemoryChunkResult[]): string {
+  return chunks
     .slice(0, 12)
     .map(
       (c, i) =>
         `[Source ${i + 1}: ${c.metadata.meetingTitle ?? "Meeting"} (${c.metadata.meetingDate ?? "unknown date"}) — ${c.sourceType}]\n${c.content}`,
     )
     .join("\n\n---\n\n");
+}
 
-  const systemPrompt = `You are an assistant that answers questions strictly based on meeting notes provided as context.
-Do not invent decisions, quotes, owners, or due dates that are not in the context.
-If the context does not contain enough information to answer, say exactly: "I couldn't find enough meeting context to answer that."
-Always cite the source meeting title and date when referencing specific information.`;
+// ── Answer generation (Pro/Team only) ──
 
-  const userPrompt = `Context from meeting history:\n\n${contextBlocks}\n\n---\n\nQuestion: ${question}`;
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      max_tokens: 800,
-      temperature: 0.2,
-    }),
-  });
-
-  if (!response.ok) {
-    console.error(`[memory] Answer generation failed: ${response.status}`);
+export async function generateAnswer(
+  question: string,
+  chunks: MemoryChunkResult[],
+): Promise<string> {
+  if (chunks.length === 0) {
     return "I couldn't find enough meeting context to answer that.";
   }
 
-  const data = (await response.json()) as {
-    choices: Array<{ message: { content: string } }>;
-  };
-  return (
-    data.choices[0]?.message.content ??
-    "I couldn't find enough meeting context to answer that."
-  );
+  try {
+    const { text } = await generateText({
+      model: getChatModel(),
+      system: MEMORY_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Context from meeting history:\n\n${buildContextBlocks(chunks)}\n\n---\n\nQuestion: ${question}`,
+        },
+      ],
+      maxOutputTokens: 800,
+      temperature: 0.2,
+    });
+    return text || "I couldn't find enough meeting context to answer that.";
+  } catch (err) {
+    console.error("[memory] Answer generation failed:", err);
+    return "I couldn't find enough meeting context to answer that.";
+  }
+}
+
+export function streamAnswer(question: string, chunks: MemoryChunkResult[]) {
+  return streamText({
+    model: getChatModel(),
+    system: MEMORY_SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: `Context from meeting history:\n\n${buildContextBlocks(chunks)}\n\n---\n\nQuestion: ${question}`,
+      },
+    ],
+    maxOutputTokens: 800,
+    temperature: 0.2,
+  });
 }
 
 // ── Usage tracking ──
@@ -348,15 +432,16 @@ export async function getMemoryUsageInfo(userId: string): Promise<{
   plan: string;
   answerMode: MemoryAnswerMode;
   usage: MemoryUsage;
+  memoryState: MeetingMemoryState;
 }> {
   const { plan } = await BillingService.resolveUserPlan(userId);
   const limits = getPlanLimits(plan);
   const daily = getDailyPeriod();
-  const current = await BillingService.getUserUsage(
-    userId,
-    "ai_memory_searches",
-    daily,
-  );
+
+  const [current, memoryState] = await Promise.all([
+    BillingService.getUserUsage(userId, "ai_memory_searches", daily),
+    getMeetingMemoryState(userId),
+  ]);
 
   return {
     plan,
@@ -366,6 +451,7 @@ export async function getMemoryUsageInfo(userId: string): Promise<{
       dailyLimit: limits.aiMemorySearchesPerDay,
       resetsAt: new Date(daily.end).toISOString(),
     },
+    memoryState,
   };
 }
 
@@ -415,32 +501,56 @@ export async function createThread(
   return thread;
 }
 
-export async function listThreads(userId: string) {
-  return db
-    .select()
-    .from(aiMemoryThreads)
-    .where(
-      and(
-        eq(aiMemoryThreads.userId, userId),
-        isNull(aiMemoryThreads.archivedAt),
-      ),
-    )
-    .orderBy(desc(aiMemoryThreads.updatedAt))
-    .limit(100);
+async function listThreadPage(
+  userId: string,
+  query: {
+    limit: number;
+    offset: number;
+  },
+  archived: boolean,
+) {
+  const where = and(
+    eq(aiMemoryThreads.userId, userId),
+    archived
+      ? sql`${aiMemoryThreads.archivedAt} IS NOT NULL`
+      : isNull(aiMemoryThreads.archivedAt),
+  );
+
+  const [items, [{ count }]] = await Promise.all([
+    db
+      .select()
+      .from(aiMemoryThreads)
+      .where(where)
+      .orderBy(desc(aiMemoryThreads.updatedAt))
+      .limit(query.limit)
+      .offset(query.offset),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(aiMemoryThreads)
+      .where(where),
+  ]);
+
+  return { items, total: count };
 }
 
-export async function listArchivedThreads(userId: string) {
-  return db
-    .select()
-    .from(aiMemoryThreads)
-    .where(
-      and(
-        eq(aiMemoryThreads.userId, userId),
-        sql`${aiMemoryThreads.archivedAt} IS NOT NULL`,
-      ),
-    )
-    .orderBy(desc(aiMemoryThreads.updatedAt))
-    .limit(100);
+export async function listThreads(
+  userId: string,
+  query: {
+    limit: number;
+    offset: number;
+  },
+) {
+  return listThreadPage(userId, query, false);
+}
+
+export async function listArchivedThreads(
+  userId: string,
+  query: {
+    limit: number;
+    offset: number;
+  },
+) {
+  return listThreadPage(userId, query, true);
 }
 
 export async function getThread(userId: string, threadId: string) {
@@ -486,6 +596,17 @@ export async function archiveThread(userId: string, threadId: string) {
   const [updated] = await db
     .update(aiMemoryThreads)
     .set({ archivedAt: new Date() })
+    .where(
+      and(eq(aiMemoryThreads.id, threadId), eq(aiMemoryThreads.userId, userId)),
+    )
+    .returning();
+  return updated ?? null;
+}
+
+export async function unarchiveThread(userId: string, threadId: string) {
+  const [updated] = await db
+    .update(aiMemoryThreads)
+    .set({ archivedAt: null })
     .where(
       and(eq(aiMemoryThreads.id, threadId), eq(aiMemoryThreads.userId, userId)),
     )

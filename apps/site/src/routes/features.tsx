@@ -14,9 +14,11 @@ import {
   UploadCloudIcon,
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
+import { ActionItemsSection } from "@/components/landing/action-items-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { MemoryChatSection } from "@/components/landing/memory-chat-section";
 import { PageIntro } from "@/components/landing/page-intro";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
 import { buttonVariants } from "@/components/ui/button";
@@ -177,6 +179,8 @@ function FeaturesPage() {
           title="What imeetly captures for you"
         />
         <FeatureDeepDive />
+        <MemoryChatSection />
+        <ActionItemsSection />
         <CapabilityMatrix />
         <IntegrationsSection />
         <ProductPreviewSection />

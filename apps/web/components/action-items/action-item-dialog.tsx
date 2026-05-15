@@ -563,7 +563,6 @@ function DateTimePicker({
                   <Calendar
                     className="flex w-full items-start justify-center border-r"
                     disabled={isDateDisabled}
-                    initialFocus
                     mode="single"
                     onSelect={handleDateSelect}
                     selected={field.value ?? undefined}

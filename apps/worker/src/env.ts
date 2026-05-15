@@ -47,6 +47,12 @@ export const env = createEnv({
     AI_EXTRACTION_PROVIDER: optional(string()),
     AI_TRANSCRIPTION_FALLBACK: optional(string()),
     AI_EXTRACTION_FALLBACK: optional(string()),
+
+    // Embedding / chat provider (Ollama or OpenAI)
+    CHAT_PROVIDER: optional(string()),
+    OLLAMA_BASE_URL: optional(string()),
+    AI_EMBEDDING_MODEL: optional(string()),
+    AI_EMBEDDING_DIMENSIONS: optional(string()),
   },
   client: {},
   shared: {},

@@ -16,6 +16,7 @@ import {
   listThreads,
   retrieveChunks,
   saveMessages,
+  unarchiveThread,
   updateThreadTitle,
 } from "./service";
 
@@ -28,13 +29,17 @@ export const memoryController = base.router({
       return createThread(context.user.id, input.title);
     }),
 
-  listThreads: privateProcedure.handler(async ({ context }) => {
-    return listThreads(context.user.id);
-  }),
+  listThreads: privateProcedure
+    .input(memoryModel.listThreads)
+    .handler(async ({ context, input }) => {
+      return listThreads(context.user.id, input);
+    }),
 
-  listArchivedThreads: privateProcedure.handler(async ({ context }) => {
-    return listArchivedThreads(context.user.id);
-  }),
+  listArchivedThreads: privateProcedure
+    .input(memoryModel.listArchivedThreads)
+    .handler(async ({ context, input }) => {
+      return listArchivedThreads(context.user.id, input);
+    }),
 
   getThread: privateProcedure
     .input(memoryModel.getThread)
@@ -64,8 +69,15 @@ export const memoryController = base.router({
   archiveThread: privateProcedure
     .input(memoryModel.archiveThread)
     .handler(async ({ input, context }) => {
-      await archiveThread(context.user.id, input.threadId);
-      return { success: true };
+      const updated = await archiveThread(context.user.id, input.threadId);
+      return { success: true, updated };
+    }),
+
+  unArchiveThread: privateProcedure
+    .input(memoryModel.unarchiveThread)
+    .handler(async ({ input, context }) => {
+      const updated = await unarchiveThread(context.user.id, input.threadId);
+      return { success: true, updated };
     }),
 
   deleteThread: privateProcedure

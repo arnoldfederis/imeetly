@@ -3,9 +3,9 @@ export const metadata: Metadata = { title: "Security" };
 export const dynamic = "force-dynamic";
 
 import { ConnectedAccountsCard } from "@/components/settings/security/connected-account-card";
-import { PasswordCard } from "@/components/settings/security/password-card";
 import { SecurityContainer } from "@/components/settings/security/container";
 import { PasskeysCard } from "@/components/settings/security/passkey-card";
+import { PasswordCard } from "@/components/settings/security/password-card";
 import { server } from "@/lib/orpc";
 import { requireAuth } from "@/lib/server-auth";
 

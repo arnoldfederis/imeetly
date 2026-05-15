@@ -1,15 +1,27 @@
 import {
   ArrowRightIcon,
+  BotIcon,
   CheckSquareIcon,
   CircleDotIcon,
+  ClockIcon,
   FileAudioIcon,
   FileTextIcon,
   FileVideoIcon,
+  FlagIcon,
   PlusIcon,
   SparklesIcon,
 } from "lucide-react";
+import { PromptInput, PromptInputSubmit, PromptInputTextarea, } from "@/components/ai-elements/prompt-input";
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { FadeIn } from "@/components/common/motion";
 import { Button } from "@/components/ui/button";
+
+const EXAMPLE_PROMPTS = [
+  "What decisions came out of my meetings?",
+  "Show me my open action items",
+  "What blockers were mentioned recently?",
+  "Summarize my latest processed meeting",
+];
 
 export function ProductPreviewSection() {
   return (
@@ -35,7 +47,7 @@ export function ProductPreviewSection() {
                     Dashboard
                   </p>
                   <p className="truncate text-muted-foreground text-sm">
-                    Your searchable meeting memory
+                    Your meeting memory, at a glance
                   </p>
                 </div>
                 <Button
@@ -79,7 +91,7 @@ export function ProductPreviewSection() {
               {/* Main grid */}
               <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
                 {/* Recent Meetings */}
-                <div className="min-w-0 lg:col-span-2">
+                <div className="flex min-w-0 flex-col-reverse gap-4 lg:col-span-2 lg:flex-col">
                   <div className="rounded-xl border">
                     <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
                       <div className="min-w-0">
@@ -114,10 +126,51 @@ export function ProductPreviewSection() {
                       />
                     </div>
                   </div>
+
+                  <div className="flex flex-col gap-4 rounded-xl border p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex size-14 items-center justify-center rounded-2xl border bg-primary/5">
+                        <BotIcon className="size-7 text-primary" />
+                      </div>{" "}
+                      <div className="flex flex-col gap-1.5">
+                        <h2 className="font-semibold text-lg">Hi John Doe!</h2>
+                        <p className="text-muted-foreground text-sm">
+                          Ask Meetly anything about your meetings
+                        </p>
+                      </div>
+                    </div>
+                    <Suggestions className="w-full items-center overflow-hidden">
+                      {EXAMPLE_PROMPTS.map((prompt) => (
+                        <Suggestion
+                          className="cursor-default"
+                          key={prompt}
+                          suggestion={prompt}
+                          variant="secondary"
+                        />
+                      ))}
+                    </Suggestions>
+
+                    <PromptInput
+                      autoFocus
+                      className="mx-auto w-full max-w-3xl"
+                      onSubmit={() => {}}
+                    >
+                      <PromptInputTextarea
+                        className="min-h-9 cursor-default pr-12"
+                        disabled
+                        placeholder="Enter your prompt here..."
+                      />
+                      <PromptInputSubmit
+                        className="absolute right-1.5 bottom-1"
+                        disabled
+                        status={"ready"}
+                      />
+                    </PromptInput>
+                  </div>
                 </div>
 
                 {/* Sidebar */}
-                <div className="flex min-w-0 flex-col gap-4">
+                <div className="flex min-w-0 flex-col-reverse gap-4 lg:flex-col">
                   {/* Action Items */}
                   <div className="rounded-xl border">
                     <div className="flex items-center justify-between border-b px-4 py-3">
@@ -150,20 +203,40 @@ export function ProductPreviewSection() {
 
                   {/* Mini stats */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border p-4">
-                      <p className="text-muted-foreground text-xs">Completed</p>
+                    <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+                      <p className="line-clamp-1 font-semibold text-sm">
+                        Completed Meetings
+                      </p>
                       <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                         47
                         <CheckSquareIcon className="size-4 text-emerald-500" />
                       </div>
                     </div>
-                    <div className="rounded-xl border p-4">
-                      <p className="text-muted-foreground text-xs">
+                    <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+                      <p className="line-clamp-1 font-semibold text-sm">
                         Open tasks
                       </p>
                       <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
-                        8
+                        9
                         <CircleDotIcon className="size-4 text-orange-500" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+                      <p className="line-clamp-1 font-semibold text-sm">
+                        Urgent Action Items
+                      </p>
+                      <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
+                        2
+                        <FlagIcon className="size-4 text-destructive" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.75 rounded-xl border p-4">
+                      <p className="line-clamp-1 font-semibold text-sm">
+                        Due Today
+                      </p>
+                      <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
+                        6
+                        <ClockIcon className="size-4 text-yellow-500" />
                       </div>
                     </div>
                   </div>

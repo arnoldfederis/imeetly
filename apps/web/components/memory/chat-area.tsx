@@ -1,16 +1,21 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import { BotIcon, CalendarIcon, ExternalLinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
   useConversationStickToBottom,
 } from "@/components/ai-elements/conversation";
-import { Message, MessageContent, MessageResponse, } from "@/components/ai-elements/message";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
 import {
   PromptInput,
   type PromptInputMessage,
@@ -18,40 +23,43 @@ import {
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
+import {
+  type MemoryChatMessage,
+  memoryChatRuntime,
+  type MemorySource,
+  type PendingExchange,
+  useMemoryChatExchange,
+} from "@/components/memory/chat-runtime";
+import { getMemoryHref } from "@/components/memory/paths";
+import {
+  getArchivedMemoryThreadListInfiniteOptions,
+  getMemoryThreadListInfiniteOptions,
+  insertThreadIntoMemoryThreadPages,
+  type MemoryThreadListItem,
+} from "@/components/memory/thread-list-query";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
-interface Source {
-  chunkId?: string;
-  meetingId: string;
-  meetingTitle: string;
-  meetingDate: string | null;
-  sourceType: string;
-  snippet: string;
-  score: number;
-}
+// ── Source type config ──
 
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  sources?: Source[];
-}
-
-interface PendingExchange {
-  assistant: ChatMessage | null;
-  requestId: string;
-  threadId: string | null;
-  user: ChatMessage;
-}
-
-const EXAMPLE_PROMPTS = [
-  "What decisions did we make about the product roadmap?",
-  "Show me action items from this week",
-  "What did we discuss about hiring?",
-  "Summarize blockers from the last sprint",
-];
+const SOURCE_TYPE_BADGE_VARIANT: Record<
+  string,
+  | "transcript"
+  | "summary"
+  | "decisions"
+  | "blockers"
+  | "followups"
+  | "action_item"
+  | "secondary"
+> = {
+  transcript: "transcript",
+  summary: "summary",
+  decisions: "decisions",
+  blockers: "blockers",
+  followups: "followups",
+  action_item: "action_item",
+};
 
 const SOURCE_TYPE_LABELS: Record<string, string> = {
   transcript: "Transcript",
@@ -71,50 +79,82 @@ function formatDate(date: string | null): string {
   });
 }
 
-function SourceCards({ sources }: { sources: Source[] }) {
+// ── Subcomponents ──
+
+function SourceCards({
+  sources,
+  threadId,
+}: {
+  sources: MemorySource[];
+  threadId?: string;
+}) {
   if (sources.length === 0) return null;
   return (
     <div className="mt-3 space-y-2">
-      <p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+      <motion.p
+        animate={{ opacity: 1 }}
+        className="font-medium text-muted-foreground text-xs uppercase tracking-wide"
+        initial={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
         Sources
-      </p>
+      </motion.p>
       <div className="flex flex-col gap-2">
-        {sources.slice(0, 6).map((s) => (
-          <a
-            className="group flex flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-            href={`/meetings/${s.meetingId}`}
-            key={s.chunkId ?? `${s.meetingId}-${s.sourceType}`}
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="text-xs" variant="secondary">
-                {SOURCE_TYPE_LABELS[s.sourceType] ?? s.sourceType}
-              </Badge>
-              <span className="font-medium group-hover:underline">
-                {s.meetingTitle}
-              </span>
-              {s.meetingDate && (
-                <span className="flex items-center gap-1 text-muted-foreground text-xs">
-                  <CalendarIcon className="size-3" />
-                  {formatDate(s.meetingDate)}
+        <AnimatePresence>
+          {sources.slice(0, 6).map((s, i) => (
+            <motion.a
+              animate={{ opacity: 1, y: 0 }}
+              className="group/card flex flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+              href={`/meetings/${s.meetingId}${threadId ? `?sourceLink=memory/${threadId}` : ""}`}
+              initial={{ opacity: 0, y: 6 }}
+              key={s.chunkId ?? `${s.meetingId}-${s.sourceType}-${i}`}
+              transition={{ delay: i * 0.06, duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  className="text-xs"
+                  variant={
+                    SOURCE_TYPE_BADGE_VARIANT[s.sourceType] ?? "secondary"
+                  }
+                >
+                  {SOURCE_TYPE_LABELS[s.sourceType] ?? s.sourceType}
+                </Badge>
+                <span className="font-medium group-hover/card:underline">
+                  {s.meetingTitle}
                 </span>
-              )}
-              <ExternalLinkIcon className="ml-auto size-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
-            </div>
-            <p className="line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-              {s.snippet}
-            </p>
-          </a>
-        ))}
+                {s.meetingDate && (
+                  <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                    <CalendarIcon className="size-3" />
+                    {formatDate(s.meetingDate)}
+                  </span>
+                )}
+                <ExternalLinkIcon className="ml-auto size-3 text-muted-foreground opacity-0 group-hover/card:opacity-100" />
+              </div>
+              <p className="line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+                {s.snippet}
+              </p>
+            </motion.a>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
+const EXAMPLE_PROMPTS = [
+  "What decisions came out of my meetings?",
+  "Show me my open action items",
+  "What blockers were mentioned recently?",
+  "Summarize my latest processed meeting",
+];
+
 function EmptyState({
   isFree,
+  hasNoMeetings,
   onPromptClick,
 }: {
   isFree: boolean;
+  hasNoMeetings: boolean;
   onPromptClick: (prompt: string) => void;
 }) {
   return (
@@ -130,7 +170,6 @@ function EmptyState({
           {isFree && " Upgrade to Pro for full AI-generated answers."}
         </p>
       </div>
-
       <Suggestions className="w-full flex-col items-center">
         {EXAMPLE_PROMPTS.map((prompt) => (
           <Suggestion
@@ -140,59 +179,111 @@ function EmptyState({
           />
         ))}
       </Suggestions>
+      {hasNoMeetings && (
+        <p className="text-muted-foreground text-xs">
+          Process a meeting first, then Meetly can answer questions like these.
+        </p>
+      )}
     </div>
   );
 }
 
-function ConversationStateSync({
-  historyOpen,
-  scrollRequest,
-  threadId,
-}: {
-  historyOpen: boolean;
-  scrollRequest: number;
-  threadId: string | null;
-}) {
-  const { scrollToBottom } = useConversationStickToBottom();
+function StreamingDots() {
+  return (
+    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+      <span className="inline-flex gap-1">
+        <span className="animate-bounce [animation-delay:-0.3s]">·</span>
+        <span className="animate-bounce [animation-delay:-0.15s]">·</span>
+        <span className="animate-bounce">·</span>
+      </span>
+      Searching your meetings…
+    </div>
+  );
+}
 
-  useEffect(() => {
-    if (!threadId && !historyOpen) {
-      return;
-    }
-
-    void scrollToBottom();
-  }, [historyOpen, scrollToBottom, threadId]);
-
-  useEffect(() => {
-    if (scrollRequest === 0) {
-      return;
-    }
-
-    void scrollToBottom();
-  }, [scrollRequest, scrollToBottom]);
-
+function NoContextCTA({ reason }: { reason: string }) {
+  if (reason === "no_meetings") {
+    return (
+      <div className="mt-3">
+        <a
+          className="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-sm transition-colors hover:bg-muted"
+          href="/meetings"
+        >
+          Process your first meeting →
+        </a>
+      </div>
+    );
+  }
+  if (reason === "no_relevant_context") {
+    return (
+      <p className="mt-3 text-muted-foreground text-xs">
+        Try a more specific question — for example, mention a person, project,
+        or date.
+      </p>
+    );
+  }
   return null;
 }
 
-export function ChatArea({
-  historyOpen = false,
-  threadId,
-}: {
-  historyOpen?: boolean;
-  threadId: string | null;
-}) {
+function CreatingThreadDots() {
+  return (
+    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+      <span className="inline-flex gap-1">
+        <span className="animate-bounce [animation-delay:-0.3s]">·</span>
+        <span className="animate-bounce [animation-delay:-0.15s]">·</span>
+        <span className="animate-bounce">·</span>
+      </span>
+      Setting up conversation…
+    </div>
+  );
+}
+
+// Scroll to bottom when threadId or historyOpen changes
+function ScrollSync({ threadId }: { threadId?: string }) {
+  const { scrollToBottom } = useConversationStickToBottom();
+  useEffect(() => {
+    if (!threadId) return;
+    void scrollToBottom();
+  }, [scrollToBottom, threadId]);
+  return null;
+}
+
+// ── Visible messages builder ──
+
+function buildVisibleMessages(
+  persisted: MemoryChatMessage[],
+  exchange: PendingExchange | null,
+): MemoryChatMessage[] {
+  if (!exchange) return persisted;
+
+  const messages: MemoryChatMessage[] = [...persisted, exchange.user];
+
+  if (exchange.assistant.content) {
+    messages.push(exchange.assistant);
+  }
+
+  return messages;
+}
+
+// ── Main component ──
+
+interface Props {
+  threadId?: string;
+}
+
+export function ChatArea({ threadId }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [input, setInput] = useState("");
-  const [pendingExchange, setPendingExchange] =
-    useState<PendingExchange | null>(null);
   const promptInputRef = useRef<HTMLDivElement | null>(null);
-  const [scrollRequest, setScrollRequest] = useState(0);
+
+  // Feature 2: runtime singleton preserves state across navigation
+  const exchange = useMemoryChatExchange(threadId ?? null);
 
   const { data: usageData } = useQuery(
     client.memory.getMemoryUsage.queryOptions(),
   );
 
+  // Persisted messages from DB — only on thread pages
   const { data: threadData, isLoading: isThreadLoading } = useQuery({
     ...client.memory.getThread.queryOptions({
       input: { threadId: threadId ?? "" },
@@ -200,212 +291,134 @@ export function ChatArea({
     enabled: !!threadId,
   });
 
-  const persistedMessages: ChatMessage[] = (threadData?.messages ?? []).map(
-    (message) => ({
-      id: message.id,
-      role: message.role as "user" | "assistant",
-      content: message.content,
-      sources: (message.sources ?? []) as Source[],
-    }),
-  );
+  const persistedMessages: MemoryChatMessage[] = (
+    threadData?.messages ?? []
+  ).map((m) => ({
+    id: m.id,
+    role: m.role as "user" | "assistant",
+    content: m.content,
+    sources: (m.sources ?? []) as MemorySource[],
+    metadata: (m.metadata ?? {}) as Record<string, unknown>,
+  }));
 
-  const visibleMessages = useMemo(() => {
-    if (!pendingExchange) {
-      return persistedMessages;
+  const visibleMessages = buildVisibleMessages(persistedMessages, exchange);
+
+  const isFree = usageData?.answerMode === "snippets_only";
+  const hasNoMeetings =
+    !usageData?.memoryState.hasProcessedMeetings &&
+    !usageData?.memoryState.hasMemoryChunks;
+  const isSubmitting =
+    exchange?.status === "creating-thread" || exchange?.status === "streaming";
+
+  // Completion: refetch DB → clear exchange from runtime
+  const completionHandledRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!exchange || exchange.status !== "complete" || !threadId) return;
+    if (completionHandledRef.current.has(exchange.requestId)) return;
+    completionHandledRef.current.add(exchange.requestId);
+
+    async function handleComplete() {
+      if (!threadId) return;
+      // Await DB refetch before clearing so messages don't flash out
+      await queryClient.invalidateQueries({
+        queryKey: client.memory.getThread.queryOptions({ input: { threadId } })
+          .queryKey,
+      });
+      memoryChatRuntime.clearThreadExchange(threadId);
+      // Also clear rootExchange if it was started from /memory for this thread
+      memoryChatRuntime.clearRootExchange(threadId);
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: getMemoryThreadListInfiniteOptions().queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getArchivedMemoryThreadListInfiniteOptions().queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: client.memory.getMemoryUsage.queryOptions().queryKey,
+        }),
+      ]);
     }
 
-    if (threadId && threadId !== pendingExchange.threadId) {
-      return persistedMessages;
-    }
-
-    return [
-      ...persistedMessages,
-      pendingExchange.user,
-      ...(pendingExchange.assistant ? [pendingExchange.assistant] : []),
-    ];
-  }, [pendingExchange, persistedMessages, threadId]);
+    void handleComplete();
+  }, [exchange?.status, exchange?.requestId, threadId, queryClient]);
 
   const focusTextarea = () => {
     const textarea = promptInputRef.current?.querySelector("textarea");
-
-    if (!(textarea instanceof HTMLTextAreaElement)) {
-      return;
-    }
-
-    textarea.focus();
+    if (textarea instanceof HTMLTextAreaElement) textarea.focus();
   };
 
-  const createThread = useMutation({
-    mutationFn: () => client.memory.createThread.call({}),
-  });
-
-  const askMutation = useMutation({
-    mutationFn: ({ question, tid }: { question: string; tid: string | null }) =>
-      client.memory.askMeetingMemory.call({
-        question,
-        threadId: tid ?? undefined,
-      }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: client.memory.getMemoryUsage.queryOptions().queryKey,
-      });
-
-      if (data.threadId) {
-        queryClient.invalidateQueries({
-          queryKey: client.memory.getThread.queryOptions({
-            input: { threadId: data.threadId },
-          }).queryKey,
-        });
-        queryClient.invalidateQueries({
-          queryKey: client.memory.listThreads.queryOptions().queryKey,
-        });
-      }
-    },
-  });
-
-  const isSubmitting = askMutation.isPending || createThread.isPending;
-  const isFree = usageData?.answerMode === "snippets_only";
-
   useEffect(() => {
-    if (!pendingExchange?.assistant || !pendingExchange.threadId) {
-      return;
-    }
-
-    if (threadId !== pendingExchange.threadId) {
-      return;
-    }
-
-    const hasUserMessage = persistedMessages.some(
-      (message) =>
-        message.role === "user" &&
-        message.content === pendingExchange.user.content,
-    );
-    const hasAssistantMessage = persistedMessages.some(
-      (message) =>
-        message.role === "assistant" &&
-        message.content === pendingExchange.assistant?.content,
-    );
-
-    if (hasUserMessage && hasAssistantMessage) {
-      setPendingExchange(null);
-    }
-  }, [pendingExchange, persistedMessages, threadId]);
-
-  useEffect(() => {
-    if (isSubmitting) {
-      return;
-    }
-
+    if (isSubmitting) return;
     requestAnimationFrame(focusTextarea);
   }, [isSubmitting]);
 
   async function handleSubmit(message: PromptInputMessage) {
     const question = message.text.trim();
+    if (!question || isSubmitting) return;
 
-    if (!question) {
-      return;
-    }
-
-    const requestId = crypto.randomUUID();
-    const userMessage: ChatMessage = {
-      id: `${requestId}-user`,
-      role: "user",
-      content: question,
-    };
-
-    setInput("");
-    setPendingExchange({
-      assistant: null,
-      requestId,
-      threadId,
-      user: userMessage,
-    });
-    requestAnimationFrame(() => {
-      focusTextarea();
-    });
-    setScrollRequest((current) => current + 1);
-
-    let targetThreadId = threadId;
-
-    if (!targetThreadId) {
-      const thread = await createThread.mutateAsync();
-      targetThreadId = thread.id;
-      setPendingExchange((current) =>
-        current?.requestId === requestId
-          ? {
-              ...current,
-              threadId: thread.id,
-            }
-          : current,
-      );
-      router.push(`/memory?thread=${thread.id}`);
-    }
-
-    const result = await askMutation.mutateAsync({
+    const result = await memoryChatRuntime.submit({
       question,
-      tid: targetThreadId,
+      threadId: threadId ?? null,
     });
 
-    const assistantMessage: ChatMessage = {
-      id: `${requestId}-assistant`,
-      role: "assistant",
-      content:
-        result.answer ??
-        result.sources
-          .map((source) => `${source.meetingTitle}: ${source.snippet}`)
-          .join("\n"),
-      sources: result.sources as Source[],
-    };
-
-    setPendingExchange((current) =>
-      current?.requestId === requestId
-        ? {
-            ...current,
-            assistant: assistantMessage,
-            threadId: result.threadId ?? targetThreadId,
-          }
-        : current,
-    );
-    requestAnimationFrame(() => {
-      focusTextarea();
-    });
-    setScrollRequest((current) => current + 1);
+    // Feature 1: navigate to thread page after creation, streaming continues in background
+    if (result.startedFromRoot && result.thread) {
+      // Optimistically insert thread into sidebar cache
+      queryClient.setQueryData(
+        getMemoryThreadListInfiniteOptions().queryKey,
+        (old: Parameters<typeof insertThreadIntoMemoryThreadPages>[0]) =>
+          insertThreadIntoMemoryThreadPages(
+            old,
+            result.thread as MemoryThreadListItem,
+          ),
+      );
+      router.push(getMemoryHref(result.threadId));
+    }
   }
 
+  const isLoadingThread =
+    isThreadLoading && persistedMessages.length === 0 && !exchange;
   const isEmpty =
-    visibleMessages.length === 0 && !isSubmitting && !isThreadLoading;
+    visibleMessages.length === 0 && !isSubmitting && !isLoadingThread;
+
+  // Feature 5: fade in on mount (hides content until scrolled to bottom)
+  const showDelay = threadId && !exchange ? 0.12 : 0;
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <motion.div
+      animate={{ opacity: 1 }}
+      className="flex flex-1 flex-col overflow-hidden"
+      initial={{ opacity: 0 }}
+      transition={{ duration: 0.18, delay: showDelay }}
+    >
       <div className="relative flex flex-1 overflow-hidden">
         <Conversation className="size-full" key={threadId ?? "memory-new"}>
-          <ConversationStateSync
-            historyOpen={historyOpen}
-            scrollRequest={scrollRequest}
-            threadId={threadId}
-          />
-          <ConversationContent className="mx-auto h-25 min-h-full w-full max-w-3xl">
-            {isThreadLoading &&
-              persistedMessages.length === 0 &&
-              !pendingExchange && (
-                <div className="flex flex-col gap-8 py-4">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div className="flex flex-col gap-4" key={index}>
-                      <div className="flex justify-end">
-                        <Skeleton className="h-10 w-48 rounded-lg" />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-4/5" />
-                        <Skeleton className="h-4 w-3/5" />
-                      </div>
+          <ScrollSync threadId={threadId} />
+          <ConversationContent className="mx-auto min-h-full w-full max-w-3xl">
+            {/* Skeleton while loading thread */}
+            {isLoadingThread && (
+              <div className="flex flex-col gap-8 py-4">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div className="flex flex-col gap-4" key={index}>
+                    <div className="flex justify-end">
+                      <Skeleton className="h-10 w-48 rounded-lg" />
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                      <Skeleton className="h-4 w-3/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {isEmpty && (
               <EmptyState
+                hasNoMeetings={!!hasNoMeetings}
                 isFree={!!isFree}
                 onPromptClick={(prompt) =>
                   handleSubmit({ files: [], text: prompt })
@@ -420,30 +433,38 @@ export function ChatArea({
                   {message.role === "assistant" &&
                     message.sources &&
                     message.sources.length > 0 && (
-                      <SourceCards sources={message.sources} />
+                      <SourceCards
+                        sources={message.sources}
+                        threadId={threadId}
+                      />
+                    )}
+                  {message.role === "assistant" &&
+                    message.metadata?.responseType === "no_context" &&
+                    typeof message.metadata.noContextReason === "string" && (
+                      <NoContextCTA reason={message.metadata.noContextReason} />
                     )}
                 </MessageContent>
               </Message>
             ))}
 
-            {pendingExchange && !pendingExchange.assistant && (
+            {/* Creating thread indicator */}
+            {exchange?.status === "creating-thread" && (
               <Message from="assistant">
                 <MessageContent>
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <span className="inline-flex gap-1">
-                      <span className="animate-bounce [animation-delay:-0.3s]">
-                        ·
-                      </span>
-                      <span className="animate-bounce [animation-delay:-0.15s]">
-                        ·
-                      </span>
-                      <span className="animate-bounce">·</span>
-                    </span>
-                    Searching your meetings…
-                  </div>
+                  <CreatingThreadDots />
                 </MessageContent>
               </Message>
             )}
+
+            {/* Streaming loading indicator (before first text) */}
+            {exchange?.status === "streaming" &&
+              !exchange.assistant.content && (
+                <Message from="assistant">
+                  <MessageContent>
+                    <StreamingDots />
+                  </MessageContent>
+                </Message>
+              )}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -468,13 +489,11 @@ export function ChatArea({
           <PromptInputTextarea
             className="pr-12"
             disabled={isSubmitting}
-            onChange={(event) => setInput(event.currentTarget.value)}
             placeholder="Ask Meetly anything about your meetings…"
-            value={input}
           />
           <PromptInputSubmit
             className="absolute right-1.5 bottom-1.5"
-            disabled={!input.trim() || isSubmitting}
+            disabled={isSubmitting}
             status={isSubmitting ? "streaming" : "ready"}
           />
         </PromptInput>
@@ -482,6 +501,6 @@ export function ChatArea({
           Meetly searches your processed meeting history · Results may vary
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

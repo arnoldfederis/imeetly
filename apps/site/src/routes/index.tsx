@@ -7,6 +7,7 @@ import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { MemoryChatSection } from "@/components/landing/memory-chat-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
@@ -70,6 +71,7 @@ function LandingPage() {
         <HeroSection />
         <TrustBar />
         <FeaturesSection />
+        <MemoryChatSection />
         <ActionItemsSection />
         <ProductPreviewSection />
         <HowItWorksSection />

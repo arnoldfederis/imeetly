@@ -19,10 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  type UploadedFile,
-  useFeedbackFiles,
-} from "@/hooks/use-feedback-files";
+import { type UploadedFile, useFeedbackFiles, } from "@/hooks/use-feedback-files";
 import { client, server } from "@/lib/orpc";
 
 type FeedbackType = "feedback" | "bug" | "feature";
@@ -159,12 +156,12 @@ export function FeedbackDetailContainer({ id }: { id: string }) {
           <Button
             nativeButton={false}
             render={<Link href="/feedbacks" />}
-            size="icon-sm"
+            size="sm"
             variant="secondary"
           >
-            <ArrowLeftIcon />
+            <ArrowLeftIcon className="size-3.5" />
+            Back
           </Button>
-          <h1 className="font-semibold text-xl">Feedback</h1>
         </div>
         {data && !editing && (
           <Button

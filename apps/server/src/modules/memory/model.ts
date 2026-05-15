@@ -7,6 +7,11 @@ const filtersSchema = z.object({
   meetingId: z.string().optional(),
 });
 
+const threadListQuerySchema = z.object({
+  limit: z.number().min(1).max(100).default(20),
+  offset: z.number().min(0).default(0),
+});
+
 export const memoryModel = {
   askRequest: z.object({
     question: z.string().min(1).max(500),
@@ -23,6 +28,10 @@ export const memoryModel = {
     title: z.string().min(1).max(200).optional(),
   }),
 
+  listThreads: threadListQuerySchema,
+
+  listArchivedThreads: threadListQuerySchema,
+
   updateThread: z.object({
     threadId: z.string().min(1),
     title: z.string().min(1).max(200),
@@ -33,6 +42,10 @@ export const memoryModel = {
   }),
 
   archiveThread: z.object({
+    threadId: z.string().min(1),
+  }),
+
+  unarchiveThread: z.object({
     threadId: z.string().min(1),
   }),
 
