@@ -16,7 +16,10 @@ import {
   deleteObject,
   initiateMultipartUpload,
 } from "@repo/server/lib/s3";
-import { startMeetingProcessing } from "@repo/server/lib/temporal";
+import {
+  startMeetingProcessing,
+  terminateMeetingWorkflow,
+} from "@repo/server/lib/temporal";
 import { getPlanLimits } from "@repo/server/modules/billing/plans";
 import { BillingService } from "@repo/server/modules/billing/service";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
@@ -257,6 +260,12 @@ export abstract class MeetingService {
   }
 
   static async remove(userId: string, meetingId: string) {
+    await terminateMeetingWorkflow(meetingId).catch((err) =>
+      console.warn(
+        `[meeting.remove] Temporal terminate failed: ${err instanceof Error ? err.message : err}`,
+      ),
+    );
+
     const files = await db.query.meetingFiles.findMany({
       where: eq(meetingFiles.meetingId, meetingId),
     });

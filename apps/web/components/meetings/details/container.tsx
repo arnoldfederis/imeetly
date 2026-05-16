@@ -30,7 +30,6 @@ import { EditableSection } from "@/components/meetings/details/editable-section"
 import { ProcessingTimeline } from "@/components/meetings/details/processing-timeline";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -73,6 +72,7 @@ export function MeetingDetailsContainer(props: Props) {
         : `/${sourceLinkParam}`
     : "/meetings";
   const [exportUpgradeOpen, setExportUpgradeOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const { data: planData } = useQuery(client.billing.getPlan.queryOptions());
@@ -311,20 +311,21 @@ export function MeetingDetailsContainer(props: Props) {
               <span className="hidden sm:inline">Export</span>
             </Button>
           )}
-          <AlertDialog>
+          <AlertDialog
+            onOpenChange={(open) => {
+              if (!deleteMutation.isPending) setDeleteDialogOpen(open);
+            }}
+            open={deleteDialogOpen}
+          >
             <AlertDialogTrigger
               render={
                 <Button
-                  disabled={deleteMutation.isPending}
+                  onClick={() => setDeleteDialogOpen(true)}
                   size="icon-sm"
                   type="button"
                   variant="destructive"
                 >
-                  {deleteMutation.isPending ? (
-                    <Spinner className="size-3.5" />
-                  ) : (
-                    <Trash2Icon className="size-3.5 text-destructive" />
-                  )}
+                  <Trash2Icon className="size-3.5 text-destructive" />
                 </Button>
               }
             />
@@ -341,13 +342,20 @@ export function MeetingDetailsContainer(props: Props) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
+                <AlertDialogCancel disabled={deleteMutation.isPending}>
+                  Cancel
+                </AlertDialogCancel>
+                <Button
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={deleteMutation.isPending}
                   onClick={() => deleteMutation.mutate({ id: meetingId })}
+                  size="sm"
                 >
-                  Delete
-                </AlertDialogAction>
+                  {deleteMutation.isPending ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

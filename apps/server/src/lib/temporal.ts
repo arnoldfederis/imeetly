@@ -9,6 +9,30 @@ function getTemporalHttpUrl(): string {
   return `http://${host}:${TEMPORAL_HTTP_PORT}`;
 }
 
+export async function terminateMeetingWorkflow(meetingId: string) {
+  const workflowId = `meeting-${meetingId}`;
+  const baseUrl = getTemporalHttpUrl();
+  const namespace = env.TEMPORAL_NAMESPACE;
+
+  const url = `${baseUrl}/api/v1/namespaces/${namespace}/workflows/${encodeURIComponent(workflowId)}/terminate`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason: "Meeting deleted by user" }),
+  });
+
+  if (response.ok || response.status === 404) {
+    console.log(`[temporal] Terminated workflow ${workflowId}`);
+    return;
+  }
+
+  const errorText = await response.text();
+  console.warn(
+    `[temporal] Failed to terminate workflow ${workflowId}: ${response.status} ${errorText}`,
+  );
+}
+
 export async function startMeetingProcessing(
   meetingId: string,
   options?: { priority?: boolean },

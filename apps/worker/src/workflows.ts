@@ -5,6 +5,7 @@ const { downloadIntegrationRecordingIfNeeded } = proxyActivities<
   typeof activities
 >({
   startToCloseTimeout: "3 hours",
+  heartbeatTimeout: "2 minutes",
   retry: {
     maximumAttempts: 2,
     initialInterval: "5 seconds",

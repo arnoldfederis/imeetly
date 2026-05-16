@@ -17,7 +17,7 @@ import {
   meetings,
 } from "@repo/db/schemas/app";
 import { users } from "@repo/db/schemas/auth";
-import { ApplicationFailure } from "@temporalio/activity";
+import { ApplicationFailure, Context } from "@temporalio/activity";
 import {
   and,
   desc,
@@ -418,6 +418,7 @@ export async function downloadIntegrationRecordingIfNeeded(
           if (!value) continue;
 
           refreshAbortTimer();
+          Context.current().heartbeat({ bytesDownloaded, sizeBytes });
 
           const chunk = Buffer.from(value);
           bytesDownloaded += chunk.byteLength;
@@ -521,6 +522,7 @@ export async function downloadIntegrationRecordingIfNeeded(
               ? chunk.byteLength
               : Buffer.byteLength(chunk);
             refreshAbortTimer();
+            Context.current().heartbeat({ bytesDownloaded, sizeBytes });
             void persistProgress().catch((err) => {
               console.warn(
                 `[${meetingId}] Failed to persist download progress:`,
