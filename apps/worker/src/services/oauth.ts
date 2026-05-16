@@ -11,8 +11,7 @@ import { env } from "../env";
 
 function getKey(): Buffer {
   const secret =
-    env.INTEGRATION_ENCRYPTION_KEY ??
-    "imeetly-dev:integration-tokens";
+    env.INTEGRATION_ENCRYPTION_KEY ?? "imeetly-dev:integration-tokens";
   return createHash("sha256").update(secret).digest();
 }
 
@@ -59,9 +58,14 @@ async function refreshGoogle(
     }),
   });
   if (!res.ok) {
-    throw new Error(`Google token refresh failed (${res.status}): ${await res.text()}`);
+    throw new Error(
+      `Google token refresh failed (${res.status}): ${await res.text()}`,
+    );
   }
-  const data = (await res.json()) as { access_token: string; expires_in: number };
+  const data = (await res.json()) as {
+    access_token: string;
+    expires_in: number;
+  };
   return {
     accessToken: data.access_token,
     expiresAt: new Date(Date.now() + data.expires_in * 1000),
@@ -79,7 +83,9 @@ async function refreshZoom(
     { method: "POST", headers: { Authorization: `Basic ${creds}` } },
   );
   if (!res.ok) {
-    throw new Error(`Zoom token refresh failed (${res.status}): ${await res.text()}`);
+    throw new Error(
+      `Zoom token refresh failed (${res.status}): ${await res.text()}`,
+    );
   }
   const data = (await res.json()) as {
     access_token: string;
@@ -151,7 +157,11 @@ export async function getWorkerAccessToken(
     throw new Error(`No refresh token for integration: ${integrationId}`);
 
   const refreshToken = decrypt(row.refreshTokenEncrypted);
-  let result: { accessToken: string; expiresAt: Date; newRefreshToken?: string };
+  let result: {
+    accessToken: string;
+    expiresAt: Date;
+    newRefreshToken?: string;
+  };
 
   switch (row.provider) {
     case "google":

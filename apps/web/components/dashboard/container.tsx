@@ -16,7 +16,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatActionItemDate } from "@/components/action-items/action-item-list-item";
-import { PromptInput, PromptInputSubmit, PromptInputTextarea, } from "@/components/ai-elements/prompt-input";
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { FormattedDate } from "@/components/common/formatted-date";
@@ -26,7 +30,12 @@ import { memoryChatRuntime } from "@/components/memory/chat-runtime";
 import { getMemoryHref } from "@/components/memory/paths";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { client } from "@/lib/orpc";
 import { cn } from "@/lib/utils";
 

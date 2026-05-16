@@ -3,8 +3,8 @@ import { db } from "@repo/db";
 import {
   actionItems,
   meetingFiles,
-  meetings,
   meetingSummaries,
+  meetings,
 } from "@repo/db/schemas/app";
 import { env } from "@repo/env";
 import {

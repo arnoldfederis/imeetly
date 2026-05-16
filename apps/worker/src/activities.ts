@@ -27,7 +27,6 @@ import {
 } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { db } from "./db";
-import { getWorkerAccessToken } from "./services/oauth";
 import {
   ActionItemReminderEmail,
   OverdueActionItemsDigestEmail,
@@ -43,6 +42,7 @@ import {
   ProviderError,
   type TranscriptionResult,
 } from "./services/ai/types";
+import { getWorkerAccessToken } from "./services/oauth";
 
 function normalizeEmail(email?: string | null) {
   return email?.trim().toLowerCase() || null;
