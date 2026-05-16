@@ -215,7 +215,9 @@ export async function downloadIntegrationRecordingIfNeeded(
 
   // Abort only on inactivity. Large imports can run for hours, but they
   // should not sit idle indefinitely without receiving any bytes.
-  const stallTimeoutMs = 5 * 60 * 1000;
+  // Keep stall timeout under heartbeat timeout (2 min) so the activity exits
+  // cleanly before Temporal reschedules a retry, avoiding concurrent downloads.
+  const stallTimeoutMs = 90 * 1000;
   const controller = new AbortController();
   let abortTimer: ReturnType<typeof setTimeout> | null = null;
   const refreshAbortTimer = () => {
@@ -351,79 +353,78 @@ export async function downloadIntegrationRecordingIfNeeded(
       );
       const parts: Array<{ ETag: string; PartNumber: number }> = [];
       let partNumber = 1;
-      let bufferedChunks: Buffer[] = [];
-      let bufferedBytes = 0;
 
-      const uploadBufferedPart = async (isFinalPart: boolean) => {
-        if (bufferedBytes === 0) return;
-        if (!isFinalPart && bufferedBytes < 5 * 1024 * 1024) return;
+      // Close the initial streaming connection — use bounded Range requests per chunk
+      // to avoid Google Drive CDN stalling long-lived streams on large files.
+      downloadRes.body.cancel().catch(() => {});
 
-        const partBody =
-          bufferedChunks.length === 1
-            ? bufferedChunks[0]
-            : Buffer.concat(bufferedChunks, bufferedBytes);
+      const totalParts = Math.ceil(sizeBytes / multipartPartSizeBytes);
+      console.log(
+        `[${meetingId}] Fetching ${totalParts} chunks via Range requests`,
+      );
 
-        console.log(
-          `[${meetingId}] Uploading R2 part ${partNumber} (${Math.round(partBody.byteLength / 1024 / 1024)} MB)`,
-        );
-
-        let response: { ETag?: string } | undefined;
-        try {
-          response = await s3.send(
-            new UploadPartCommand({
-              Bucket: env.S3_BUCKET,
-              Key: storageKey,
-              UploadId: uploadId,
-              PartNumber: partNumber,
-              Body: partBody,
-              ContentLength: partBody.byteLength,
-            }),
-          );
-        } catch (err) {
-          console.error(
-            `[${meetingId}] Failed uploading R2 part ${partNumber}:`,
-            err instanceof Error ? err.message : err,
-          );
-          throw err;
-        }
-
-        if (!response.ETag) {
-          throw new Error(`R2 did not return an ETag for part ${partNumber}`);
-        }
-
-        console.log(`[${meetingId}] Uploaded R2 part ${partNumber}`);
-        parts.push({ ETag: response.ETag, PartNumber: partNumber });
-        partNumber++;
-        bufferedChunks = [];
-        bufferedBytes = 0;
-      };
-
-      const reader = downloadRes.body.getReader();
       try {
-        while (true) {
-          let readResult:
-            | { done: false; value: Uint8Array }
-            | { done: true; value?: Uint8Array };
+        for (let chunkIndex = 0; chunkIndex < totalParts; chunkIndex++) {
+          const startByte = chunkIndex * multipartPartSizeBytes;
+          const endByte = Math.min(
+            (chunkIndex + 1) * multipartPartSizeBytes - 1,
+            sizeBytes - 1,
+          );
+          const rangeHeader = `bytes=${startByte}-${endByte}`;
+
+          refreshAbortTimer();
+          Context.current().heartbeat({
+            bytesDownloaded,
+            sizeBytes,
+            phase: "downloading_chunk",
+            chunkIndex,
+          });
+
+          console.log(
+            `[${meetingId}] Fetching chunk ${chunkIndex + 1}/${totalParts} (${rangeHeader})`,
+          );
+
+          let chunkRes: Response;
           try {
-            readResult = await reader.read();
+            chunkRes = await fetch(downloadRes.url, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                Range: rangeHeader,
+              },
+              signal: controller.signal,
+            });
           } catch (err) {
             console.error(
-              `[${meetingId}] Failed while reading provider stream:`,
+              `[${meetingId}] Failed to fetch chunk ${chunkIndex + 1}:`,
               err instanceof Error ? err.message : err,
             );
             throw err;
           }
-          const { done, value } = readResult;
-          if (done) break;
-          if (!value) continue;
 
+          if (chunkRes.status !== 206 && chunkRes.status !== 200) {
+            throw new Error(
+              `Unexpected status ${chunkRes.status} for Range request (chunk ${chunkIndex + 1})`,
+            );
+          }
+
+          clearAbortTimer();
           refreshAbortTimer();
-          Context.current().heartbeat({ bytesDownloaded, sizeBytes });
 
-          const chunk = Buffer.from(value);
-          bytesDownloaded += chunk.byteLength;
-          bufferedChunks.push(chunk);
-          bufferedBytes += chunk.byteLength;
+          let chunkBuffer: Buffer;
+          try {
+            const ab = await chunkRes.arrayBuffer();
+            chunkBuffer = Buffer.from(ab);
+          } catch (err) {
+            console.error(
+              `[${meetingId}] Failed reading chunk ${chunkIndex + 1} body:`,
+              err instanceof Error ? err.message : err,
+            );
+            throw err;
+          }
+
+          clearAbortTimer();
+
+          bytesDownloaded += chunkBuffer.byteLength;
 
           void persistProgress().catch((err) => {
             console.warn(
@@ -432,33 +433,49 @@ export async function downloadIntegrationRecordingIfNeeded(
             );
           });
 
-          while (bufferedBytes >= multipartPartSizeBytes) {
-            let remainingToTake = multipartPartSizeBytes;
-            const partChunks: Buffer[] = [];
-            let partBytes = 0;
+          const currentPart = partNumber;
+          console.log(
+            `[${meetingId}] Uploading R2 part ${currentPart} (${Math.round(chunkBuffer.byteLength / 1024 / 1024)} MB)`,
+          );
 
-            while (remainingToTake > 0 && bufferedChunks.length > 0) {
-              const current = bufferedChunks[0];
-              if (current.byteLength <= remainingToTake) {
-                partChunks.push(current);
-                partBytes += current.byteLength;
-                remainingToTake -= current.byteLength;
-                bufferedChunks.shift();
-              } else {
-                partChunks.push(current.subarray(0, remainingToTake));
-                bufferedChunks[0] = current.subarray(remainingToTake);
-                partBytes += remainingToTake;
-                remainingToTake = 0;
-              }
-            }
+          Context.current().heartbeat({
+            bytesDownloaded,
+            sizeBytes,
+            phase: "uploading_part",
+            partNumber: currentPart,
+          });
 
-            bufferedChunks.unshift(Buffer.concat(partChunks, partBytes));
-            bufferedBytes -= multipartPartSizeBytes;
-            await uploadBufferedPart(false);
+          let uploadResponse: { ETag?: string } | undefined;
+          try {
+            uploadResponse = await s3.send(
+              new UploadPartCommand({
+                Bucket: env.S3_BUCKET,
+                Key: storageKey,
+                UploadId: uploadId,
+                PartNumber: currentPart,
+                Body: chunkBuffer,
+                ContentLength: chunkBuffer.byteLength,
+              }),
+            );
+          } catch (err) {
+            console.error(
+              `[${meetingId}] Failed uploading R2 part ${currentPart}:`,
+              err instanceof Error ? err.message : err,
+            );
+            throw err;
           }
+
+          if (!uploadResponse.ETag) {
+            throw new Error(
+              `R2 did not return an ETag for part ${currentPart}`,
+            );
+          }
+
+          parts.push({ ETag: uploadResponse.ETag, PartNumber: currentPart });
+          partNumber++;
+          console.log(`[${meetingId}] Uploaded R2 part ${currentPart}`);
         }
 
-        await uploadBufferedPart(true);
         await persistProgress(true);
 
         console.log(
@@ -511,7 +528,6 @@ export async function downloadIntegrationRecordingIfNeeded(
         throw err;
       } finally {
         clearAbortTimer();
-        reader.releaseLock();
       }
     } else {
       console.log(`[${meetingId}] Using single-part upload to R2`);
