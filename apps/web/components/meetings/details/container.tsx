@@ -40,7 +40,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,7 +58,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { client } from "@/lib/orpc";
-import { downloadMeetingMarkdown, downloadMeetingPdf, getLandingPageUrl, } from "@/lib/utils";
+import {
+  downloadMeetingMarkdown,
+  downloadMeetingPdf,
+  getLandingPageUrl,
+} from "@/lib/utils";
 
 interface Props {
   meetingId: string;
