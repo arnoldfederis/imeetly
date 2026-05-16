@@ -208,6 +208,7 @@ export async function downloadIntegrationRecordingIfNeeded(
 
   const { integrationId, downloadUrl, mimeType, sizeBytes, durationSeconds } =
     pending;
+  const downloadSummary = `${mimeType}${sizeBytes != null ? `, ${Math.round(sizeBytes / 1024 / 1024)} MB` : ""}`;
 
   // Always get a fresh token — refreshes automatically if within 5 min of expiry
   const accessToken = await getWorkerAccessToken(integrationId);
@@ -238,6 +239,8 @@ export async function downloadIntegrationRecordingIfNeeded(
           startedAt,
           lastProgressAt: startedAt,
           bytesDownloaded: 0,
+          phase: "starting",
+          lastError: null,
         },
       },
     })
@@ -245,9 +248,14 @@ export async function downloadIntegrationRecordingIfNeeded(
       sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
     );
 
+  console.log(
+    `[${meetingId}] Starting integration download (${downloadSummary}) from provider=${extMeeting.provider}`,
+  );
+
   let downloadRes: Response;
   try {
     refreshAbortTimer();
+    console.log(`[${meetingId}] Requesting source media from provider`);
     downloadRes = await fetch(downloadUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
       signal: controller.signal,
@@ -255,6 +263,10 @@ export async function downloadIntegrationRecordingIfNeeded(
   } finally {
     clearAbortTimer();
   }
+
+  console.log(
+    `[${meetingId}] Source response status=${downloadRes.status} content-length=${downloadRes.headers.get("content-length") ?? "unknown"}`,
+  );
 
   if (downloadRes.status === 401 || downloadRes.status === 403) {
     throw ApplicationFailure.nonRetryable(
@@ -304,6 +316,8 @@ export async function downloadIntegrationRecordingIfNeeded(
               startedAt,
               lastProgressAt: new Date(now).toISOString(),
               bytesDownloaded,
+              phase: "downloading",
+              lastError: null,
             },
           },
         })
@@ -316,6 +330,9 @@ export async function downloadIntegrationRecordingIfNeeded(
     refreshAbortTimer();
 
     if (sizeBytes >= multipartThresholdBytes) {
+      console.log(
+        `[${meetingId}] Using multipart upload to R2 (part size ${Math.round(multipartPartSizeBytes / 1024 / 1024)} MB)`,
+      );
       const createResponse = await s3.send(
         new CreateMultipartUploadCommand({
           Bucket: env.S3_BUCKET,
@@ -329,6 +346,9 @@ export async function downloadIntegrationRecordingIfNeeded(
       }
 
       const uploadId = createResponse.UploadId;
+      console.log(
+        `[${meetingId}] Multipart upload started uploadId=${uploadId}`,
+      );
       const parts: Array<{ ETag: string; PartNumber: number }> = [];
       let partNumber = 1;
       let bufferedChunks: Buffer[] = [];
@@ -347,21 +367,31 @@ export async function downloadIntegrationRecordingIfNeeded(
           `[${meetingId}] Uploading R2 part ${partNumber} (${Math.round(partBody.byteLength / 1024 / 1024)} MB)`,
         );
 
-        const response = await s3.send(
-          new UploadPartCommand({
-            Bucket: env.S3_BUCKET,
-            Key: storageKey,
-            UploadId: uploadId,
-            PartNumber: partNumber,
-            Body: partBody,
-            ContentLength: partBody.byteLength,
-          }),
-        );
+        let response: { ETag?: string } | undefined;
+        try {
+          response = await s3.send(
+            new UploadPartCommand({
+              Bucket: env.S3_BUCKET,
+              Key: storageKey,
+              UploadId: uploadId,
+              PartNumber: partNumber,
+              Body: partBody,
+              ContentLength: partBody.byteLength,
+            }),
+          );
+        } catch (err) {
+          console.error(
+            `[${meetingId}] Failed uploading R2 part ${partNumber}:`,
+            err instanceof Error ? err.message : err,
+          );
+          throw err;
+        }
 
         if (!response.ETag) {
           throw new Error(`R2 did not return an ETag for part ${partNumber}`);
         }
 
+        console.log(`[${meetingId}] Uploaded R2 part ${partNumber}`);
         parts.push({ ETag: response.ETag, PartNumber: partNumber });
         partNumber++;
         bufferedChunks = [];
@@ -371,7 +401,19 @@ export async function downloadIntegrationRecordingIfNeeded(
       const reader = downloadRes.body.getReader();
       try {
         while (true) {
-          const { done, value } = await reader.read();
+          let readResult:
+            | { done: false; value: Uint8Array }
+            | { done: true; value?: Uint8Array };
+          try {
+            readResult = await reader.read();
+          } catch (err) {
+            console.error(
+              `[${meetingId}] Failed while reading provider stream:`,
+              err instanceof Error ? err.message : err,
+            );
+            throw err;
+          }
+          const { done, value } = readResult;
           if (done) break;
           if (!value) continue;
 
@@ -418,6 +460,9 @@ export async function downloadIntegrationRecordingIfNeeded(
         await uploadBufferedPart(true);
         await persistProgress(true);
 
+        console.log(
+          `[${meetingId}] Completing multipart upload with ${parts.length} parts`,
+        );
         await s3.send(
           new CompleteMultipartUploadCommand({
             Bucket: env.S3_BUCKET,
@@ -428,7 +473,31 @@ export async function downloadIntegrationRecordingIfNeeded(
             },
           }),
         );
+        console.log(`[${meetingId}] Multipart upload completed`);
       } catch (err) {
+        await db
+          .update(externalMeetings)
+          .set({
+            metadata: {
+              ...meta,
+              pendingDownload: {
+                ...pending,
+                startedAt,
+                lastProgressAt: new Date().toISOString(),
+                bytesDownloaded,
+                phase: "failed",
+                lastError:
+                  err instanceof Error ? err.message : "Unknown transfer error",
+              },
+            },
+          })
+          .where(
+            sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+          );
+        console.error(
+          `[${meetingId}] Multipart transfer failed:`,
+          err instanceof Error ? err.message : err,
+        );
         await s3
           .send(
             new AbortMultipartUploadCommand({
@@ -444,6 +513,7 @@ export async function downloadIntegrationRecordingIfNeeded(
         reader.releaseLock();
       }
     } else {
+      console.log(`[${meetingId}] Using single-part upload to R2`);
       const body = Readable.fromWeb(downloadRes.body).pipe(
         new Transform({
           transform(chunk, _encoding, callback) {
@@ -469,6 +539,7 @@ export async function downloadIntegrationRecordingIfNeeded(
       );
 
       try {
+        console.log(`[${meetingId}] Starting single-part upload to R2`);
         await s3.send(
           new PutObjectCommand({
             Bucket: env.S3_BUCKET,
@@ -478,6 +549,32 @@ export async function downloadIntegrationRecordingIfNeeded(
             ContentLength: sizeBytes,
           }),
         );
+        console.log(`[${meetingId}] Single-part upload completed`);
+      } catch (err) {
+        await db
+          .update(externalMeetings)
+          .set({
+            metadata: {
+              ...meta,
+              pendingDownload: {
+                ...pending,
+                startedAt,
+                lastProgressAt: new Date().toISOString(),
+                bytesDownloaded,
+                phase: "failed",
+                lastError:
+                  err instanceof Error ? err.message : "Unknown transfer error",
+              },
+            },
+          })
+          .where(
+            sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+          );
+        console.error(
+          `[${meetingId}] Single-part upload failed:`,
+          err instanceof Error ? err.message : err,
+        );
+        throw err;
       } finally {
         clearAbortTimer();
       }
@@ -495,6 +592,8 @@ export async function downloadIntegrationRecordingIfNeeded(
             startedAt,
             lastProgressAt: new Date().toISOString(),
             bytesDownloaded: fileSize,
+            phase: "uploading",
+            lastError: null,
           },
         },
       })
@@ -502,6 +601,7 @@ export async function downloadIntegrationRecordingIfNeeded(
         sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
       );
 
+    console.log(`[${meetingId}] Uploading buffered source to R2`);
     await s3.send(
       new PutObjectCommand({
         Bucket: env.S3_BUCKET,
@@ -511,6 +611,7 @@ export async function downloadIntegrationRecordingIfNeeded(
         ContentLength: fileSize,
       }),
     );
+    console.log(`[${meetingId}] Buffered upload completed`);
   }
 
   await db.insert(meetingFiles).values({
@@ -532,6 +633,7 @@ export async function downloadIntegrationRecordingIfNeeded(
     .where(
       sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
     );
+  console.log(`[${meetingId}] Integration recording stored at ${storageKey}`);
 }
 
 // --- AI activities (thin wrappers around provider layer) ---
