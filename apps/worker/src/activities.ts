@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
@@ -236,11 +237,12 @@ export async function downloadIntegrationRecordingIfNeeded(
   const storageKey = `${meetingId}/recording${mimeType === "audio/mp4" ? ".m4a" : ".mp4"}`;
   const [, fileName = storageKey] = storageKey.split("/");
 
-  // Stream body directly to S3 when size is known; buffer otherwise
-  let body: Buffer | ReadableStream;
+  // Convert fetch streams to Node streams before uploading so the AWS SDK can
+  // hash/sign the body without tripping over a flowing Web ReadableStream.
+  let body: Buffer | Readable;
   let fileSize: number;
   if (sizeBytes != null && downloadRes.body) {
-    body = downloadRes.body;
+    body = Readable.fromWeb(downloadRes.body);
     fileSize = sizeBytes;
   } else {
     const buf = Buffer.from(await downloadRes.arrayBuffer());

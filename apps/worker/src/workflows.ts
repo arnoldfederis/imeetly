@@ -44,16 +44,16 @@ const {
 });
 
 export async function processMeeting(meetingId: string): Promise<void> {
-  // Download integration recording to S3 before processing (no-op for manual uploads)
-  await downloadIntegrationRecordingIfNeeded(meetingId);
-
-  await updateMeetingStatus(meetingId, "processing", "queued", null);
-  const input = await loadMeetingInput(meetingId);
-
-  let transcript = input.transcriptText || "";
-  let transcriptionProvider: string | undefined;
-
   try {
+    await updateMeetingStatus(meetingId, "processing", "queued", null);
+
+    // Download integration recording to S3 before processing (no-op for manual uploads)
+    await downloadIntegrationRecordingIfNeeded(meetingId);
+
+    const input = await loadMeetingInput(meetingId);
+    let transcript = input.transcriptText || "";
+    let transcriptionProvider: string | undefined;
+
     // --- Transcription phase ---
     if (input.sourceType === "video" && input.storageKey) {
       await updateMeetingStatus(
