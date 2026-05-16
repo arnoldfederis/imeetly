@@ -1,4 +1,4 @@
-import { Readable } from "node:stream";
+import { Readable, Transform } from "node:stream";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
@@ -208,18 +208,48 @@ export async function downloadIntegrationRecordingIfNeeded(
   // Always get a fresh token — refreshes automatically if within 5 min of expiry
   const accessToken = await getWorkerAccessToken(integrationId);
 
-  // Abort the download if it stalls (25 min cap, safely under the 30 min activity timeout)
+  // Abort only on inactivity. Large imports can run for hours, but they
+  // should not sit idle indefinitely without receiving any bytes.
+  const stallTimeoutMs = 5 * 60 * 1000;
   const controller = new AbortController();
-  const abortTimer = setTimeout(() => controller.abort(), 25 * 60 * 1000);
+  let abortTimer: ReturnType<typeof setTimeout> | null = null;
+  const refreshAbortTimer = () => {
+    if (abortTimer) clearTimeout(abortTimer);
+    abortTimer = setTimeout(() => controller.abort(), stallTimeoutMs);
+  };
+  const clearAbortTimer = () => {
+    if (!abortTimer) return;
+    clearTimeout(abortTimer);
+    abortTimer = null;
+  };
+
+  const startedAt = new Date().toISOString();
+  await db
+    .update(externalMeetings)
+    .set({
+      metadata: {
+        ...meta,
+        pendingDownload: {
+          ...pending,
+          startedAt,
+          lastProgressAt: startedAt,
+          bytesDownloaded: 0,
+        },
+      },
+    })
+    .where(
+      sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+    );
 
   let downloadRes: Response;
   try {
+    refreshAbortTimer();
     downloadRes = await fetch(downloadUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
       signal: controller.signal,
     });
   } finally {
-    clearTimeout(abortTimer);
+    clearAbortTimer();
   }
 
   if (downloadRes.status === 401 || downloadRes.status === 403) {
@@ -242,23 +272,103 @@ export async function downloadIntegrationRecordingIfNeeded(
   let body: Buffer | Readable;
   let fileSize: number;
   if (sizeBytes != null && downloadRes.body) {
-    body = Readable.fromWeb(downloadRes.body);
+    let bytesDownloaded = 0;
+    let lastPersistedBytes = 0;
+    let lastPersistedAt = Date.now();
+    const persistThresholdBytes = 64 * 1024 * 1024;
+    const persistIntervalMs = 15 * 1000;
+
+    const persistProgress = async (force = false) => {
+      const now = Date.now();
+      if (
+        !force &&
+        bytesDownloaded - lastPersistedBytes < persistThresholdBytes &&
+        now - lastPersistedAt < persistIntervalMs
+      ) {
+        return;
+      }
+
+      lastPersistedBytes = bytesDownloaded;
+      lastPersistedAt = now;
+
+      await db
+        .update(externalMeetings)
+        .set({
+          metadata: {
+            ...meta,
+            pendingDownload: {
+              ...pending,
+              startedAt,
+              lastProgressAt: new Date(now).toISOString(),
+              bytesDownloaded,
+            },
+          },
+        })
+        .where(
+          sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+        );
+    };
+
+    refreshAbortTimer();
+    body = Readable.fromWeb(downloadRes.body).pipe(
+      new Transform({
+        transform(chunk, _encoding, callback) {
+          bytesDownloaded += Buffer.isBuffer(chunk)
+            ? chunk.byteLength
+            : Buffer.byteLength(chunk);
+          refreshAbortTimer();
+          void persistProgress().catch((err) => {
+            console.warn(
+              `[${meetingId}] Failed to persist download progress:`,
+              err instanceof Error ? err.message : err,
+            );
+          });
+          callback(null, chunk);
+        },
+        final(callback) {
+          clearAbortTimer();
+          void persistProgress(true)
+            .then(() => callback())
+            .catch((err) => callback(err as Error));
+        },
+      }),
+    );
     fileSize = sizeBytes;
   } else {
     const buf = Buffer.from(await downloadRes.arrayBuffer());
     body = buf;
     fileSize = buf.byteLength;
+    await db
+      .update(externalMeetings)
+      .set({
+        metadata: {
+          ...meta,
+          pendingDownload: {
+            ...pending,
+            startedAt,
+            lastProgressAt: new Date().toISOString(),
+            bytesDownloaded: fileSize,
+          },
+        },
+      })
+      .where(
+        sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+      );
   }
 
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: env.S3_BUCKET,
-      Key: storageKey,
-      Body: body,
-      ContentType: mimeType,
-      ...(sizeBytes != null ? { ContentLength: sizeBytes } : {}),
-    }),
-  );
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: storageKey,
+        Body: body,
+        ContentType: mimeType,
+        ...(sizeBytes != null ? { ContentLength: sizeBytes } : {}),
+      }),
+    );
+  } finally {
+    clearAbortTimer();
+  }
 
   await db.insert(meetingFiles).values({
     meetingId,

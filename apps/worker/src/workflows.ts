@@ -4,7 +4,7 @@ import type * as activities from "./activities";
 const { downloadIntegrationRecordingIfNeeded } = proxyActivities<
   typeof activities
 >({
-  startToCloseTimeout: "30 minutes",
+  startToCloseTimeout: "3 hours",
   retry: {
     maximumAttempts: 2,
     initialInterval: "5 seconds",
@@ -48,6 +48,12 @@ export async function processMeeting(meetingId: string): Promise<void> {
     await updateMeetingStatus(meetingId, "processing", "queued", null);
 
     // Download integration recording to S3 before processing (no-op for manual uploads)
+    await updateMeetingStatus(
+      meetingId,
+      "processing",
+      "downloading_recording",
+      null,
+    );
     await downloadIntegrationRecordingIfNeeded(meetingId);
 
     const input = await loadMeetingInput(meetingId);

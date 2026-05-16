@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
 import {
   actionItems,
+  externalMeetings,
   meetingFiles,
   meetingSummaries,
   meetings,
@@ -21,6 +22,63 @@ import { BillingService } from "@repo/server/modules/billing/service";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 
 export abstract class MeetingService {
+  private static async getIntegrationDownloadState(
+    userId: string,
+    meetingId: string,
+  ) {
+    const [extMeeting] = await db
+      .select({
+        provider: externalMeetings.provider,
+        status: externalMeetings.status,
+        metadata: externalMeetings.metadata,
+      })
+      .from(externalMeetings)
+      .where(
+        and(
+          eq(externalMeetings.userId, userId),
+          sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
+        ),
+      )
+      .limit(1);
+
+    if (!extMeeting) return null;
+
+    const metadata = extMeeting.metadata as Record<string, unknown>;
+    const pending = metadata.pendingDownload as
+      | {
+          sizeBytes?: number | null;
+          durationSeconds?: number | null;
+          bytesDownloaded?: number | null;
+          startedAt?: string | null;
+          lastProgressAt?: string | null;
+        }
+      | undefined;
+
+    if (!pending) return null;
+
+    const sizeBytes =
+      typeof pending.sizeBytes === "number" ? pending.sizeBytes : null;
+    const bytesDownloaded =
+      typeof pending.bytesDownloaded === "number" ? pending.bytesDownloaded : 0;
+
+    return {
+      provider: extMeeting.provider,
+      externalStatus: extMeeting.status,
+      sizeBytes,
+      durationSeconds:
+        typeof pending.durationSeconds === "number"
+          ? pending.durationSeconds
+          : null,
+      bytesDownloaded,
+      progressPercent:
+        sizeBytes && sizeBytes > 0
+          ? Math.max(0, Math.min(100, Math.round((bytesDownloaded / sizeBytes) * 100)))
+          : null,
+      startedAt: pending.startedAt ?? null,
+      lastProgressAt: pending.lastProgressAt ?? null,
+    };
+  }
+
   static async checkUsageLimit(userId: string) {
     const { plan, currentPeriodStart, currentPeriodEnd } =
       await BillingService.resolveUserPlan(userId);
@@ -140,18 +198,26 @@ export abstract class MeetingService {
   }
 
   static async getById(userId: string, meetingId: string) {
-    return (
-      (await db.query.meetings.findFirst({
-        where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
-        with: {
-          files: true,
-          summary: true,
-          actionItems: {
-            orderBy: [asc(actionItems.createdAt)],
-          },
+    const meeting = await db.query.meetings.findFirst({
+      where: and(eq(meetings.id, meetingId), eq(meetings.userId, userId)),
+      with: {
+        files: true,
+        summary: true,
+        actionItems: {
+          orderBy: [asc(actionItems.createdAt)],
         },
-      })) ?? null
-    );
+      },
+    });
+
+    if (!meeting) return null;
+
+    return {
+      ...meeting,
+      integrationDownload: await MeetingService.getIntegrationDownloadState(
+        userId,
+        meetingId,
+      ),
+    };
   }
 
   static async update(

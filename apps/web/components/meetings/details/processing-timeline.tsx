@@ -1,6 +1,7 @@
 import {
   CheckCircle2Icon,
   CircleDotIcon,
+  DownloadIcon,
   PlayIcon,
   XCircleIcon,
 } from "lucide-react";
@@ -17,8 +18,15 @@ export function ProcessingTimeline({
 }: {
   meeting: {
     status: string;
+    provider?: string | null;
     processingStatus: string | null;
     failureReason?: string | null;
+    integrationDownload?: {
+      sizeBytes: number | null;
+      bytesDownloaded: number;
+      progressPercent: number | null;
+      lastProgressAt?: string | null;
+    } | null;
   };
   sourceType: string;
   onRetry?: () => void;
@@ -26,24 +34,35 @@ export function ProcessingTimeline({
 }) {
   const allStages = [
     { key: "queued", label: "Queued" },
+    { key: "downloading_recording", label: "Downloading Recording" },
     { key: "extracting_audio", label: "Extracting Audio" },
     { key: "transcribing", label: "Transcribing" },
     { key: "summarizing", label: "Summarizing" },
     { key: "extracting_actions", label: "Extracting Actions" },
     { key: "completed", label: "Completed" },
   ];
+  const showsDownloadStage =
+    sourceType !== "text" && Boolean(meeting.provider);
 
   const stages =
     sourceType === "text"
       ? allStages.filter(
-          (s) => s.key !== "extracting_audio" && s.key !== "transcribing",
+          (s) =>
+            s.key !== "downloading_recording" &&
+            s.key !== "extracting_audio" &&
+            s.key !== "transcribing",
         )
-      : allStages;
+      : allStages.filter((s) =>
+          showsDownloadStage ? true : s.key !== "downloading_recording",
+        );
 
   const currentIdx = stages.findIndex(
     (s) => s.key === meeting.processingStatus,
   );
   const isFailed = meeting.status === "failed";
+  const downloadPercent =
+    meeting.integrationDownload?.progressPercent ??
+    (meeting.processingStatus === "downloading_recording" ? 0 : null);
   const progressPercent =
     currentIdx >= 0 ? Math.round((currentIdx / (stages.length - 1)) * 100) : 0;
 
@@ -107,7 +126,48 @@ export function ProcessingTimeline({
             )}
           </div>
         )}
+        {showsDownloadStage && meeting.integrationDownload && (
+          <div className="rounded-lg border bg-muted/30 px-3 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <DownloadIcon className="size-3.5 text-muted-foreground" />
+                <span className="font-medium text-sm">
+                  Recording transfer
+                </span>
+              </div>
+              <span className="text-muted-foreground text-xs">
+                {formatBytes(meeting.integrationDownload.bytesDownloaded)}
+                {meeting.integrationDownload.sizeBytes != null
+                  ? ` / ${formatBytes(meeting.integrationDownload.sizeBytes)}`
+                  : ""}
+              </span>
+            </div>
+            <div className="mt-2">
+              <Progress value={downloadPercent ?? 0} />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3 text-muted-foreground text-xs">
+              <span>
+                {downloadPercent != null
+                  ? `${downloadPercent}% transferred`
+                  : "Transfer in progress"}
+              </span>
+              <span>Updates while the worker is receiving bytes</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
+}
+
+function formatBytes(value: number) {
+  if (!Number.isFinite(value) || value < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = value;
+  let unitIdx = 0;
+  while (size >= 1024 && unitIdx < units.length - 1) {
+    size /= 1024;
+    unitIdx++;
+  }
+  return `${size >= 10 || unitIdx === 0 ? Math.round(size) : size.toFixed(1)} ${units[unitIdx]}`;
 }
