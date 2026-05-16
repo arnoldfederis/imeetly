@@ -53,7 +53,6 @@ export function ProductPreviewSection() {
                 <Button
                   className="w-full shrink-0 cursor-default hover:bg-primary sm:w-auto"
                   disabled
-                  nativeButton={false}
                 >
                   <PlusIcon className="size-4" />
                   <span className="hidden sm:inline">New Meeting</span>
@@ -107,20 +106,20 @@ export function ProductPreviewSection() {
                     </div>
                     <div className="divide-y px-4">
                       <MeetingRow
-                        date="Yesterday, 11:00 AM"
                         status="processing"
+                        subtitle="Yesterday, 11:00 AM"
                         title="Design Review: Dashboard v2"
                         type="video"
                       />
                       <MeetingRow
-                        date="Today, 2:30 PM"
                         status="completed"
+                        subtitle="Today, 2:30 PM"
                         title="Q4 Planning - Product Sync"
                         type="audio"
                       />
                       <MeetingRow
-                        date="Mon, 3:00 PM"
                         status="completed"
+                        subtitle="Mon, 3:00 PM"
                         title="Sprint Retrospective"
                         type="text"
                       />
@@ -165,31 +164,29 @@ export function ProductPreviewSection() {
                 <div className="flex min-w-0 flex-col-reverse gap-4 lg:flex-col">
                   {/* Action Items */}
                   <div className="rounded-xl border">
-                    <div className="flex items-center justify-between border-b px-4 py-3">
-                      <p className="font-semibold text-sm">Action Items</p>
-                      <span className="rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
-                        8 open
-                      </span>
+                    <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm">Action Items</p>
+                        <p className="text-muted-foreground text-xs">8 open</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1 text-muted-foreground text-xs">
+                        View all
+                        <ArrowRightIcon className="size-3" />
+                      </div>
                     </div>
                     <div className="divide-y px-4">
                       <ActionRow
-                        meeting="Q4 Planning"
-                        text="Draft API v2 migration guide"
+                        subtitle="May 16, 2026, 7:00 PM"
+                        title="Q4 Planning"
                       />
                       <ActionRow
-                        meeting="Design Review"
-                        text="Finalize dashboard wireframes"
+                        subtitle="May 16, 2026, 7:00 PM"
+                        title="Design Review"
                       />
                       <ActionRow
-                        meeting="Client Onboarding"
-                        text="Send onboarding docs"
+                        subtitle="No due date"
+                        title="Client Onboarding"
                       />
-                    </div>
-                    <div className="flex items-center justify-center border-t px-4 py-2.5">
-                      <span className="flex items-center gap-1 text-muted-foreground text-xs">
-                        View all
-                        <ArrowRightIcon className="size-3" />
-                      </span>
                     </div>
                   </div>
 
@@ -206,11 +203,11 @@ export function ProductPreviewSection() {
                     </div>
                     <div className="flex flex-col gap-1.75 rounded-xl border p-4">
                       <p className="line-clamp-1 font-semibold text-sm">
-                        Open tasks
+                        Done tasks
                       </p>
                       <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
                         9
-                        <CircleDotIcon className="size-4 text-orange-500" />
+                        <CircleDotIcon className="size-4 text-emerald-500" />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.75 rounded-xl border p-4">
@@ -244,13 +241,13 @@ export function ProductPreviewSection() {
 
 function MeetingRow({
   title,
-  date,
+  subtitle,
   type,
   status,
 }: {
   title: string;
-  date: string;
-  type: "audio" | "video" | "text";
+  subtitle: string;
+  type?: "audio" | "video" | "text";
   status: "completed" | "processing" | "failed";
 }) {
   const Icon =
@@ -283,7 +280,7 @@ function MeetingRow({
       <div className="min-w-0 flex-1 space-y-1.5">
         <p className="truncate font-medium text-sm">{title}</p>
         <p className="flex items-center gap-1 text-muted-foreground text-xs">
-          <span className="truncate">{date}</span>
+          <span className="truncate">{subtitle}</span>
         </p>
       </div>
       <div className="shrink-0">{badge}</div>
@@ -291,15 +288,17 @@ function MeetingRow({
   );
 }
 
-function ActionRow({ text, meeting }: { text: string; meeting: string }) {
+function ActionRow({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex min-w-0 items-start gap-2.5 py-2.5">
-      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-        <CircleDotIcon className="size-3 text-orange-500" />
+    <div className="flex min-w-0 items-center gap-3 py-3">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <CircleDotIcon className="size-5 text-orange-500" />
       </div>
       <div className="min-w-0 flex-1 space-y-1.5">
-        <p className="truncate font-medium text-sm leading-tight">{text}</p>
-        <p className="truncate text-muted-foreground text-xs">{meeting}</p>
+        <p className="truncate font-medium text-sm">{title}</p>
+        <p className="flex items-center gap-1 text-muted-foreground text-xs">
+          <span className="truncate">{subtitle}</span>
+        </p>
       </div>
     </div>
   );

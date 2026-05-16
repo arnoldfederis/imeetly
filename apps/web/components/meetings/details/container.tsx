@@ -41,13 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,11 +53,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { client } from "@/lib/orpc";
-import {
-  downloadMeetingMarkdown,
-  downloadMeetingPdf,
-  getLandingPageUrl,
-} from "@/lib/utils";
+import { downloadMeetingMarkdown, downloadMeetingPdf, getLandingPageUrl, } from "@/lib/utils";
 
 interface Props {
   meetingId: string;
@@ -111,13 +101,9 @@ export function MeetingDetailsContainer(props: Props) {
       prevStatus.current !== meeting?.status &&
       (meeting?.status === "completed" || meeting?.status === "failed")
     ) {
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: client.meeting.list.key() }),
-        invalidateMeetingDetailsQuery(),
-        queryClient.invalidateQueries({
-          queryKey: client.actionItem.list.key(),
-        }),
-      ]).then(() => console.log("meeting status updated, refetched queries."));
+      invalidateMeetingDetailsQuery().then(() =>
+        console.log("meeting status updated, refetched queries."),
+      );
     }
     prevStatus.current = meeting?.status;
   }, [meeting?.status, queryClient]);
@@ -171,9 +157,7 @@ export function MeetingDetailsContainer(props: Props) {
   const deleteMutation = useMutation(
     client.meeting.remove.mutationOptions({
       onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: client.meeting.list.key(),
-        });
+        await invalidateMeetingDetailsQuery();
 
         posthog.capture("meeting_deleted", { meeting_id: meetingId });
         toast.success("Meeting deleted");
@@ -199,9 +183,20 @@ export function MeetingDetailsContainer(props: Props) {
   );
 
   async function invalidateMeetingDetailsQuery() {
-    await queryClient.invalidateQueries({
-      queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
-    });
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.getById.key({ input: { id: meetingId } }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.actionItem.list.key(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.list.key(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.dashboard.key(),
+      }),
+    ]);
   }
 
   if (isMeetingLoading) {

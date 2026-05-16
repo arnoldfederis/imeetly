@@ -75,7 +75,7 @@ export function DashboardSkeleton() {
                 <Skeleton className="h-5 w-60" />
               </div>
             </div>
-            <Suggestions className="w-full items-center">
+            <Suggestions className="w-full items-center overflow-hidden">
               {EXAMPLE_PROMPTS.map((prompt) => (
                 <Skeleton
                   className="inline-flex h-8 w-full items-center gap-1 border border-secondary px-4 font-medium text-sm"
@@ -93,22 +93,25 @@ export function DashboardSkeleton() {
         <div className="flex min-w-0 flex-col-reverse gap-4 lg:flex-col">
           <div className="rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <Skeleton className="h-5 w-24 rounded-lg" />
-              <Skeleton className="h-5 w-12 rounded-full" />
+              <div className="flex flex-col gap-1">
+                <Skeleton className="h-5 w-32 rounded-lg" />
+                <Skeleton className="h-3 w-44 rounded-lg" />
+              </div>
+              <Skeleton className="h-3 w-16 rounded-lg" />
             </div>
-            <div className="divide-y px-4">
+            <div className="divide-y px-4 py-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div className="flex items-start gap-2.5 py-2.5" key={i}>
-                  <Skeleton className="mt-0.5 size-5 shrink-0 rounded-full" />
+                <div
+                  className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                  key={i}
+                >
+                  <Skeleton className="size-8 shrink-0 rounded-lg" />
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <Skeleton className="h-[17.5px] w-full rounded-lg" />
-                    <Skeleton className="h-4 w-2/3 rounded-lg" />
+                    <Skeleton className="h-5 w-3/4 rounded-lg" />
+                    <Skeleton className="h-4 w-1/3 rounded-lg" />
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="flex items-center justify-center border-t px-4 py-2.5">
-              <Skeleton className="h-4 w-16 rounded-lg" />
             </div>
           </div>
 

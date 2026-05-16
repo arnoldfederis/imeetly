@@ -22,6 +22,15 @@ import { client } from "@/lib/orpc";
 import { getLandingPageUrl } from "@/lib/utils";
 
 type Provider = "google" | "zoom" | "microsoft";
+type Integration = {
+  id: string;
+  provider: string;
+  providerAccountId: string;
+  status: string;
+  scopes: string[];
+  expiresAt: Date | null;
+  createdAt: Date;
+};
 
 const PROVIDER_META: Record<
   Provider,
@@ -56,8 +65,10 @@ const PROVIDER_META: Record<
 const CONTACT_URL = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/contact`;
 
 export function IntegrationProviderContainer({
+  initialIntegrations,
   provider,
 }: {
+  initialIntegrations: Integration[];
   provider: Provider;
 }) {
   const meta = PROVIDER_META[provider];
@@ -79,7 +90,7 @@ export function IntegrationProviderContainer({
     });
   }, [searchParams]);
 
-  const { data: integrations = [], isLoading: isIntegrationLoading } = useQuery(
+  const { data: integrations = initialIntegrations } = useQuery(
     client.integration.list.queryOptions({
       context: { cache: true },
     }),
@@ -96,19 +107,6 @@ export function IntegrationProviderContainer({
       },
     }),
   );
-
-  if (isIntegrationLoading && integration) {
-    return (
-      <div className="flex flex-col gap-6">
-        <ProviderHeader
-          action={<DisconnectButton disabled />}
-          meetingCount={null}
-          meta={meta}
-        />
-        <ExternalMeetingListSkeleton />
-      </div>
-    );
-  }
 
   if (integration) {
     return (
@@ -252,31 +250,6 @@ function DisconnectButton({
       )}
       Disconnect
     </Button>
-  );
-}
-
-function ExternalMeetingListSkeleton() {
-  return (
-    <div className="flex flex-col gap-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div className="flex items-center gap-3 rounded-xl border p-4" key={i}>
-          <div className="flex w-full flex-col gap-3">
-            <div className="flex w-full min-w-0 items-center justify-between gap-3">
-              <Skeleton className="size-9 shrink-0 rounded-lg" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-5 w-2/5 rounded-md" />
-                <Skeleton className="h-4 w-1/4 rounded-md" />
-              </div>
-              <Skeleton className="h-5 w-[116.233px] shrink-0 rounded-full" />
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:flex-row">
-              <Skeleton className="h-8 w-full rounded-full sm:w-[155.917px]" />
-              <Skeleton className="h-8 w-full rounded-full sm:w-[132.433px]" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 

@@ -15,11 +15,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-} from "@/components/ai-elements/prompt-input";
+import { formatActionItemDate } from "@/components/action-items/action-item-list-item";
+import { PromptInput, PromptInputSubmit, PromptInputTextarea, } from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { UpgradeDialog } from "@/components/billing/upgrade-dialog";
 import { FormattedDate } from "@/components/common/formatted-date";
@@ -29,6 +26,7 @@ import { memoryChatRuntime } from "@/components/memory/chat-runtime";
 import { getMemoryHref } from "@/components/memory/paths";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 import { client } from "@/lib/orpc";
 import { cn } from "@/lib/utils";
 
@@ -223,7 +221,7 @@ export function DashboardContainer() {
                 </Link>
               )}
             </div>
-            <div className={cn("px-4 py-3", recent.length > 1 && "divide-y")}>
+            <div className={cn(recent.length > 1 && "divide-y")}>
               {recent.slice(0, 3).map((m) => (
                 <MeetingRow key={m.id} meeting={m} />
               ))}
@@ -282,60 +280,83 @@ export function DashboardContainer() {
           {/* Action Items */}
           <div className="rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <p className="font-semibold text-sm">Action Items</p>
-              {(actionItemsData?.total ?? 0) > 0 && (
-                <span className="rounded-full bg-orange-500/10 px-2 py-0.5 font-medium text-orange-600 text-xs dark:text-orange-400">
-                  {actionItemsData?.total} open
-                </span>
+              <div>
+                <p className="font-semibold text-sm">Action Items</p>
+                <p className="text-muted-foreground text-xs">
+                  {actionItemsData?.total ?? 0} open
+                </p>
+              </div>
+              {recent.length > 0 && (
+                <Link
+                  className="flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
+                  href="/action-items?status=open"
+                >
+                  View all
+                  <ArrowRightIcon className="size-3" />
+                </Link>
               )}
             </div>
             {!actionItemsData || actionItemsData.items.length === 0 ? (
-              <div className="divide-y px-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <ActionItemPlaceholder key={`ai-empty-${i}`} />
-                ))}
-              </div>
+              <Empty className="py-8">
+                <EmptyHeader>
+                  <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-muted">
+                    <CheckSquareIcon className="size-5 text-muted-foreground" />
+                  </div>
+                  <EmptyTitle>No action items</EmptyTitle>
+                  <EmptyDescription>
+                    Congrats on completing all your action items! 🎉
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <>
                 <div
-                  className={cn(
-                    "px-4",
-                    actionItemsData.items.length > 1 && "divide-y",
-                  )}
+                  className={cn(actionItemsData.items.length > 1 && "divide-y")}
                 >
-                  {actionItemsData.items.slice(0, 3).map((item) => (
-                    <div
-                      className="flex items-start gap-2.5 py-2.5"
-                      key={item.id}
-                    >
-                      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-                        <CircleDotIcon className="size-3 text-orange-500" />
+                  {actionItemsData.items.slice(0, 3).map((item) => {
+                    return (
+                      <div
+                        className="flex items-center gap-3 px-4 py-3 transition-colors"
+                        key={item.id}
+                      >
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors">
+                          <CircleDotIcon className="size-5 text-orange-500" />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <p className="truncate font-medium text-sm">
+                            {item.title}
+                          </p>
+                          <p className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                            {formatActionItemDate(item.dueDate ?? null)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="truncate font-medium text-sm leading-tight">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-muted-foreground text-xs">
-                          {item.meetingTitle}
-                          {item.ownerName && ` · ${item.ownerName}`}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+                  {/*{actionItemsData.items.slice(0, 3).map((item) => (*/}
+                  {/*  <div*/}
+                  {/*    className="flex items-start gap-2.5 py-2.5"*/}
+                  {/*    key={item.id}*/}
+                  {/*  >*/}
+                  {/*    <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10">*/}
+                  {/*      <CircleDotIcon className="size-3 text-orange-500" />*/}
+                  {/*    </div>*/}
+                  {/*    <div className="min-w-0 flex-1 space-y-1.5">*/}
+                  {/*      <p className="truncate font-medium text-sm leading-tight">*/}
+                  {/*        {item.title}*/}
+                  {/*      </p>*/}
+                  {/*      <p className="truncate text-muted-foreground text-xs">*/}
+                  {/*        {item.meetingTitle}*/}
+                  {/*        {item.ownerName && ` · ${item.ownerName}`}*/}
+                  {/*      </p>*/}
+                  {/*    </div>*/}
+                  {/*  </div>*/}
+                  {/*))}*/}
                   {Array.from({
                     length: Math.max(0, 3 - actionItemsData.items.length),
                   }).map((_, i) => (
                     <ActionItemPlaceholder key={`ai-ph-${i}`} />
                   ))}
-                </div>
-                <div className="flex items-center justify-center border-t px-4 py-2.5">
-                  <Link
-                    className="flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
-                    href="/action-items"
-                  >
-                    View all
-                    <ArrowRightIcon className="size-3" />
-                  </Link>
                 </div>
               </>
             )}
@@ -357,12 +378,12 @@ export function DashboardContainer() {
             </Link>
             <Link
               className="flex flex-col gap-1.75 rounded-xl border p-4 transition-colors hover:bg-muted/40"
-              href="/action-items?status=open"
+              href="/action-items?status=completed"
             >
-              <p className="line-clamp-1 font-semibold text-sm">Open tasks</p>
+              <p className="line-clamp-1 font-semibold text-sm">Done tasks</p>
               <div className="mt-0.5 flex items-center gap-1.5 font-semibold text-xl tabular-nums">
-                {stats?.openActionItems ?? 0}
-                <CircleDotIcon className="size-4 text-orange-500" />
+                {stats?.doneActionItems ?? 0}
+                <CircleDotIcon className="size-4 text-emerald-500" />
               </div>
             </Link>
             <Link
@@ -403,11 +424,11 @@ export function DashboardContainer() {
 // ── Placeholder rows ──
 
 function MeetingRowPlaceholder() {
-  return <div className="h-15.25 w-full" />;
+  return <div className="h-16.75 w-full" />;
 }
 
 function ActionItemPlaceholder() {
-  return <div className="h-[59.5px] w-full" />;
+  return <div className="h-16.75 w-full" />;
 }
 
 // ── Meeting Row ──
@@ -426,7 +447,7 @@ function MeetingRow({
 }) {
   return (
     <Link
-      className="group flex items-center gap-3 py-3 transition-colors first:pt-0 last:pb-0 hover:opacity-80"
+      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:opacity-80"
       href={`/meetings/${meeting.id}?sourceLink=/`}
     >
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-muted/70">

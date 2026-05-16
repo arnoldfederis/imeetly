@@ -32,12 +32,21 @@ export function ActionItemRow({
     setOptimisticDone(item.status === "done");
   }, [item.status]);
 
-  const invalidateMeeting = () =>
-    queryClient.invalidateQueries({
-      queryKey: client.meeting.getById.key({ input: { id: item.meetingId } }),
-    });
+  async function invalidateQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: client.actionItem.list.key(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.getById.key({ input: { id: item.meetingId } }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.dashboard.key(),
+      }),
+    ]);
+  }
 
-  const updateStatusInCache = (id: string, status: string) => {
+  function updateStatusInCache(id: string, status: string) {
     type MeetingQueryData = {
       actionItems?: Array<{ id: string; status: string }>;
     };
@@ -68,15 +77,13 @@ export function ActionItemRow({
         };
       },
     );
-  };
+  }
 
   const toggleMutation = useMutation(
     client.actionItem.update.mutationOptions({
-      onSuccess: (_, vars) => {
+      onSuccess: async (_, vars) => {
         updateStatusInCache(vars.id, vars.status ?? item.status);
-        void queryClient.invalidateQueries({
-          queryKey: client.meeting.dashboard.key(),
-        });
+        await invalidateQueries();
       },
       onError: () => {
         setOptimisticDone(item.status === "done");
@@ -88,7 +95,8 @@ export function ActionItemRow({
   const editMutation = useMutation(
     client.actionItem.update.mutationOptions({
       onSuccess: async () => {
-        await invalidateMeeting();
+        await invalidateQueries();
+        toast.success("Action item updated");
       },
       onError: () => {
         toast.error("Failed to update action item");
@@ -99,12 +107,8 @@ export function ActionItemRow({
   const deleteMutation = useMutation(
     client.actionItem.remove.mutationOptions({
       onSuccess: async () => {
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: client.actionItem.list.key(),
-          }),
-          invalidateMeeting(),
-        ]);
+        await invalidateQueries();
+        toast.success("Action item deleted");
       },
       onError: () => toast.error("Failed to delete action item"),
     }),

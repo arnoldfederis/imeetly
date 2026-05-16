@@ -3,8 +3,8 @@ import { db } from "@repo/db";
 import {
   actionItems,
   meetingFiles,
-  meetingSummaries,
   meetings,
+  meetingSummaries,
 } from "@repo/db/schemas/app";
 import { env } from "@repo/env";
 import {
@@ -664,10 +664,7 @@ export abstract class MeetingService {
       .select({ count: sql<number>`count(*)::int` })
       .from(actionItems)
       .where(
-        and(
-          eq(actionItems.userId, userId),
-          inArray(actionItems.status, ["open", "in_progress", "blocked"]),
-        ),
+        and(eq(actionItems.userId, userId), eq(actionItems.status, "done")),
       );
 
     const [urgentActions] = await db
@@ -701,7 +698,7 @@ export abstract class MeetingService {
       meetingsThisMonth: meetingsThisMonth.count,
       processingNow: processingNow.count,
       completedMeetings: completedMeetings.count,
-      openActionItems: openActions.count,
+      doneActionItems: openActions.count,
       urgentActionItems: urgentActions.count,
       dueTodayActionItems: dueTodayActions.count,
     };

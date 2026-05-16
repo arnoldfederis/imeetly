@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient, } from "@tanstack/react-query";
 import {
   CheckSquareIcon,
   ChevronDownIcon,
@@ -21,36 +17,12 @@ import { toast } from "sonner";
 import { ActionItemDialog } from "@/components/action-items/action-item-dialog";
 import { ActionItemListItem } from "@/components/action-items/action-item-list-item";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, } from "@/components/ui/empty";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { InputGroup, InputGroupAddon, InputGroupInput, } from "@/components/ui/input-group";
+import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
 
@@ -447,7 +419,12 @@ function MeetingGroup({
           queryClient.invalidateQueries({
             queryKey: client.meeting.list.key(),
           }),
+          queryClient.invalidateQueries({
+            queryKey: client.meeting.dashboard.key(),
+          }),
         ]);
+
+        toast.success("Action item added");
       },
       onError: () => toast.error("Failed to add action item"),
     }),
@@ -526,19 +503,21 @@ function ActionItemCard({ item }: { item: ActionItem }) {
     setOptimisticDone(item.status === "done");
   }, [item.status]);
 
-  const invalidateAll = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: client.actionItem.list.key(),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: client.meeting.list.key(),
-    });
-    void queryClient.invalidateQueries({
-      queryKey: client.meeting.dashboard.key(),
-    });
-  };
+  async function invalidateQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: client.actionItem.list.key(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.list.key(),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: client.meeting.dashboard.key(),
+      }),
+    ]);
+  }
 
-  const updateStatusInCache = (id: string, status: string) => {
+  function updateStatusInCache(id: string, status: string) {
     type Page = { items: ActionItem[]; total: number };
     type CacheData = { pages: Page[]; pageParams: unknown[] };
     queryClient.setQueriesData(
@@ -554,12 +533,13 @@ function ActionItemCard({ item }: { item: ActionItem }) {
         };
       },
     );
-  };
+  }
 
   const toggleMutation = useMutation(
     client.actionItem.update.mutationOptions({
-      onSuccess: (_, vars) => {
+      onSuccess: async (_, vars) => {
         updateStatusInCache(vars.id, vars.status ?? item.status);
+        await invalidateQueries();
       },
       onError: () => {
         setOptimisticDone(item.status === "done");
@@ -571,9 +551,8 @@ function ActionItemCard({ item }: { item: ActionItem }) {
   const editMutation = useMutation(
     client.actionItem.update.mutationOptions({
       onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: client.actionItem.list.key(),
-        });
+        await invalidateQueries();
+        toast.success("Action item updated");
       },
       onError: () => {
         toast.error("Failed to update action item");
@@ -584,7 +563,7 @@ function ActionItemCard({ item }: { item: ActionItem }) {
   const deleteMutation = useMutation(
     client.actionItem.remove.mutationOptions({
       onSuccess: async () => {
-        await invalidateAll();
+        await invalidateQueries();
         toast.success("Action item deleted");
       },
     }),
