@@ -13,11 +13,19 @@ const { downloadIntegrationRecordingIfNeeded } = proxyActivities<
   },
 });
 
+const { transcribeAudio } = proxyActivities<typeof activities>({
+  startToCloseTimeout: "2 hours",
+  retry: {
+    maximumAttempts: 3,
+    initialInterval: "5 seconds",
+    backoffCoefficient: 2,
+  },
+});
+
 const {
   loadMeetingInput,
   updateMeetingStatus,
   extractAudioFromVideo,
-  transcribeAudio,
   generateExtractionResult,
   saveProcessingResults,
   deleteSourceFile,
