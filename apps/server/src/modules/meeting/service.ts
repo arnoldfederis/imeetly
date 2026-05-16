@@ -72,7 +72,10 @@ export abstract class MeetingService {
       bytesDownloaded,
       progressPercent:
         sizeBytes && sizeBytes > 0
-          ? Math.max(0, Math.min(100, Math.round((bytesDownloaded / sizeBytes) * 100)))
+          ? Math.max(
+              0,
+              Math.min(100, Math.round((bytesDownloaded / sizeBytes) * 100)),
+            )
           : null,
       startedAt: pending.startedAt ?? null,
       lastProgressAt: pending.lastProgressAt ?? null,

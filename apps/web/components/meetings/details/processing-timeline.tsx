@@ -41,8 +41,7 @@ export function ProcessingTimeline({
     { key: "extracting_actions", label: "Extracting Actions" },
     { key: "completed", label: "Completed" },
   ];
-  const showsDownloadStage =
-    sourceType !== "text" && Boolean(meeting.provider);
+  const showsDownloadStage = sourceType !== "text" && Boolean(meeting.provider);
 
   const stages =
     sourceType === "text"
@@ -131,9 +130,7 @@ export function ProcessingTimeline({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <DownloadIcon className="size-3.5 text-muted-foreground" />
-                <span className="font-medium text-sm">
-                  Recording transfer
-                </span>
+                <span className="font-medium text-sm">Recording transfer</span>
               </div>
               <span className="text-muted-foreground text-xs">
                 {formatBytes(meeting.integrationDownload.bytesDownloaded)}
