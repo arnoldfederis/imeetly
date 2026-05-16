@@ -151,7 +151,9 @@ export function ProductPreviewSection() {
 
                     <div className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-input/50">
                       <div className="flex h-10.5 select-none items-start px-4 py-3 pr-12 text-muted-foreground text-sm">
-                        Ask Meetly anything about your meetings…
+                        <p className="line-clamp-1">
+                          Ask Meetly anything about your meetings…
+                        </p>
                       </div>
                       <div className="absolute right-1.5 bottom-1.5 flex size-[30px] items-center justify-center rounded-full bg-primary">
                         <CornerDownLeftIcon className="size-4 text-primary-foreground" />
