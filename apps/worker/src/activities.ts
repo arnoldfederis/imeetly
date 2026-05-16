@@ -1,8 +1,12 @@
 import { Readable, Transform } from "node:stream";
 import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
+  UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { render } from "@react-email/components";
 import {
@@ -267,9 +271,6 @@ export async function downloadIntegrationRecordingIfNeeded(
   const storageKey = `${meetingId}/recording${mimeType === "audio/mp4" ? ".m4a" : ".mp4"}`;
   const [, fileName = storageKey] = storageKey.split("/");
 
-  // Convert fetch streams to Node streams before uploading so the AWS SDK can
-  // hash/sign the body without tripping over a flowing Web ReadableStream.
-  let body: Buffer | Readable;
   let fileSize: number;
   if (sizeBytes != null && downloadRes.body) {
     let bytesDownloaded = 0;
@@ -277,6 +278,8 @@ export async function downloadIntegrationRecordingIfNeeded(
     let lastPersistedAt = Date.now();
     const persistThresholdBytes = 64 * 1024 * 1024;
     const persistIntervalMs = 15 * 1000;
+    const multipartThresholdBytes = 100 * 1024 * 1024;
+    const multipartPartSizeBytes = 64 * 1024 * 1024;
 
     const persistProgress = async (force = false) => {
       const now = Date.now();
@@ -309,34 +312,178 @@ export async function downloadIntegrationRecordingIfNeeded(
         );
     };
 
+    fileSize = sizeBytes;
     refreshAbortTimer();
-    body = Readable.fromWeb(downloadRes.body).pipe(
-      new Transform({
-        transform(chunk, _encoding, callback) {
-          bytesDownloaded += Buffer.isBuffer(chunk)
-            ? chunk.byteLength
-            : Buffer.byteLength(chunk);
+
+    if (sizeBytes >= multipartThresholdBytes) {
+      const createResponse = await s3.send(
+        new CreateMultipartUploadCommand({
+          Bucket: env.S3_BUCKET,
+          Key: storageKey,
+          ContentType: mimeType,
+        }),
+      );
+
+      if (!createResponse.UploadId) {
+        throw new Error("R2 did not return an upload ID for multipart upload");
+      }
+
+      const uploadId = createResponse.UploadId;
+      const parts: Array<{ ETag: string; PartNumber: number }> = [];
+      let partNumber = 1;
+      let bufferedChunks: Buffer[] = [];
+      let bufferedBytes = 0;
+
+      const uploadBufferedPart = async (isFinalPart: boolean) => {
+        if (bufferedBytes === 0) return;
+        if (!isFinalPart && bufferedBytes < 5 * 1024 * 1024) return;
+
+        const partBody =
+          bufferedChunks.length === 1
+            ? bufferedChunks[0]
+            : Buffer.concat(bufferedChunks, bufferedBytes);
+
+        console.log(
+          `[${meetingId}] Uploading R2 part ${partNumber} (${Math.round(partBody.byteLength / 1024 / 1024)} MB)`,
+        );
+
+        const response = await s3.send(
+          new UploadPartCommand({
+            Bucket: env.S3_BUCKET,
+            Key: storageKey,
+            UploadId: uploadId,
+            PartNumber: partNumber,
+            Body: partBody,
+            ContentLength: partBody.byteLength,
+          }),
+        );
+
+        if (!response.ETag) {
+          throw new Error(`R2 did not return an ETag for part ${partNumber}`);
+        }
+
+        parts.push({ ETag: response.ETag, PartNumber: partNumber });
+        partNumber++;
+        bufferedChunks = [];
+        bufferedBytes = 0;
+      };
+
+      const reader = downloadRes.body.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!value) continue;
+
           refreshAbortTimer();
+
+          const chunk = Buffer.from(value);
+          bytesDownloaded += chunk.byteLength;
+          bufferedChunks.push(chunk);
+          bufferedBytes += chunk.byteLength;
+
           void persistProgress().catch((err) => {
             console.warn(
               `[${meetingId}] Failed to persist download progress:`,
               err instanceof Error ? err.message : err,
             );
           });
-          callback(null, chunk);
-        },
-        final(callback) {
-          clearAbortTimer();
-          void persistProgress(true)
-            .then(() => callback())
-            .catch((err) => callback(err as Error));
-        },
-      }),
-    );
-    fileSize = sizeBytes;
+
+          while (bufferedBytes >= multipartPartSizeBytes) {
+            let remainingToTake = multipartPartSizeBytes;
+            const partChunks: Buffer[] = [];
+            let partBytes = 0;
+
+            while (remainingToTake > 0 && bufferedChunks.length > 0) {
+              const current = bufferedChunks[0];
+              if (current.byteLength <= remainingToTake) {
+                partChunks.push(current);
+                partBytes += current.byteLength;
+                remainingToTake -= current.byteLength;
+                bufferedChunks.shift();
+              } else {
+                partChunks.push(current.subarray(0, remainingToTake));
+                bufferedChunks[0] = current.subarray(remainingToTake);
+                partBytes += remainingToTake;
+                remainingToTake = 0;
+              }
+            }
+
+            bufferedChunks.unshift(Buffer.concat(partChunks, partBytes));
+            bufferedBytes -= multipartPartSizeBytes;
+            await uploadBufferedPart(false);
+          }
+        }
+
+        await uploadBufferedPart(true);
+        await persistProgress(true);
+
+        await s3.send(
+          new CompleteMultipartUploadCommand({
+            Bucket: env.S3_BUCKET,
+            Key: storageKey,
+            UploadId: uploadId,
+            MultipartUpload: {
+              Parts: parts,
+            },
+          }),
+        );
+      } catch (err) {
+        await s3
+          .send(
+            new AbortMultipartUploadCommand({
+              Bucket: env.S3_BUCKET,
+              Key: storageKey,
+              UploadId: uploadId,
+            }),
+          )
+          .catch(() => {});
+        throw err;
+      } finally {
+        clearAbortTimer();
+        reader.releaseLock();
+      }
+    } else {
+      const body = Readable.fromWeb(downloadRes.body).pipe(
+        new Transform({
+          transform(chunk, _encoding, callback) {
+            bytesDownloaded += Buffer.isBuffer(chunk)
+              ? chunk.byteLength
+              : Buffer.byteLength(chunk);
+            refreshAbortTimer();
+            void persistProgress().catch((err) => {
+              console.warn(
+                `[${meetingId}] Failed to persist download progress:`,
+                err instanceof Error ? err.message : err,
+              );
+            });
+            callback(null, chunk);
+          },
+          final(callback) {
+            clearAbortTimer();
+            void persistProgress(true)
+              .then(() => callback())
+              .catch((err) => callback(err as Error));
+          },
+        }),
+      );
+
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: env.S3_BUCKET,
+            Key: storageKey,
+            Body: body,
+            ContentType: mimeType,
+            ContentLength: sizeBytes,
+          }),
+        );
+      } finally {
+        clearAbortTimer();
+      }
+    }
   } else {
     const buf = Buffer.from(await downloadRes.arrayBuffer());
-    body = buf;
     fileSize = buf.byteLength;
     await db
       .update(externalMeetings)
@@ -354,20 +501,16 @@ export async function downloadIntegrationRecordingIfNeeded(
       .where(
         sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meetingId}`,
       );
-  }
 
-  try {
     await s3.send(
       new PutObjectCommand({
         Bucket: env.S3_BUCKET,
         Key: storageKey,
-        Body: body,
+        Body: buf,
         ContentType: mimeType,
-        ...(sizeBytes != null ? { ContentLength: sizeBytes } : {}),
+        ContentLength: fileSize,
       }),
     );
-  } finally {
-    clearAbortTimer();
   }
 
   await db.insert(meetingFiles).values({
