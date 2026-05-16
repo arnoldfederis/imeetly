@@ -51,6 +51,8 @@ export abstract class MeetingService {
           bytesDownloaded?: number | null;
           startedAt?: string | null;
           lastProgressAt?: string | null;
+          phase?: string | null;
+          lastError?: string | null;
         }
       | undefined;
 
@@ -79,6 +81,9 @@ export abstract class MeetingService {
           : null,
       startedAt: pending.startedAt ?? null,
       lastProgressAt: pending.lastProgressAt ?? null,
+      phase: typeof pending.phase === "string" ? pending.phase : null,
+      lastError:
+        typeof pending.lastError === "string" ? pending.lastError : null,
     };
   }
 

@@ -1,4 +1,5 @@
 import {
+  AlertCircleIcon,
   CheckCircle2Icon,
   CircleDotIcon,
   DownloadIcon,
@@ -26,6 +27,8 @@ export function ProcessingTimeline({
       bytesDownloaded: number;
       progressPercent: number | null;
       lastProgressAt?: string | null;
+      phase?: string | null;
+      lastError?: string | null;
     } | null;
   };
   sourceType: string;
@@ -129,7 +132,11 @@ export function ProcessingTimeline({
           <div className="rounded-lg border bg-muted/30 px-3 py-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <DownloadIcon className="size-3.5 text-muted-foreground" />
+                {meeting.integrationDownload.phase === "failed" ? (
+                  <AlertCircleIcon className="size-3.5 text-destructive" />
+                ) : (
+                  <DownloadIcon className="size-3.5 text-muted-foreground" />
+                )}
                 <span className="font-medium text-sm">Recording transfer</span>
               </div>
               <span className="text-muted-foreground text-xs">
@@ -142,14 +149,21 @@ export function ProcessingTimeline({
             <div className="mt-2">
               <Progress value={downloadPercent ?? 0} />
             </div>
-            <div className="mt-2 flex items-center justify-between gap-3 text-muted-foreground text-xs">
-              <span>
-                {downloadPercent != null
-                  ? `${downloadPercent}% transferred`
-                  : "Transfer in progress"}
-              </span>
-              <span>Updates while the worker is receiving bytes</span>
-            </div>
+            {meeting.integrationDownload.phase === "failed" &&
+            meeting.integrationDownload.lastError ? (
+              <p className="mt-2 rounded-md bg-destructive/10 px-2 py-1.5 text-destructive text-xs leading-relaxed">
+                {meeting.integrationDownload.lastError}
+              </p>
+            ) : (
+              <div className="mt-2 flex items-center justify-between gap-3 text-muted-foreground text-xs">
+                <span>
+                  {downloadPercent != null
+                    ? `${downloadPercent}% transferred`
+                    : "Transfer in progress"}
+                </span>
+                <span>Updates while the worker is receiving bytes</span>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
