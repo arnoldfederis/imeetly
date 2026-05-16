@@ -213,7 +213,7 @@ function DocsPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Learn how to add imeetly to Zoom, use imeetly with supported meeting platforms, troubleshoot common issues, and remove the app from your Zoom account."
+          description="Learn how to connect imeetly to Zoom, Google Meet, and Microsoft Teams, use imeetly with supported meeting platforms, troubleshoot common issues, and manage or remove integrations when needed."
           eyebrow="Documentation"
           title="imeetly Documentation"
         />
@@ -225,7 +225,7 @@ function DocsPage() {
               href="#adding-the-app"
             >
               <ShieldCheckIcon className="size-4" />
-              Add imeetly to Zoom
+              View Zoom Setup Steps
             </a>
             <a
               className={buttonVariants({
