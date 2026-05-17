@@ -53,11 +53,10 @@ export function createDeepgramTranscription(
         `[deepgram] URL mode — Deepgram will download ${fileName} from R2 directly${language ? ` (lang: ${language})` : ""}. Waiting for Deepgram response...`,
       );
       const t0 = Date.now();
-      const response = await client.listen.v1.media.transcribeUrl({
-        url,
-        ...DEEPGRAM_OPTIONS,
-        ...(language ? { language } : {}),
-      });
+      const response = await client.listen.v1.media.transcribeUrl(
+        { url, ...DEEPGRAM_OPTIONS, ...(language ? { language } : {}) },
+        { timeoutInSeconds: 7200, maxRetries: 0 },
+      );
       console.log(
         `[deepgram] URL transcription API call took ${Date.now() - t0}ms`,
       );
