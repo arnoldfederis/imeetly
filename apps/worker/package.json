@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",
-    "@aws-sdk/client-s3": "^3.1047.0",
+    "@aws-sdk/client-s3": "^3.1048.0",
     "@aws-sdk/s3-request-presigner": "^3.1048.0",
     "@deepgram/sdk": "5.2.0",
     "@neondatabase/serverless": "^1.1.0",
@@ -41,7 +41,7 @@
     "groq-sdk": "^1.2.0",
     "nanoid": "^5.1.11",
     "nodemailer": "8.0.7",
-    "openai": "^6.37.0",
+    "openai": "^6.38.0",
     "pg": "^8.20.0",
     "react": "^19.2.6",
     "zod": "catalog:"
@@ -55,7 +55,7 @@
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.22.0",
+    "tsx": "^4.22.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   }

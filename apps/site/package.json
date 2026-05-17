@@ -26,7 +26,7 @@
     "h3": "^2.0.1-rc.22",
     "lucide-react": "^1.16.0",
     "nitro": "^3.0.260429-beta",
-    "posthog-js": "^1.373.4",
+    "posthog-js": "^1.373.5",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
