@@ -629,7 +629,12 @@ export function MeetingDetailsContainer(props: Props) {
                     {f.fileName}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {(Number(f.fileSize) / 1024 / 1024).toFixed(1)} MB
+                    {(() => {
+                      const bytes = Number(f.fileSize);
+                      if (bytes >= 1024 * 1024 * 1024)
+                        return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+                      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+                    })()}
                   </span>
                   {f.retentionStatus === "deleted" ? (
                     <Badge className="text-xs" variant="secondary">

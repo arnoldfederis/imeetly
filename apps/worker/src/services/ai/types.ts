@@ -51,6 +51,13 @@ export interface TranscriptionProviderImpl {
     mimeType: string,
     language?: string,
   ): Promise<string>;
+  /** If present, provider can transcribe directly from a URL (no worker download needed). */
+  transcribeFromUrl?(
+    url: string,
+    fileName: string,
+    mimeType: string,
+    language?: string,
+  ): Promise<string>;
 }
 
 export interface ExtractionProviderImpl {

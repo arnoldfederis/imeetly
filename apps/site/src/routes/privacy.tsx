@@ -21,7 +21,7 @@ function PrivacyPage() {
         <div className="mx-auto max-w-3xl px-6 py-20">
           <h1 className="font-bold text-4xl tracking-tight">Privacy Policy</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: May 14, 2026
+            Last updated: May 17, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -161,10 +161,13 @@ function PrivacyPage() {
               <ul className="mt-3">
                 <li>
                   <strong>
-                    We do not use your content to train AI models.
+                    We do not use your content to train AI models, and we
+                    require our AI providers to do the same.
                   </strong>{" "}
                   Your meeting data is processed solely to deliver the service
-                  to you.
+                  to you. Where providers offer an explicit opt-out from model
+                  training programs, we enable it (for example, we opt out of
+                  Deepgram&apos;s Model Improvement Program on all requests).
                 </li>
                 <li>
                   <strong>AI outputs may not be accurate.</strong> Transcripts
@@ -265,8 +268,23 @@ function PrivacyPage() {
                   temporarily holding uploaded files during processing.
                 </li>
                 <li>
-                  <strong>Deepgram</strong> - speech-to-text transcription of
-                  audio and video files.
+                  <strong>Deepgram</strong> - speech-to-text transcription.
+                  Rather than uploading your file to Deepgram, we generate a
+                  short-lived signed URL pointing to your recording in
+                  Cloudflare R2 storage and pass that URL to Deepgram. Deepgram
+                  fetches the file directly, transcribes it, and returns the
+                  text. We explicitly opt out of Deepgram&apos;s Model
+                  Improvement Program on every request, meaning Deepgram does
+                  not retain or use your audio to train their models. See{" "}
+                  <a
+                    className="text-primary underline underline-offset-4 hover:text-primary/80"
+                    href="https://deepgram.com/privacy"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Deepgram&apos;s Privacy Policy
+                  </a>
+                  .
                 </li>
                 <li>
                   <strong>Groq</strong> - AI language model used for meeting

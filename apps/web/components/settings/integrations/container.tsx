@@ -858,6 +858,19 @@ function MeetingRow({
           ) : (
             "No start time"
           )}
+          {(() => {
+            const pd = meeting.metadata.pendingDownload as
+              | { sizeBytes?: number | null }
+              | undefined;
+            const bytes = pd?.sizeBytes;
+            if (!bytes) return null;
+            const gb = bytes / 1024 / 1024 / 1024;
+            const label =
+              gb >= 1
+                ? `${gb.toFixed(2)} GB`
+                : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+            return <span className="text-muted-foreground/70">· {label}</span>;
+          })()}
         </>
       }
       title={meeting.title}

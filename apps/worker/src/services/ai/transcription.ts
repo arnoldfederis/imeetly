@@ -1,4 +1,5 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../../env";
 import { createDeepgramTranscription } from "./providers/deepgram-transcription";
 import { createGroqTranscription } from "./providers/groq-transcription";
@@ -97,27 +98,36 @@ export async function transcribeMeeting(
   storageKey: string,
   language?: string,
 ): Promise<TranscriptionResult> {
-  // Download from S3
-  console.log(`[transcribe] Downloading from S3: ${storageKey}`);
-  const response = await s3.send(
-    new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: storageKey }),
-  );
-
-  if (!response.Body) {
-    throw new Error(`Empty file body for key: ${storageKey}`);
-  }
-
-  const bytes = await response.Body.transformToByteArray();
   const fileName = storageKey.split("/").pop() ?? "audio.mp3";
-  const mimeType = response.ContentType ?? "audio/mpeg";
-  console.log(
-    `[transcribe] Downloaded ${fileName} — ${bytes.length} bytes, ${mimeType}`,
-  );
 
   const chain = resolveChain();
   const triedProviders: string[] = [];
   const emptyTranscriptProviders: string[] = [];
   const infraErrors: Array<{ provider: string; error: unknown }> = [];
+
+  // Lazily downloaded — only fetched if a provider doesn't support URL transcription.
+  let bytes: Uint8Array | null = null;
+  let mimeType = "audio/mpeg";
+
+  const getBytes = async (): Promise<{
+    bytes: Uint8Array;
+    mimeType: string;
+  }> => {
+    if (bytes) return { bytes, mimeType };
+    console.log(`[transcribe] Downloading from R2: ${storageKey}`);
+    const response = await s3.send(
+      new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: storageKey }),
+    );
+    if (!response.Body) {
+      throw new Error(`Empty file body for key: ${storageKey}`);
+    }
+    bytes = await response.Body.transformToByteArray();
+    mimeType = response.ContentType ?? "audio/mpeg";
+    console.log(
+      `[transcribe] Downloaded ${fileName} — ${bytes.length} bytes, ${mimeType}`,
+    );
+    return { bytes, mimeType };
+  };
 
   for (const name of chain) {
     if (!hasKey(name)) {
@@ -135,12 +145,38 @@ export async function transcribeMeeting(
       console.log(
         `[transcribe] Trying ${name}${language ? ` (lang: ${language})` : ""}`,
       );
-      const text = await provider.transcribe(
-        bytes,
-        fileName,
-        mimeType,
-        language,
-      );
+
+      let text: string;
+      if (provider.transcribeFromUrl) {
+        console.log(
+          `[transcribe:url] Step 1/3 — Generating presigned R2 URL for ${storageKey} (expires 2h)`,
+        );
+        const presignedUrl = await getSignedUrl(
+          s3,
+          new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: storageKey }),
+          { expiresIn: 7200 },
+        );
+        console.log(
+          `[transcribe:url] Step 2/3 — Presigned URL ready. Sending to ${name} — no worker download, ${name} pulls from R2 directly`,
+        );
+        text = await provider.transcribeFromUrl(
+          presignedUrl,
+          fileName,
+          mimeType,
+          language,
+        );
+        console.log(
+          `[transcribe:url] Step 3/3 — ${name} transcription complete`,
+        );
+      } else {
+        const fetched = await getBytes();
+        text = await provider.transcribe(
+          fetched.bytes,
+          fileName,
+          fetched.mimeType,
+          language,
+        );
+      }
       const trimmed = text.trim();
       const durationMs = Date.now() - start;
 

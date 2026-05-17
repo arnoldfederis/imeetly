@@ -23,7 +23,7 @@ function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Last updated: May 14, 2026
+            Last updated: May 17, 2026
           </p>
 
           <div className="mt-12 space-y-10 text-foreground/90 text-sm leading-relaxed [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:tracking-tight [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
@@ -228,7 +228,9 @@ function TermsPage() {
                 </li>
                 <li>
                   Your uploaded content is processed by third-party AI providers
-                  on our behalf. We do not use your content to train AI models.
+                  on our behalf. We do not use your content to train AI models,
+                  and where AI providers offer explicit opt-outs from model
+                  training programs, we enable those opt-outs on your behalf.
                 </li>
               </ul>
             </section>
