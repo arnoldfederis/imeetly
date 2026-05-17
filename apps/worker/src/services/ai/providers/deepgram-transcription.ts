@@ -48,19 +48,35 @@ export function createDeepgramTranscription(
 
   return {
     name: "deepgram",
-    async transcribeFromUrl(url, fileName, _mimeType, language) {
+    async transcribeFromStream(
+      stream,
+      fileName,
+      mimeType,
+      contentLength,
+      language,
+    ) {
       console.log(
-        `[deepgram] URL mode — Deepgram will download ${fileName} from R2 directly${language ? ` (lang: ${language})` : ""}. Waiting for Deepgram response...`,
+        `[deepgram] Stream mode — piping R2 stream directly to Deepgram${contentLength != null ? ` (${Math.round(contentLength / 1024 / 1024)} MB)` : ""}${language ? ` lang=${language}` : ""}`,
       );
       const t0 = Date.now();
-      const response = await client.listen.v1.media.transcribeUrl(
-        { url, ...DEEPGRAM_OPTIONS, ...(language ? { language } : {}) },
+      const uploadable = {
+        data: stream,
+        filename: fileName,
+        contentType: mimeType,
+        ...(contentLength != null ? { contentLength } : {}),
+      };
+      const response = await client.listen.v1.media.transcribeFile(
+        uploadable,
+        {
+          ...DEEPGRAM_OPTIONS,
+          ...(language ? { language } : {}),
+        } as Parameters<typeof client.listen.v1.media.transcribeFile>[1],
         { timeoutInSeconds: 7200, maxRetries: 0 },
       );
       console.log(
-        `[deepgram] URL transcription API call took ${Date.now() - t0}ms`,
+        `[deepgram] Stream transcription API call took ${Date.now() - t0}ms`,
       );
-      return parseDeepgramResponse(response, "URL transcription done");
+      return parseDeepgramResponse(response, "Stream transcription done");
     },
     async transcribe(fileBytes, fileName, mimeType, language) {
       console.log(

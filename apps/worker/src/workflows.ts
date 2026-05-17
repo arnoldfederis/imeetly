@@ -85,7 +85,11 @@ export async function processMeeting(meetingId: string): Promise<void> {
       input.storageKey
     ) {
       await updateMeetingStatus(meetingId, "processing", "transcribing", null);
-      const result = await transcribeAudio(input.storageKey, input.language);
+      const result = await transcribeAudio(
+        input.storageKey,
+        input.language,
+        input.sizeBytes,
+      );
       transcript = result.text;
       transcriptionProvider = result.provider;
     }

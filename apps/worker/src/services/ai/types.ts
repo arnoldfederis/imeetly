@@ -51,11 +51,12 @@ export interface TranscriptionProviderImpl {
     mimeType: string,
     language?: string,
   ): Promise<string>;
-  /** If present, provider can transcribe directly from a URL (no worker download needed). */
-  transcribeFromUrl?(
-    url: string,
+  /** If present, provider can transcribe from a stream (no full download into RAM needed). */
+  transcribeFromStream?(
+    stream: import("stream").Readable,
     fileName: string,
     mimeType: string,
+    contentLength: number | null,
     language?: string,
   ): Promise<string>;
 }

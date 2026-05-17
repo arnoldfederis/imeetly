@@ -1,5 +1,4 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../../env";
 import { createDeepgramTranscription } from "./providers/deepgram-transcription";
 import { createGroqTranscription } from "./providers/groq-transcription";
@@ -97,6 +96,7 @@ function resolveChain(): TranscriptionProvider[] {
 export async function transcribeMeeting(
   storageKey: string,
   language?: string,
+  sizeBytes?: number | null,
 ): Promise<TranscriptionResult> {
   const fileName = storageKey.split("/").pop() ?? "audio.mp3";
 
@@ -147,26 +147,34 @@ export async function transcribeMeeting(
       );
 
       let text: string;
-      if (provider.transcribeFromUrl) {
+      if (provider.transcribeFromStream) {
         console.log(
-          `[transcribe:url] Step 1/3 — Generating presigned R2 URL for ${storageKey} (expires 2h)`,
+          `[transcribe:stream] Step 1/3 — Opening R2 stream for ${storageKey}`,
         );
-        const presignedUrl = await getSignedUrl(
-          s3,
+        const s3Response = await s3.send(
           new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: storageKey }),
-          { expiresIn: 7200 },
+        );
+        if (!s3Response.Body) {
+          throw new Error(`Empty file body for key: ${storageKey}`);
+        }
+        const streamMimeType = s3Response.ContentType ?? "audio/mpeg";
+        // transformToWebStream() → pipe through Node.js Readable for SDK compat
+        const { Readable } = await import("node:stream");
+        const nodeStream = Readable.fromWeb(
+          s3Response.Body.transformToWebStream() as import("stream/web").ReadableStream<Uint8Array>,
         );
         console.log(
-          `[transcribe:url] Step 2/3 — Presigned URL ready. Sending to ${name} — no worker download, ${name} pulls from R2 directly`,
+          `[transcribe:stream] Step 2/3 — Streaming R2 → ${name} (no full download into worker RAM)`,
         );
-        text = await provider.transcribeFromUrl(
-          presignedUrl,
+        text = await provider.transcribeFromStream(
+          nodeStream,
           fileName,
-          mimeType,
+          streamMimeType,
+          sizeBytes ?? null,
           language,
         );
         console.log(
-          `[transcribe:url] Step 3/3 — ${name} transcription complete`,
+          `[transcribe:stream] Step 3/3 — ${name} stream transcription complete`,
         );
       } else {
         const fetched = await getBytes();

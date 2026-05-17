@@ -115,6 +115,7 @@ export interface MeetingInput {
   storageKey?: string | null;
   bucketName?: string | null;
   language?: string | null;
+  sizeBytes?: number | null;
 }
 
 export interface ProcessingResult {
@@ -169,6 +170,18 @@ export async function loadMeetingInput(
 
   const file = meeting.files?.[0];
 
+  // Pull sizeBytes from the integration download metadata if available
+  const [extMeetingRow] = await db
+    .select({ metadata: externalMeetings.metadata })
+    .from(externalMeetings)
+    .where(
+      sql`${externalMeetings.metadata}->>'imeetlyMeetingId' = ${meeting.id}`,
+    )
+    .limit(1);
+  const pendingDownload = (
+    extMeetingRow?.metadata as Record<string, unknown> | undefined
+  )?.pendingDownload as { sizeBytes?: number | null } | undefined;
+
   return {
     meetingId: meeting.id,
     userId: meeting.userId,
@@ -177,6 +190,7 @@ export async function loadMeetingInput(
     storageKey: file?.storageKey ?? null,
     bucketName: file?.bucketName ?? null,
     language: meeting.language ?? null,
+    sizeBytes: pendingDownload?.sizeBytes ?? null,
   };
 }
 
@@ -669,9 +683,14 @@ export async function extractAudioFromVideo(
 export async function transcribeAudio(
   audioKey: string,
   language?: string | null,
+  sizeBytes?: number | null,
 ): Promise<TranscriptionResult> {
   try {
-    return await transcribeMeeting(audioKey, language ?? undefined);
+    return await transcribeMeeting(
+      audioKey,
+      language ?? undefined,
+      sizeBytes ?? null,
+    );
   } catch (err) {
     if (err instanceof ProviderError) {
       // Deterministic failures: same audio will produce the same result on retry.
