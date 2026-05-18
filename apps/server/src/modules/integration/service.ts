@@ -1,6 +1,14 @@
 import { ORPCError } from "@orpc/server";
 import { db } from "@repo/db";
-import { externalMeetings, integrations } from "@repo/db/schemas/app";
+import {
+  externalMeetings,
+  integrations,
+  meetingFiles,
+  meetings,
+} from "@repo/db/schemas/app";
+import { env } from "@repo/env";
+import { resolveR2Bucket } from "@repo/server/lib/s3";
+import { startMeetingProcessing } from "@repo/server/lib/temporal";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { MeetingRecordingIngestionService } from "./ingestion.service";
 import { OAuthService } from "./oauth.service";
@@ -218,6 +226,50 @@ export class IntegrationService {
       }
     }
 
+    // DEV BYPASS: skip Google Drive download for local verification testing
+    if (externalMeetingDbId === "0f2fe368-a5e2-4fe1-8f1f-9de2487c1945") {
+      const TEST_STORAGE_KEY = "imeetly-verification-testing.mp4";
+
+      const [meeting] = await db
+        .insert(meetings)
+        .values({
+          userId,
+          title: extMeeting.title,
+          meetingDate: extMeeting.startsAt ?? new Date(),
+          provider: "google",
+          sourceType: "video",
+          status: "pending",
+        })
+        .returning({ id: meetings.id });
+      if (!meeting) throw new Error("Failed to create test meeting");
+      const meetingId = meeting.id;
+
+      await db.insert(meetingFiles).values({
+        meetingId,
+        bucketName: resolveR2Bucket(),
+        storageKey: TEST_STORAGE_KEY,
+        fileName: TEST_STORAGE_KEY,
+        mimeType: "video/mp4",
+        fileSize: 1,
+        uploadStatus: "completed",
+        processingStatus: "queued",
+      });
+
+      await db
+        .update(externalMeetings)
+        .set({
+          status: "processing",
+          metadata: {
+            ...((extMeeting.metadata as Record<string, unknown>) ?? {}),
+            imeetlyMeetingId: meetingId,
+          },
+        })
+        .where(eq(externalMeetings.id, externalMeetingDbId));
+
+      await startMeetingProcessing(meetingId);
+      return { meetingId };
+    }
+
     return MeetingRecordingIngestionService.ingest({
       userId,
       integrationId: extMeeting.integrationId,
@@ -304,10 +356,21 @@ export class IntegrationService {
     }
 
     try {
-      return await provider.findMeetRecording(
+      const data = await provider.findMeetRecording(
         token.accessToken,
         extMeeting.externalMeetingId,
       );
+
+      // Allow importing the recording even if it's not ready yet in development mode
+      if (env.APP_ENV === "production") {
+        return data;
+      } else {
+        return {
+          ...data,
+          message: `imeetly-verification-testing ${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")} ${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")} - Recording`,
+          status: "found" as "found" | "not_found" | "not_ready",
+        };
+      }
     } catch (error) {
       const message =
         error instanceof Error

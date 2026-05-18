@@ -110,6 +110,19 @@ export function LandingFooter() {
           <p className="text-muted-foreground text-xs">
             &copy; {new Date().getFullYear()} imeetly. All rights reserved.
           </p>
+          <a
+            href="https://www.producthunt.com/products/imeetly/launches/imeetly?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-imeetly"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {/** biome-ignore lint/performance/noImgElement: ph image no need to optimize */}
+            <img
+              alt="imeetly -  Never lose what happened in a meeting again | Product Hunt"
+              height="54"
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1126883&amp;theme=dark&amp;t=1779085443813"
+              width="250"
+            />
+          </a>
         </div>
       </div>
     </footer>

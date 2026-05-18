@@ -44,7 +44,7 @@ const PROVIDER_META: Record<
   google: {
     name: "Google Meet",
     description:
-      "Sync Google Calendar events, find Meet recording artifacts, and import available recordings automatically",
+      "Sync Google Calendar events, check for Meet recordings automatically, and import them when Google makes them available",
     icon: <GoogleMeetIcon className="size-5" />,
     connectLabel: "Connect Google Meet",
   },
@@ -114,6 +114,7 @@ export function IntegrationProviderContainer({
         connected={searchParams.get("connected") === "true"}
         integrationId={integration.id}
         meta={meta}
+        provider={provider}
       />
     );
   }
@@ -165,10 +166,12 @@ export function IntegrationProviderContainer({
 function ConnectedProviderView({
   connected,
   integrationId,
+  provider,
   meta,
 }: {
   connected: boolean;
   integrationId: string;
+  provider: Provider;
   meta: { name: string };
 }) {
   const queryClient = useQueryClient();
@@ -220,6 +223,7 @@ function ConnectedProviderView({
       <ExternalMeetingsList
         integrationId={integrationId}
         onTotalChange={setMeetingsTotal}
+        provider={provider}
         showTitle={false}
       />
     </div>

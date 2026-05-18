@@ -92,7 +92,7 @@ const PROVIDER_META: Record<
   google: {
     name: "Google Meet",
     description:
-      "Sync Google Calendar events, find Meet recording artifacts, and import available recordings automatically",
+      "Sync Google Calendar events, check for Meet recordings automatically, and import them when Google makes them available",
     icon: <GoogleMeetIcon className="size-6" />,
   },
   zoom: {
@@ -218,7 +218,7 @@ export function IntegrationsContainer({
 
           return (
             <div
-              className="grid min-w-0 gap-4 rounded-xl border p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+              className="grid min-w-0 gap-4 rounded-xl border p-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center"
               key={provider}
             >
               <div className="flex min-w-0 items-start gap-3 sm:items-center">
@@ -234,11 +234,11 @@ export function IntegrationsContainer({
                       </Badge>
                     )}
                   </div>
-                  <p className="break-words text-muted-foreground text-xs">
+                  <p className="wrap-break-word text-muted-foreground text-xs">
                     {meta.description}
                   </p>
                   {provider === "microsoft" && !connected && (
-                    <p className="mt-0.5 break-words text-muted-foreground text-xs">
+                    <p className="wrap-break-word mt-0.5 text-muted-foreground text-xs">
                       Enterprise accounts may require admin approval.{" "}
                       <a
                         className="underline underline-offset-2 hover:text-foreground"
@@ -254,7 +254,7 @@ export function IntegrationsContainer({
                 </div>
               </div>
 
-              <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap md:w-auto md:justify-end">
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end md:w-auto">
                 {connected ? (
                   <>
                     <Button
@@ -308,7 +308,10 @@ export function IntegrationsContainer({
       {selectedIntegrationId && (
         <>
           <Separator />
-          <ExternalMeetingsList integrationId={selectedIntegrationId} />
+          <ExternalMeetingsList
+            integrationId={selectedIntegrationId}
+            provider={selectedProvider ?? undefined}
+          />
         </>
       )}
     </div>
@@ -354,14 +357,23 @@ function GoogleMeetRecordingImportDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="pr-10">
           <DialogTitle className="leading-6">
-            Import recording from Calendar event
+            Google Meet recording status
           </DialogTitle>
           <DialogDescription className="wrap-break-word line-clamp-2">
-            {meeting?.title ?? "Find the Google Meet recording for this event."}
+            {meeting?.title ??
+              "Check whether Google Meet has published the recording for this event."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
+          <Alert>
+            <InfoIcon />
+            <AlertTitle>Automatic checks stay on</AlertTitle>
+            <AlertDescription>
+              imeetly keeps checking after the meeting ends and imports the
+              recording once Google makes the Drive file available.
+            </AlertDescription>
+          </Alert>
           {lookupError === "google_meet_recording_scope_missing" ? (
             <Alert variant="destructive">
               <InfoIcon />
@@ -427,7 +439,7 @@ function GoogleMeetRecordingImportDialog({
               ) : (
                 <SearchIcon data-icon="inline-start" />
               )}
-              Retry
+              Check again now
             </Button>
           )}
           <Button
@@ -449,10 +461,12 @@ function GoogleMeetRecordingImportDialog({
 
 export function ExternalMeetingsList({
   integrationId,
+  provider,
   showTitle = true,
   onTotalChange,
 }: {
   integrationId: string;
+  provider?: Provider;
   showTitle?: boolean;
   onTotalChange?: (total: number | null) => void;
 }) {
@@ -465,6 +479,7 @@ export function ExternalMeetingsList({
   const [googleImportMeeting, setGoogleImportMeeting] =
     useState<ExternalMeeting | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const previousStatusesRef = useRef<Record<string, string>>({});
 
   const importMutation = useMutation(
     client.integration.importRecording.mutationOptions({
@@ -556,6 +571,20 @@ export function ExternalMeetingsList({
           const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
           return loaded < lastPage.total ? loaded : undefined;
         },
+        refetchInterval: (query) => {
+          if (provider !== "google") return false;
+          const pages = query.state.data?.pages;
+          if (!pages) return false;
+          const items = pages.flatMap((page) => page.items);
+          const hasPendingGoogleRecording = items.some(
+            (meeting) =>
+              meeting.status === "imported" ||
+              meeting.status === "recording_available" ||
+              meeting.status === "processing",
+          );
+          return hasPendingGoogleRecording ? 15000 : false;
+        },
+        refetchIntervalInBackground: true,
       }),
     );
 
@@ -597,10 +626,56 @@ export function ExternalMeetingsList({
 
   const meetings = data?.pages.flatMap((p) => p.items) ?? [];
 
+  useEffect(() => {
+    if (provider !== "google" || meetings.length === 0) return;
+
+    for (const meeting of meetings) {
+      const previousStatus = previousStatusesRef.current[meeting.id];
+
+      if (
+        previousStatus &&
+        previousStatus !== meeting.status &&
+        meeting.status === "processing"
+      ) {
+        toast.success("Google Meet recording found", {
+          description:
+            "Import started. You can open the meeting while it processes.",
+        });
+      }
+
+      if (
+        previousStatus &&
+        previousStatus !== meeting.status &&
+        meeting.status === "completed" &&
+        typeof meeting.metadata.imeetlyMeetingId === "string"
+      ) {
+        toast.success("Meeting notes are ready", {
+          description:
+            meeting.title || "Your Google Meet recording finished processing.",
+        });
+      }
+
+      previousStatusesRef.current[meeting.id] = meeting.status;
+    }
+  }, [meetings, provider]);
+
   return (
     <div className="flex min-w-0 max-w-full flex-col gap-6 overflow-hidden">
       {showTitle ? (
         <h2 className="-mt-3 font-semibold text-lg">Synced meetings</h2>
+      ) : null}
+      {provider === "google" ? (
+        <Alert>
+          <InfoIcon />
+          <AlertTitle>
+            Google Meet recordings are checked automatically
+          </AlertTitle>
+          <AlertDescription>
+            Calendar events sync first. After a meeting ends, imeetly keeps
+            checking for the recording and starts import when Google publishes
+            the Drive file. You can still check manually at any time.
+          </AlertDescription>
+        </Alert>
       ) : null}
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         <InputGroup className="min-w-0 flex-1">
@@ -763,7 +838,10 @@ function MeetingRow({
 
   const statusLabel: Record<string, string> = {
     imported: meeting.provider === "google" ? "Calendar synced" : "Imported",
-    recording_available: "Recording ready",
+    recording_available:
+      meeting.provider === "google"
+        ? "Checking automatically"
+        : "Recording ready",
     processing: "Processing",
     completed: "Completed",
     failed: "Failed",
@@ -776,6 +854,7 @@ function MeetingRow({
         <>
           {meeting.provider === "google" &&
             (meeting.status === "imported" ||
+              meeting.status === "recording_available" ||
               meeting.status === "no_recording" ||
               meeting.status === "failed") && (
               <Button
@@ -790,7 +869,7 @@ function MeetingRow({
                 ) : (
                   <SearchIcon className="size-4" />
                 )}
-                Import recording
+                Check now
               </Button>
             )}
           {meeting.provider !== "google" &&
@@ -813,7 +892,8 @@ function MeetingRow({
                 Import
               </Button>
             )}
-          {meeting.status === "completed" &&
+          {(meeting.status === "processing" ||
+            meeting.status === "completed") &&
             typeof meeting.metadata.imeetlyMeetingId === "string" && (
               <Button
                 className="w-full min-w-0 max-w-full shrink overflow-hidden text-ellipsis lg:w-auto"
@@ -826,7 +906,9 @@ function MeetingRow({
                 size="sm"
                 variant="secondary"
               >
-                View notes
+                {meeting.status === "processing"
+                  ? "View progress"
+                  : "View notes"}
               </Button>
             )}
           {meeting.joinUrl && (

@@ -1059,6 +1059,11 @@ export async function deleteSourceFile(meetingId: string): Promise<void> {
 
   for (const file of files) {
     if (file.retentionStatus === "deleted") continue;
+    // Preserve shared test file used for local verification testing
+    if (file.storageKey === "imeetly-verification-testing.mp4") {
+      console.log(`[${meetingId}] Skipping deletion of shared test file`);
+      continue;
+    }
 
     try {
       await s3.send(
