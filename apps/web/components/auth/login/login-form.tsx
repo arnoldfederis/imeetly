@@ -5,13 +5,7 @@ import { env } from "@repo/env";
 import { authClient } from "@repo/server/lib/auth-client";
 import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  EyeIcon,
-  EyeOffIcon,
-  KeyRoundIcon,
-  LoaderCircleIcon,
-  MailIcon,
-} from "lucide-react";
+import { EyeIcon, EyeOffIcon, KeyRoundIcon, LoaderCircleIcon, MailIcon, } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
@@ -19,15 +13,10 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { loginAtom } from "@/components/auth/login/atom";
+import { PolicyTermsLinks } from "@/components/auth/policy-terms-links";
 import { GoogleIcon } from "@/components/svgs/google-icon";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator, } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { server } from "@/lib/orpc";
 
@@ -51,6 +40,7 @@ export function LoginForm() {
 
   const isSubmitting = form.formState.isSubmitting;
   const toggleVisibility = () => setIsVisible((prevState) => !prevState);
+  const isLoading = isSubmitting || isSocialSigningIn || isPasskeySigningIn;
 
   async function handleSubmit(values: AuthModel["signInRequest"]) {
     const email = values.email.trim().toLowerCase();
@@ -253,20 +243,14 @@ export function LoginForm() {
               {fieldState.invalid ? (
                 <FieldError errors={[fieldState.error]} />
               ) : null}
+
+              <PolicyTermsLinks type="signIn" />
             </Field>
           )}
         />
 
         <Field>
-          <Button
-            disabled={
-              !form.formState.isValid ||
-              isSubmitting ||
-              isSocialSigningIn ||
-              isPasskeySigningIn
-            }
-            type="submit"
-          >
+          <Button disabled={!form.formState.isValid || isLoading} type="submit">
             {isSubmitting ? (
               <LoaderCircleIcon className="animate-spin" />
             ) : (
@@ -280,6 +264,7 @@ export function LoginForm() {
         <FieldSeparator>or continue with</FieldSeparator>
         <Field>
           <Button
+            disabled={isLoading}
             nativeButton={false}
             render={<Link href="/register" />}
             type="button"
@@ -288,7 +273,7 @@ export function LoginForm() {
             <MailIcon /> Sign up
           </Button>
           <Button
-            disabled={isSubmitting || isPasskeySigningIn || isSocialSigningIn}
+            disabled={isLoading}
             onClick={handleGoogleAuth}
             suppressHydrationWarning
             type="button"
@@ -303,7 +288,7 @@ export function LoginForm() {
             )}
           </Button>
           <Button
-            disabled={isSubmitting || isPasskeySigningIn || isSocialSigningIn}
+            disabled={isLoading}
             onClick={handlePasskeyAuth}
             type="button"
             variant="secondary"
