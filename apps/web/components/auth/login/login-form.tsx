@@ -5,7 +5,13 @@ import { env } from "@repo/env";
 import { authClient } from "@repo/server/lib/auth-client";
 import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
 import { useAtomValue, useSetAtom } from "jotai";
-import { EyeIcon, EyeOffIcon, KeyRoundIcon, LoaderCircleIcon, MailIcon, } from "lucide-react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  KeyRoundIcon,
+  LoaderCircleIcon,
+  MailIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
@@ -16,7 +22,13 @@ import { loginAtom } from "@/components/auth/login/atom";
 import { PolicyTermsLinks } from "@/components/auth/policy-terms-links";
 import { GoogleIcon } from "@/components/svgs/google-icon";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSeparator, } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { server } from "@/lib/orpc";
 

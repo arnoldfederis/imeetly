@@ -4,10 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { env } from "@repo/env";
 import { authClient } from "@repo/server/lib/auth-client";
 import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
-import { getViolations, isPasswordValid, PASSWORD_CRITERIA, } from "@repo/server/modules/auth/utils";
+import {
+  getViolations,
+  isPasswordValid,
+  PASSWORD_CRITERIA,
+} from "@repo/server/modules/auth/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSetAtom } from "jotai";
-import { CircleAlertIcon, CircleCheckIcon, EyeIcon, EyeOffIcon, LoaderCircleIcon, } from "lucide-react";
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { useEffect, useState } from "react";
@@ -16,7 +26,12 @@ import { toast } from "sonner";
 import { loginAtom } from "@/components/auth/login/atom";
 import { PolicyTermsLinks } from "@/components/auth/policy-terms-links";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel, } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
