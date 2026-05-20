@@ -20,7 +20,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@types/bun": "1.3.14",
-    "@typescript/native-preview": "7.0.0-dev.20260517.1",
+    "@typescript/native-preview": "7.0.0-dev.20260519.1",
     "tailwindcss": "4.3.0",
     "turbo": "2.9.14"
   },
@@ -44,10 +44,10 @@
       "@tailwindcss/vite": "latest",
       "@tanstack/react-devtools": "0.10.2",
       "@tanstack/react-query": "5.99.0",
-      "@tanstack/react-router": "1.170.3",
+      "@tanstack/react-router": "1.170.4",
       "@tanstack/react-router-devtools": "1.166.13",
       "@tanstack/react-router-ssr-query": "1.166.11",
-      "@tanstack/react-start": "1.168.5",
+      "@tanstack/react-start": "1.168.6",
       "@tanstack/router-plugin": "1.167.22",
       "better-auth": "1.6.11",
       "class-variance-authority": "latest",
@@ -77,10 +77,10 @@
         "@types/bun": "1.3.14",
         "@types/node": "latest",
         "@types/pg": "8.20.0",
-        "@types/react": "latest",
+        "@types/react": "19.2.15",
         "@types/react-dom": "latest",
         "@vitejs/plugin-react": "latest",
-        "baseline-browser-mapping": "2.10.30",
+        "baseline-browser-mapping": "2.10.31",
         "dotenv-cli": "latest",
         "jsdom": "29.1.1",
         "pino-pretty": "latest",
@@ -92,7 +92,7 @@
     }
   },
   "dependencies": {
-    "@tanstack/query-core": "^5.100.10",
-    "@tanstack/react-query": "^5.100.10"
+    "@tanstack/query-core": "^5.100.11",
+    "@tanstack/react-query": "^5.100.11"
   }
 }

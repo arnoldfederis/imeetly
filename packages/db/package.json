@@ -23,7 +23,7 @@
     "@types/pg": "catalog:dev",
     "dotenv-cli": "catalog:dev",
     "drizzle-kit": "latest",
-    "tsx": "4.22.1"
+    "tsx": "4.22.3"
   },
   "exports": {
     ".": "./src/index.ts",

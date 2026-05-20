@@ -356,21 +356,10 @@ export class IntegrationService {
     }
 
     try {
-      const data = await provider.findMeetRecording(
+      return await provider.findMeetRecording(
         token.accessToken,
         extMeeting.externalMeetingId,
       );
-
-      // Allow importing the recording even if it's not ready yet in development mode
-      if (env.APP_ENV === "production") {
-        return data;
-      } else {
-        return {
-          ...data,
-          message: `imeetly-verification-testing ${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")} ${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")} - Recording`,
-          status: "found" as "found" | "not_found" | "not_ready",
-        };
-      }
     } catch (error) {
       const message =
         error instanceof Error
