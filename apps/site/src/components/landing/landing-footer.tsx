@@ -106,7 +106,7 @@ export function LandingFooter() {
       </div>
 
       <div className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 py-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p className="text-muted-foreground text-xs">
             &copy; {new Date().getFullYear()} imeetly. All rights reserved.
           </p>
