@@ -189,10 +189,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Image
               alt="imeetly"
               className="size-5"
-              height={20}
+              height={128}
               loading={"eager"}
               src="/imeetly-transparent.png"
-              width={20}
+              width={128}
             />
           </Link>
         ) : (
@@ -204,10 +204,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Image
               alt="imeetly"
               className="size-6"
-              height={24}
+              height={128}
               loading={"eager"}
               src="/imeetly-transparent.png"
-              width={24}
+              width={128}
             />
             imeetly
           </Link>

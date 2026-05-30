@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import posthog from "posthog-js";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionItemDialog } from "@/components/action-items/action-item-dialog";
@@ -124,7 +123,6 @@ export function MeetingDetailsContainer(props: Props) {
         if (!token) {
           return;
         }
-        posthog.capture("meeting_shared", { meeting_id: meetingId });
         await invalidateMeetingDetailsQuery();
         const url = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/meet/${token}`;
         if (navigator.share) {
@@ -155,9 +153,6 @@ export function MeetingDetailsContainer(props: Props) {
     client.meeting.process.mutationOptions({
       onSuccess: async () => {
         await invalidateMeetingDetailsQuery();
-        posthog.capture("meeting_processing_retried", {
-          meeting_id: meetingId,
-        });
         toast.success("Processing restarted");
       },
       onError: (err) => toast.error(err.message),
@@ -169,7 +164,6 @@ export function MeetingDetailsContainer(props: Props) {
       onSuccess: async () => {
         await invalidateMeetingDetailsQuery();
 
-        posthog.capture("meeting_deleted", { meeting_id: meetingId });
         toast.success("Meeting deleted");
 
         router.replace(sourceLink);
@@ -180,13 +174,8 @@ export function MeetingDetailsContainer(props: Props) {
 
   const visibilityMutation = useMutation(
     client.meeting.setVisibility.mutationOptions({
-      onSuccess: async (visibility) => {
+      onSuccess: async (_visibility) => {
         await invalidateMeetingDetailsQuery();
-        if (visibility === "public") {
-          posthog.capture("public_index_enabled", { meeting_id: meetingId });
-        } else {
-          posthog.capture("public_index_disabled", { meeting_id: meetingId });
-        }
       },
       onError: (err) => toast.error(err.message),
     }),
@@ -286,10 +275,6 @@ export function MeetingDetailsContainer(props: Props) {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => {
-                    posthog.capture("meeting_exported", {
-                      meeting_id: meetingId,
-                      format: "markdown",
-                    });
                     downloadMeetingMarkdown(meeting);
                   }}
                 >
@@ -298,10 +283,6 @@ export function MeetingDetailsContainer(props: Props) {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    posthog.capture("meeting_exported", {
-                      meeting_id: meetingId,
-                      format: "pdf",
-                    });
                     downloadMeetingPdf(meeting);
                   }}
                 >

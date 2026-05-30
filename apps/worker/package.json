@@ -24,9 +24,9 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.97.1",
-    "@aws-sdk/client-s3": "^3.1050.0",
-    "@aws-sdk/s3-request-presigner": "^3.1050.0",
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@aws-sdk/client-s3": "^3.1057.0",
+    "@aws-sdk/s3-request-presigner": "^3.1057.0",
     "@deepgram/sdk": "5.3.0",
     "@neondatabase/serverless": "^1.1.0",
     "@react-email/components": "^1.0.12",
@@ -38,10 +38,10 @@
     "@temporalio/worker": "^1.16.2",
     "@temporalio/workflow": "^1.16.2",
     "drizzle-orm": "catalog:",
-    "groq-sdk": "^1.2.0",
+    "groq-sdk": "^1.2.1",
     "nanoid": "^5.1.11",
-    "nodemailer": "8.0.7",
-    "openai": "^6.38.0",
+    "nodemailer": "8.0.10",
+    "openai": "^6.39.1",
     "pg": "^8.20.0",
     "react": "^19.2.6",
     "zod": "catalog:"
@@ -57,6 +57,6 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.7"
   }
 }

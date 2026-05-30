@@ -102,7 +102,7 @@ jobs:
 
   build-site:
     name: Build site
-    needs: [ci, changes]
+    needs: [ ci, changes ]
     if: needs.changes.outputs.site == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
@@ -136,16 +136,14 @@ jobs:
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:latest
             ghcr.io/${{ steps.vars.outputs.owner }}/imeetly-site:${{ github.sha }}
           build-args: |
-            VITE_APP_BASE_URL=${{ vars.VITE_APP_BASE_URL }}
-            VITE_APP_SERVER_URL=${{ vars.VITE_APP_SERVER_URL }}
-            VITE_POSTHOG_TOKEN=${{ secrets.VITE_POSTHOG_TOKEN }}
-            VITE_POSTHOG_HOST=${{ vars.VITE_POSTHOG_HOST }}
+            NEXT_PUBLIC_APP_BASE_URL=${{ vars.NEXT_PUBLIC_APP_BASE_URL }}
+            APP_SERVER_URL=${{ vars.APP_SERVER_URL }}
           cache-from: type=gha,scope=imeetly-site-production
           cache-to: type=gha,mode=max,scope=imeetly-site-production
 
   build-web:
     name: Build web
-    needs: [ci, changes]
+    needs: [ ci, changes ]
     if: needs.changes.outputs.web == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
@@ -181,14 +179,12 @@ jobs:
           build-args: |
             NEXT_PUBLIC_APP_BASE_URL=${{ vars.NEXT_PUBLIC_APP_BASE_URL }}
             NEXT_PUBLIC_APP_SERVER_URL=${{ vars.NEXT_PUBLIC_APP_SERVER_URL }}
-            NEXT_PUBLIC_POSTHOG_TOKEN=${{ secrets.NEXT_PUBLIC_POSTHOG_TOKEN }}
-            NEXT_PUBLIC_POSTHOG_HOST=${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
           cache-from: type=gha,scope=imeetly-web-production
           cache-to: type=gha,mode=max,scope=imeetly-web-production
 
   build-server:
     name: Build server
-    needs: [ci, changes]
+    needs: [ ci, changes ]
     if: needs.changes.outputs.server == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
@@ -226,7 +222,7 @@ jobs:
 
   build-worker:
     name: Build worker
-    needs: [ci, changes]
+    needs: [ ci, changes ]
     if: needs.changes.outputs.worker == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
@@ -264,7 +260,7 @@ jobs:
 
   deploy:
     name: Deploy Production
-    needs: [build-site, build-web, build-server, build-worker]
+    needs: [ build-site, build-web, build-server, build-worker ]
     if: ${{ always() && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: production

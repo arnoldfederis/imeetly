@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -120,10 +119,6 @@ export function ActionItemRow({
     const newDone = !isDone;
     setOptimisticDone(newDone);
     const newStatus = newDone ? "done" : "open";
-    posthog.capture("action_item_toggled", {
-      action_item_id: item.id,
-      new_status: newStatus,
-    });
     toggleMutation.mutate({ id: item.id, status: newStatus });
   };
 

@@ -297,7 +297,7 @@ export class IntegrationService {
       )
       .limit(1);
 
-    if (!integration || integration.provider !== "google") {
+    if (integration?.provider !== "google") {
       throw new ORPCError("NOT_FOUND", {
         message: "Google integration not found",
       });

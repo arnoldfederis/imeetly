@@ -19,7 +19,6 @@ import {
   LoaderCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
-import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -155,7 +154,6 @@ export function RegisterForm() {
       return;
     }
 
-    posthog.capture("signup_password_submitted", { email });
     setLoginAtom((prevState) => ({
       ...prevState,
       email,

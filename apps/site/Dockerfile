@@ -13,28 +13,24 @@ RUN bun install --frozen-lockfile
 
 FROM deps AS build
 
-ARG VITE_APP_BASE_URL
-ENV VITE_APP_BASE_URL=$VITE_APP_BASE_URL
+ARG NEXT_PUBLIC_APP_BASE_URL
+ENV NEXT_PUBLIC_APP_BASE_URL=$NEXT_PUBLIC_APP_BASE_URL
 
-ARG VITE_APP_SERVER_URL
-ENV VITE_APP_SERVER_URL=$VITE_APP_SERVER_URL
-
-ARG VITE_POSTHOG_TOKEN
-ENV VITE_POSTHOG_TOKEN=$VITE_POSTHOG_TOKEN
-
-ARG VITE_POSTHOG_HOST
-ENV VITE_POSTHOG_HOST=$VITE_POSTHOG_HOST
+ARG APP_SERVER_URL
+ENV APP_SERVER_URL=$APP_SERVER_URL
 
 COPY . .
 RUN cd apps/site && bun run build
 
-FROM oven/bun:1-slim AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
-
-COPY --from=build /app/apps/site/.output /app/.output
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
+COPY --from=build /app/apps/site/.next/standalone ./
+COPY --from=build /app/apps/site/.next/static ./apps/site/.next/static
+COPY --from=build /app/apps/site/public ./apps/site/public
+
 EXPOSE 4000
-CMD ["bun", ".output/server/index.mjs"]
+CMD ["node", "apps/site/server.js"]

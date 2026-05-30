@@ -6,7 +6,6 @@ import { type AuthModel, authModel } from "@repo/server/modules/auth/model";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderCircleIcon } from "lucide-react";
-import posthog from "posthog-js";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -72,13 +71,6 @@ export function OtpForm({ context }: { context: "login" | "register" }) {
       (data.stats?.completedMeetings ?? 0) === 0 &&
       (data.recent?.length ?? 0) === 0;
 
-    posthog.identify(email, { email });
-    posthog.capture("email_verified", {
-      email,
-      is_new_user: isNewUser,
-      source: context,
-    });
-
     window.location.href = isNewUser ? "/onboarding" : "/";
   }
 
@@ -125,12 +117,6 @@ export function OtpForm({ context }: { context: "login" | "register" }) {
           });
 
     if (result.error) {
-      posthog.capture("verify_otp_failed", {
-        error_code: result.error.code,
-        error_message: result.error.message,
-        source: context,
-        verification_mode: verificationMode ?? "email-verification",
-      });
       setLoginAtom((prevState) => ({
         ...prevState,
         isVerifying: false,

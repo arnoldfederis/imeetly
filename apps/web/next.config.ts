@@ -13,14 +13,6 @@ const nextConfig: NextConfig = {
         source: "/integrations/:provider/callback",
         destination: `${process.env.NEXT_PUBLIC_APP_SERVER_URL}/integrations/:provider/callback`,
       },
-      {
-        source: "/ingest/static/:path*",
-        destination: "https://us-assets.i.posthog.com/static/:path*",
-      },
-      {
-        source: "/ingest/:path*",
-        destination: "https://us.i.posthog.com/:path*",
-      },
     ];
   },
   skipTrailingSlashRedirect: true,

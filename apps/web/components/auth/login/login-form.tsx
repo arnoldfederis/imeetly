@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -56,7 +55,6 @@ export function LoginForm() {
 
   async function handleSubmit(values: AuthModel["signInRequest"]) {
     const email = values.email.trim().toLowerCase();
-    posthog.capture("login_password_submitted", { email });
 
     const { error } = await authClient.signIn.email({
       callbackURL: env.NEXT_PUBLIC_APP_BASE_URL,
@@ -86,7 +84,6 @@ export function LoginForm() {
   }
 
   async function handleGoogleAuth() {
-    posthog.capture("login_google_clicked");
     setLoginAtom((prevState) => ({
       ...prevState,
       isSocialSigningIn: true,
@@ -121,7 +118,6 @@ export function LoginForm() {
       return;
     }
 
-    posthog.capture("login_passkey_clicked", { email });
     setLoginAtom((prevState) => ({
       ...prevState,
       email,

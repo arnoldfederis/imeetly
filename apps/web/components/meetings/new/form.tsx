@@ -17,7 +17,6 @@ import {
   XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
 import { type DragEvent, useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -113,17 +112,8 @@ export function NewMeetingForm({
         if (file) {
           try {
             await multipartUpload.upload(meeting.id, file);
-            posthog.capture("meeting_file_uploaded", {
-              meeting_id: meeting.id,
-              file_type: file.type,
-              file_size_mb: parseFloat((file.size / 1024 / 1024).toFixed(2)),
-              source_type: sourceType,
-            });
           } catch (err) {
             const msg = err instanceof Error ? err.message : "Upload failed";
-            posthog.captureException(
-              err instanceof Error ? err : new Error(msg),
-            );
             toast.error(msg);
             multipartUpload.reset();
             router.replace(`/meetings/${meeting.id}`);
@@ -134,10 +124,6 @@ export function NewMeetingForm({
           await server.meeting.process({ id: meeting.id });
         }
 
-        posthog.capture("meeting_created", {
-          meeting_id: meeting.id,
-          source_type: file ? sourceType : "text",
-        });
         await queryClient.invalidateQueries({
           queryKey: client.meeting.list.key(),
         });

@@ -18,11 +18,11 @@
     "expo:fix": "turbo expo:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
+    "@biomejs/biome": "2.4.16",
     "@types/bun": "1.3.14",
-    "@typescript/native-preview": "7.0.0-dev.20260519.1",
+    "@typescript/native-preview": "7.0.0-dev.20260527.2",
     "tailwindcss": "4.3.0",
-    "turbo": "2.9.14"
+    "turbo": "2.9.16"
   },
   "packageManager": "bun@1.3.13",
   "workspaces": {
@@ -33,13 +33,13 @@
     ],
     "catalog": {
       "@base-ui/react": "latest",
-      "@better-auth/passkey": "1.6.11",
+      "@better-auth/passkey": "1.6.12",
       "@hookform/resolvers": "latest",
-      "@orpc/client": "1.14.3",
+      "@orpc/client": "1.14.4",
       "@orpc/experimental-pino": "latest",
       "@orpc/openapi": "latest",
-      "@orpc/server": "1.14.3",
-      "@orpc/tanstack-query": "1.14.3",
+      "@orpc/server": "1.14.4",
+      "@orpc/tanstack-query": "1.14.4",
       "@orpc/zod": "latest",
       "@tailwindcss/vite": "latest",
       "@tanstack/react-devtools": "0.10.2",
@@ -49,7 +49,7 @@
       "@tanstack/react-router-ssr-query": "1.166.11",
       "@tanstack/react-start": "1.168.6",
       "@tanstack/router-plugin": "1.167.22",
-      "better-auth": "1.6.11",
+      "better-auth": "1.6.12",
       "class-variance-authority": "latest",
       "clsx": "latest",
       "drizzle-orm": "0.45.2",
@@ -61,7 +61,7 @@
       "pino": "latest",
       "react": "19.2.6",
       "react-dom": "19.2.6",
-      "react-hook-form": "7.76.0",
+      "react-hook-form": "7.76.1",
       "shadcn": "4.1.2",
       "sonner": "latest",
       "tailwind-merge": "latest",
@@ -86,13 +86,13 @@
         "pino-pretty": "latest",
         "typescript": "6.0.3",
         "vite": "8.0.13",
-        "vitest": "4.1.6",
+        "vitest": "4.1.7",
         "web-vitals": "latest"
       }
     }
   },
   "dependencies": {
-    "@tanstack/query-core": "^5.100.11",
-    "@tanstack/react-query": "^5.100.11"
+    "@tanstack/query-core": "^5.100.14",
+    "@tanstack/react-query": "^5.100.14"
   }
 }

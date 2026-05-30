@@ -315,7 +315,7 @@ export function ChatArea({ threadId }: Props) {
   const completionHandledRef = useRef(new Set<string>());
 
   useEffect(() => {
-    if (!exchange || exchange.status !== "complete" || !threadId) return;
+    if (exchange?.status !== "complete" || !threadId) return;
     if (completionHandledRef.current.has(exchange.requestId)) return;
     completionHandledRef.current.add(exchange.requestId);
 
