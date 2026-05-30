@@ -49,7 +49,7 @@ export function HowItWorksSection() {
         >
           {steps.map((s) => (
             <StaggerItem key={s.step}>
-              <div className="flex h-full flex-col border-b pt-8 pb-8 gap-4">
+              <div className="flex h-full flex-col gap-4 border-b pt-8 pb-8">
                 <div>
                   <p className="mb-3 font-bold text-5xl text-foreground/10">
                     {s.step}
