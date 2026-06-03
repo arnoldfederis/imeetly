@@ -157,7 +157,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: temporal
-      POSTGRES_PASSWORD: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD}
       POSTGRES_DB: temporal
     volumes:
       - temporal-data-prod:/var/lib/postgresql/data
@@ -178,7 +178,7 @@ services:
       - DB=postgres12
       - DB_PORT=5432
       - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
+      - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD}
       - POSTGRES_SEEDS=temporal-db
       - DEFAULT_NAMESPACE=default
     depends_on:
