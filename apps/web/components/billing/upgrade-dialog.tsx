@@ -1,12 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  CheckIcon,
-  CrownIcon,
-  LoaderCircleIcon,
-  UsersIcon,
-} from "lucide-react";
+import { CheckIcon, CrownIcon, LoaderCircleIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,22 +35,6 @@ const UPGRADE_PLANS = [
       "Unlimited AI memory search*",
       "Full AI answers across past meetings",
     ],
-  },
-  {
-    name: "Team",
-    plan: "team",
-    monthlyPrice: "$39/mo",
-    yearlyPrice: "$390/yr",
-    monthlySlug: "team-monthly" as const,
-    yearlySlug: "team-yearly" as const,
-    icon: <UsersIcon className="size-5" />,
-    meetings: "150 meetings / month",
-    highlights: [
-      "Everything in Pro",
-      "1 GB max file size",
-      "Unlimited team AI memory search*",
-    ],
-    comingSoon: true,
   },
 ] as const;
 
@@ -111,9 +90,7 @@ export function UpgradeDialog({
 
   const copy = REASON_COPY[reason];
 
-  async function handleCheckout(
-    slug: "pro-monthly" | "pro-yearly" | "team-monthly" | "team-yearly",
-  ) {
+  async function handleCheckout(slug: "pro-monthly" | "pro-yearly") {
     setLoading(slug);
     try {
       const { server } = await import("@/lib/orpc");
@@ -192,9 +169,6 @@ export function UpgradeDialog({
                         </span>
                       )}
                     {isCurrent && <Badge variant="secondary">Current</Badge>}
-                    {isComingSoon && (
-                      <Badge variant="outline">Coming Soon</Badge>
-                    )}
                   </div>
                   <p className="text-muted-foreground text-sm">
                     {plan.meetings}

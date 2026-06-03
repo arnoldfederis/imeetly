@@ -15,7 +15,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
-import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import {
   Collapsible,
@@ -54,9 +53,9 @@ export interface SidebarNav {
   url: string;
 }
 
-type Provider = "google" | "zoom" | "microsoft";
+type Provider = "google" | "zoom";
 
-const providerOrder: Provider[] = ["google", "zoom", "microsoft"];
+const providerOrder: Provider[] = ["google", "zoom"];
 
 const providerNavMeta: Record<
   Provider,
@@ -70,14 +69,10 @@ const providerNavMeta: Record<
     title: "Zoom",
     icon: <ZoomIcon className="size-4" />,
   },
-  microsoft: {
-    title: "Microsoft Teams",
-    icon: <MicrosoftTeamsIcon className="size-4" />,
-  },
 };
 
 function isProvider(value: string | null): value is Provider {
-  return value === "google" || value === "zoom" || value === "microsoft";
+  return value === "google" || value === "zoom";
 }
 
 const primaryNavs: SidebarNav[] = [

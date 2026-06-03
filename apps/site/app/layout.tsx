@@ -27,7 +27,6 @@ export const metadata: Metadata = {
     "searchable meeting history",
     "Zoom meeting notes",
     "Google Meet notes",
-    "Microsoft Teams notes",
   ],
   icons: {
     icon: [

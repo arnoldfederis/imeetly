@@ -46,8 +46,7 @@ const features = [
   {
     icon: LinkIcon,
     title: "Connected to your tools",
-    description:
-      "Connect Zoom or Google Meet for recording import. Link Microsoft Teams for calendar sync and manual recording import.",
+    description: "Connect Zoom or Google Meet for recording import.",
   },
   {
     icon: GlobeIcon,

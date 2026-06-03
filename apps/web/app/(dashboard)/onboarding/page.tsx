@@ -53,7 +53,7 @@ export default function Page() {
 
       <div className="mx-auto mt-16 grid w-full gap-4 xl:grid-cols-3">
         <StepCard
-          description="Connect Zoom or Google Meet for automatic recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly."
+          description="Connect Zoom or Google Meet for automatic recording import. Or upload audio, video, or paste a transcript directly."
           icon={<UploadIcon className="size-5 text-primary" />}
           step="01"
           title="Bring your meetings in"

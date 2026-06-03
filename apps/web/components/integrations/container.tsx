@@ -1,6 +1,5 @@
 "use client";
 
-import { env } from "@repo/env";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderIcon, Unlink2Icon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -8,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ExternalMeetingsList } from "@/components/settings/integrations/container";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
-import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,9 +17,8 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
-import { getLandingPageUrl } from "@/lib/utils";
 
-type Provider = "google" | "zoom" | "microsoft";
+type Provider = "google" | "zoom";
 type Integration = {
   id: string;
   provider: string;
@@ -54,15 +51,7 @@ const PROVIDER_META: Record<
     icon: <ZoomIcon className="size-5" />,
     connectLabel: "Connect Zoom",
   },
-  microsoft: {
-    name: "Microsoft Teams",
-    description:
-      "Sync Outlook calendar meetings and manually import Teams recordings",
-    icon: <MicrosoftTeamsIcon className="size-5" />,
-    connectLabel: "Connect Microsoft Teams",
-  },
 };
-const CONTACT_URL = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/contact`;
 
 export function IntegrationProviderContainer({
   initialIntegrations,
@@ -80,7 +69,7 @@ export function IntegrationProviderContainer({
     if (error === "ms_admin_required") {
       toast.error("Admin approval required", {
         description:
-          "Your organization requires an IT admin to approve this app. Contact your admin or reach out to us for enterprise setup.",
+          "Your organization requires an IT admin to approve this app.",
         duration: 10000,
       });
       return;
@@ -129,20 +118,6 @@ export function IntegrationProviderContainer({
           </div>
           <EmptyTitle>{meta.name} is not connected</EmptyTitle>
           <EmptyDescription>{meta.description}</EmptyDescription>
-          {provider === "microsoft" && (
-            <EmptyDescription>
-              Enterprise accounts may require admin approval.{" "}
-              <a
-                className="underline underline-offset-2 hover:text-foreground"
-                href={CONTACT_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Contact us
-              </a>{" "}
-              for help with setup.
-            </EmptyDescription>
-          )}
         </EmptyHeader>
         <Button
           className="w-full sm:w-auto"

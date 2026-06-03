@@ -1,5 +1,5 @@
 "use client";
-import { ArrowRightIcon, CheckIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon, SparklesIcon } from "lucide-react";
 import { useState } from "react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,8 @@ interface Plan {
   period: { monthly: string; yearly: string };
   features: string[];
   cta: string;
+  href?: string;
+  customPricing?: boolean;
   highlighted?: boolean;
   comingSoon?: boolean;
 }
@@ -58,21 +60,23 @@ const plans: Plan[] = [
     highlighted: true,
   },
   {
-    name: "Team",
-    description: "For teams that run on meetings and need higher limits",
-    monthlyPrice: "$39",
-    yearlyPrice: "$390",
-    yearlySavings: "Save $78/year",
-    period: { monthly: "per month", yearly: "per year" },
+    name: "Enterprise",
+    description: "For organizations with custom support or rollout needs",
+    monthlyPrice: "Custom",
+    yearlyPrice: "Custom",
+    yearlySavings: "",
+    period: { monthly: "pricing", yearly: "pricing" },
     features: [
-      "150 meetings per month",
-      "Everything in Pro",
-      "1 GB max file size",
-      "Unlimited team AI memory search*",
-      "Shared meeting knowledge base",
+      "Custom meeting limits",
+      "Priority onboarding support",
+      "Data deletion on request",
+      "Support requirements review",
+      "Volume discounts",
+      "Custom integrations on request",
     ],
-    cta: "Coming Soon",
-    comingSoon: true,
+    cta: "Contact us",
+    href: "/contact",
+    customPricing: true,
   },
 ];
 
@@ -114,7 +118,10 @@ export function PricingSection() {
           </div>
         </FadeIn>
 
-        <Stagger className="grid gap-6 md:grid-cols-3" staggerDelay={0.12}>
+        <Stagger
+          className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-3"
+          staggerDelay={0.12}
+        >
           {plans.map((plan) => {
             const price = yearly ? plan.yearlyPrice : plan.monthlyPrice;
             const period = yearly ? plan.period.yearly : plan.period.monthly;
@@ -133,6 +140,11 @@ export function PricingSection() {
                       Most popular
                     </div>
                   )}
+                  {plan.customPricing && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary/10 px-3 py-0.5 font-medium text-primary text-xs">
+                      Custom pricing
+                    </div>
+                  )}
                   {plan.comingSoon && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-muted-foreground px-3 py-0.5 font-medium text-background text-xs">
                       Coming soon
@@ -148,9 +160,16 @@ export function PricingSection() {
 
                   <div className="mb-6">
                     <span className="font-bold text-4xl">{price}</span>
-                    <span className="ml-1 text-muted-foreground text-sm">
-                      / {period}
-                    </span>
+                    {!plan.customPricing && (
+                      <span className="ml-1 text-muted-foreground text-sm">
+                        / {period}
+                      </span>
+                    )}
+                    {plan.customPricing && (
+                      <p className="mt-1 text-muted-foreground text-sm">
+                        {period}
+                      </p>
+                    )}
                     {yearly && plan.yearlySavings && (
                       <p className="mt-1 font-medium text-primary text-xs">
                         {plan.yearlySavings}
@@ -185,9 +204,9 @@ export function PricingSection() {
                         variant: plan.highlighted ? "default" : "secondary",
                         className: "w-full gap-1.5",
                       })}
-                      href={APP_URL}
-                      rel="noopener noreferrer"
-                      target="_blank"
+                      href={plan.href ?? APP_URL}
+                      rel={plan.href ? undefined : "noopener noreferrer"}
+                      target={plan.href ? undefined : "_blank"}
                     >
                       {plan.highlighted && (
                         <SparklesIcon className="size-3.5" />
@@ -200,52 +219,6 @@ export function PricingSection() {
             );
           })}
         </Stagger>
-
-        <FadeIn className="mt-8">
-          <div className="rounded-2xl bg-muted/30 p-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="font-semibold text-lg">Enterprise</span>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
-                    Custom pricing
-                  </span>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  For organizations with advanced needs - custom limits, MS
-                  Teams admin setup, SSO discussions, and support requirements.
-                </p>
-                <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {[
-                    "Unlimited meetings",
-                    "MS Teams enterprise setup",
-                    "Data deletion on request",
-                    "Support requirements review",
-                    "Volume discounts",
-                    "Custom integrations on request",
-                  ].map((f) => (
-                    <li className="flex items-center gap-2 text-sm" key={f}>
-                      <CheckIcon className="size-4 shrink-0 text-primary" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="shrink-0">
-                <a
-                  className={buttonVariants({
-                    variant: "default",
-                    className: "gap-1.5",
-                  })}
-                  href="/contact"
-                >
-                  Contact us
-                  <ArrowRightIcon className="size-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </FadeIn>
         <FadeIn className="mt-10 text-center">
           <p className="text-muted-foreground text-xs">
             *Subject to fair use and abuse prevention.

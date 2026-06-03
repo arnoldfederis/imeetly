@@ -4,16 +4,15 @@ import { IntegrationProviderContainer } from "@/components/integrations/containe
 import { server } from "@/lib/orpc";
 import { requireAuth } from "@/lib/server-auth";
 
-type Provider = "google" | "zoom" | "microsoft";
+type Provider = "google" | "zoom";
 
 const PROVIDER_NAMES: Record<Provider, string> = {
   google: "Google Meet",
   zoom: "Zoom",
-  microsoft: "Microsoft Teams",
 };
 
 function isProvider(value: string): value is Provider {
-  return value === "google" || value === "zoom" || value === "microsoft";
+  return value === "google" || value === "zoom";
 }
 
 export async function generateMetadata({

@@ -23,7 +23,7 @@ export function LandingHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <div className="relative mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link
           className="flex items-center gap-2 font-bold text-lg tracking-tight"
           href="/"
@@ -37,6 +37,23 @@ export function LandingHeader() {
           />
           imeetly
         </Link>
+
+        <nav className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              className={cn(
+                "rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted",
+                pathname === link.href
+                  ? "font-medium text-foreground"
+                  : "text-muted-foreground",
+              )}
+              href={link.href}
+              key={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
         <div className="hidden items-center gap-3 md:flex">
           <ThemeSwitcher />

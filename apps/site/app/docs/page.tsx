@@ -13,7 +13,7 @@ import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
 
 const DOCS_DESCRIPTION =
-  "Learn how to add, use, troubleshoot, and remove imeetly for Zoom, Google Meet, and Microsoft Teams.";
+  "Learn how to add, use, troubleshoot, and remove imeetly for Zoom and Google Meet.";
 
 export const metadata: Metadata = {
   title: "imeetly Documentation",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 const PREREQUISITES = [
   "An active imeetly account",
-  "Access to at least one supported meeting platform: Zoom, Google Meet, or Microsoft Teams",
+  "Access to at least one supported meeting platform: Zoom or Google Meet",
   "Permission to authorize apps or integrations for the meeting platform you want to connect",
   "A supported browser such as Chrome, Edge, Safari, or Firefox",
 ];
@@ -48,7 +48,7 @@ const FEATURE_SECTIONS = [
   {
     title: "Connect a Meeting Platform",
     useCase:
-      "Connect Zoom, Google Meet, or Microsoft Teams so imeetly can support meeting-related workflows for that platform.",
+      "Connect Zoom or Google Meet so imeetly can support meeting-related workflows for that platform.",
     prerequisites: [
       "Active imeetly account",
       "Access to the meeting platform you want to connect",
@@ -57,7 +57,7 @@ const FEATURE_SECTIONS = [
     steps: [
       "Sign in to imeetly.",
       "Open your account settings or integrations page.",
-      "Select the meeting platform you want to connect: Zoom, Google Meet, or Microsoft Teams.",
+      "Select the meeting platform you want to connect: Zoom or Google Meet.",
       "Follow the authorization flow.",
       "Review the requested permissions.",
       "Confirm that the integration status is active.",
@@ -120,11 +120,11 @@ const TROUBLESHOOTING_ITEMS = [
     ],
   },
   {
-    issue: "I cannot connect Google Meet or Microsoft Teams",
+    issue: "I cannot connect Google Meet",
     steps: [
-      "Confirm you are signed in to the correct Google or Microsoft account",
+      "Confirm you are signed in to the correct Google account",
       "Confirm your organization allows third-party app integrations",
-      "Ask your workspace or tenant administrator to approve the integration if required",
+      "Ask your workspace administrator to approve the integration if required",
       "Try reconnecting from imeetly account settings",
       "Contact support@imeetly.app",
     ],
@@ -173,7 +173,7 @@ export default function DocsPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Learn how to connect imeetly to Zoom, Google Meet, and Microsoft Teams, use imeetly with supported meeting platforms, troubleshoot common issues, and manage or remove integrations when needed."
+          description="Learn how to connect imeetly to Zoom and Google Meet, use imeetly with supported meeting platforms, troubleshoot common issues, and manage or remove integrations when needed."
           eyebrow="Documentation"
           title="imeetly Documentation"
         />
@@ -276,10 +276,10 @@ export default function DocsPage() {
               title="Using imeetly with Supported Meeting Platforms"
             >
               <p className="mb-6 text-sm leading-6">
-                imeetly works with Zoom, Google Meet, and Microsoft Teams.
-                Availability of specific meeting memory features may depend on
-                the meeting platform, your account settings, permissions, and
-                subscription access.
+                imeetly works with Zoom and Google Meet. Availability of
+                specific meeting memory features may depend on the meeting
+                platform, your account settings, permissions, and subscription
+                access.
               </p>
               <div className="space-y-6">
                 {FEATURE_SECTIONS.map((feature) => (
@@ -395,9 +395,8 @@ export default function DocsPage() {
                 that option is available.
               </p>
               <p className="mt-4 text-muted-foreground text-sm leading-6">
-                For Google Meet or Microsoft Teams, reconnect the relevant
-                integration from your imeetly account settings or integrations
-                page, if available.
+                For Google Meet, reconnect the relevant integration from your
+                imeetly account settings or integrations page, if available.
               </p>
             </DocsSection>
 

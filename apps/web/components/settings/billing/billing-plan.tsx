@@ -1,6 +1,6 @@
 "use client";
 
-import { CrownIcon, UsersIcon, ZapIcon } from "lucide-react";
+import { CrownIcon, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { PlanCard } from "@/components/settings/billing/plan-card";
 
@@ -45,24 +45,6 @@ export const PLANS = [
       "Full AI answers across past meetings",
     ],
   },
-  {
-    name: "Team",
-    plan: "team",
-    monthlyPrice: "$39",
-    yearlyPrice: "$390",
-    icon: <UsersIcon className="size-5" />,
-    meetings: 150,
-    monthlySlug: "team-monthly" as const,
-    yearlySlug: "team-yearly" as const,
-    comingSoon: true,
-    features: [
-      "150 meetings per month",
-      "Everything in Pro",
-      "1 GB max file size",
-      "Unlimited team AI memory search*",
-      "Shared meeting knowledge base",
-    ],
-  },
 ];
 
 interface Props {
@@ -97,7 +79,7 @@ export function BillingPlan({ currentPlan }: Props) {
           </button>
         </div>
       </div>
-      <div className="grid gap-x-4 gap-y-8 lg:grid-cols-2 lg:gap-x-4 lg:gap-y-8 xl:grid-cols-3 xl:gap-4">
+      <div className="grid gap-4 lg:grid-cols-2">
         {PLANS.map((plan) => (
           <PlanCard
             checkoutPlan={checkoutPlan}

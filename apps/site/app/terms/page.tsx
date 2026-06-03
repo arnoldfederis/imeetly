@@ -47,12 +47,11 @@ export default function TermsPage() {
                 imeetly is an AI-powered meeting notes service. You can upload
                 meeting recordings, video files, or text transcripts - or
                 connect your Google Meet or Zoom account to import recordings
-                automatically, or connect Microsoft Teams to manually import
-                recordings. The Service uses artificial intelligence to generate
-                structured outputs including transcripts, summaries, decisions,
-                blockers, and action items. The Service also provides searchable
-                meeting history and memory features built from those saved
-                outputs.
+                automatically. The Service uses artificial intelligence to
+                generate structured outputs including transcripts, summaries,
+                decisions, blockers, and action items. The Service also provides
+                searchable meeting history and memory features built from those
+                saved outputs.
               </p>
               <p className="mt-3">
                 The Service is provided on a best-effort basis. Features and
@@ -152,11 +151,11 @@ export default function TermsPage() {
                 </li>
               </ul>
               <p className="mt-3">
-                If you connect a third-party integration (Google Meet, Zoom, or
-                Microsoft Teams), recordings retrieved via that integration are
-                subject to the same representations, warranties, and consent
-                obligations described above. You are responsible for ensuring
-                you have the right to import and process those recordings.
+                If you connect a third-party integration (Google Meet or Zoom),
+                recordings retrieved via that integration are subject to the
+                same representations, warranties, and consent obligations
+                described above. You are responsible for ensuring you have the
+                right to import and process those recordings.
               </p>
               <p className="mt-3">
                 Uploaded or imported source files are processed and then deleted
@@ -171,10 +170,10 @@ export default function TermsPage() {
               <h2>6. Third-Party Integrations</h2>
               <p className="mt-3">
                 The Service allows you to connect third-party meeting platforms
-                (currently Google Meet, Zoom, and Microsoft Teams) via OAuth. By
-                connecting an integration, you authorize imeetly to access your
-                calendar events and cloud recordings through that
-                platform&apos;s API on your behalf.
+                (currently Google Meet and Zoom) via OAuth. By connecting an
+                integration, you authorize imeetly to access your calendar
+                events and cloud recordings through that platform&apos;s API on
+                your behalf.
               </p>
               <ul className="mt-3">
                 <li>

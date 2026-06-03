@@ -1,6 +1,5 @@
 "use client";
 
-import { env } from "@repo/env";
 import {
   type UseMutationResult,
   useInfiniteQuery,
@@ -26,7 +25,6 @@ import { FormattedDate } from "@/components/common/formatted-date";
 import { MeetingListRow } from "@/components/meetings/list-row";
 import { detectMeetingProvider } from "@/components/meetings/provider-icon";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
-import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +58,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc";
-import { getLandingPageUrl } from "@/lib/utils";
 
 type Integration = {
   id: string;
@@ -83,7 +80,7 @@ type ExternalMeeting = {
   metadata: Record<string, unknown>;
 };
 
-type Provider = "google" | "zoom" | "microsoft";
+type Provider = "google" | "zoom";
 
 const PROVIDER_META: Record<
   Provider,
@@ -100,16 +97,9 @@ const PROVIDER_META: Record<
     description: "Automatically import Zoom cloud recordings",
     icon: <ZoomIcon className="size-6" />,
   },
-  microsoft: {
-    name: "Microsoft Teams",
-    description:
-      "Sync Outlook calendar meetings and manually import Teams recordings",
-    icon: <MicrosoftTeamsIcon className="size-6" />,
-  },
 };
 
-const ALL_PROVIDERS: Provider[] = ["google", "zoom", "microsoft"];
-const CONTACT_URL = `${getLandingPageUrl(env.NEXT_PUBLIC_APP_BASE_URL)}/contact`;
+const ALL_PROVIDERS: Provider[] = ["google", "zoom"];
 const PAGE_SIZE = 20;
 
 const EXTERNAL_STATUS_OPTIONS = [
@@ -123,7 +113,7 @@ const EXTERNAL_STATUS_OPTIONS = [
 ] as const;
 
 function isProvider(value: string | null): value is Provider {
-  return value === "google" || value === "zoom" || value === "microsoft";
+  return value === "google" || value === "zoom";
 }
 
 interface IntegrationsContainerProps {
@@ -166,7 +156,7 @@ export function IntegrationsContainer({
           } else if (error === "ms_admin_required") {
             toast.error("Admin approval required", {
               description:
-                "Your organization requires an IT admin to approve this app. Contact your admin or reach out to us for enterprise setup.",
+                "Your organization requires an IT admin to approve this app.",
               duration: 10000,
             });
           } else if (error) {
@@ -237,20 +227,6 @@ export function IntegrationsContainer({
                   <p className="wrap-break-word text-muted-foreground text-xs">
                     {meta.description}
                   </p>
-                  {provider === "microsoft" && !connected && (
-                    <p className="wrap-break-word mt-0.5 text-muted-foreground text-xs">
-                      Enterprise accounts may require admin approval.{" "}
-                      <a
-                        className="underline underline-offset-2 hover:text-foreground"
-                        href={CONTACT_URL}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        Contact us
-                      </a>{" "}
-                      for help with setup.
-                    </p>
-                  )}
                 </div>
               </div>
 

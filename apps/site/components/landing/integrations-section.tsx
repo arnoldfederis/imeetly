@@ -1,9 +1,7 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
-import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 
 const integrations = [
@@ -23,14 +21,6 @@ const integrations = [
     dot: "bg-green-500",
     comingSoon: false,
   },
-  {
-    name: "Microsoft Teams",
-    description:
-      "Sync your Outlook calendar via Microsoft Graph and import Teams recordings manually. Keep your meeting notes organized alongside your schedule.",
-    icon: <MicrosoftTeamsIcon className="size-6" />,
-    dot: "bg-indigo-500",
-    comingSoon: false,
-  },
 ];
 
 export function IntegrationsSection() {
@@ -45,18 +35,18 @@ export function IntegrationsSection() {
             Works with the tools your team already uses
           </h2>
           <p className="mt-5 text-muted-foreground text-xl leading-relaxed">
-            Connect Zoom, Google Meet, or Microsoft Teams. imeetly syncs your
-            meetings and lets you import recordings without replacing the tools
-            you already rely on.
+            Connect Zoom or Google Meet. imeetly syncs your meetings and lets
+            you import recordings without replacing the tools you already rely
+            on.
           </p>
         </FadeIn>
         <Stagger
-          className="grid sm:grid-cols-2 lg:grid-cols-3"
+          className="mx-auto grid max-w-4xl gap-4 border-t sm:grid-cols-2"
           staggerDelay={0.1}
         >
           {integrations.map((integration) => (
             <StaggerItem key={integration.name}>
-              <div className="flex flex-col border-t pt-8 pb-8">
+              <div className="flex h-full flex-col gap-4 border-b pt-8 pb-8">
                 <div className="w-fit rounded-xl bg-muted/50 p-2">
                   {integration.icon}
                 </div>
@@ -76,12 +66,6 @@ export function IntegrationsSection() {
             </StaggerItem>
           ))}
         </Stagger>
-        <FadeIn className="mt-8 flex justify-center" delay={0.4}>
-          <div className="flex items-center gap-2.5 rounded-full border border-dashed px-5 py-2.5 text-muted-foreground text-sm">
-            <PlusIcon className="size-4" />
-            More integrations coming soon
-          </div>
-        </FadeIn>
       </div>
     </section>
   );

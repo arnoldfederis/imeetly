@@ -6,7 +6,7 @@ import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
 
 const CONTACT_DESCRIPTION =
-  "Contact imeetly for enterprise AI meeting notes, Microsoft Teams admin setup, custom meeting limits, SSO discussions, support requirements, volume discounts, and onboarding.";
+  "Contact imeetly for enterprise plans, onboarding guidance, support requirements, and general support.";
 
 export const metadata: Metadata = {
   title: "Contact Sales and Support",
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://imeetly.app/contact" },
 };
 
-const ENTERPRISE_FEATURES = [
-  "Unlimited meetings per month",
-  "Microsoft Teams enterprise admin setup",
-  "Data deletion on request",
-  "Support requirements review",
-  "Volume discounts",
-  "Custom integrations on request",
-  "Onboarding assistance",
+const SUPPORT_TOPICS = [
+  "Enterprise plans and onboarding help",
+  "Custom support requirements",
+  "Meeting import and upload troubleshooting",
+  "Account, billing, and subscription support",
+  "Data deletion requests",
+  "General product feedback",
+  "Integration help",
 ];
 
 export default function ContactPage() {
@@ -34,7 +34,7 @@ export default function ContactPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Enterprise plans, MS Teams setup, SSO discussions, or anything else. Reach out and we'll review the best setup for your team."
+          description="Need help with an enterprise setup, billing, or anything else? Reach out and we'll point you in the right direction."
           eyebrow="Contact"
           title="Let's talk"
         />
@@ -42,13 +42,13 @@ export default function ContactPage() {
           <Stagger className="grid gap-8 md:grid-cols-2" staggerDelay={0.12}>
             <StaggerItem className="h-full">
               <div className="h-full rounded-2xl border border-border/50 p-8">
-                <h2 className="font-semibold text-xl">Enterprise plan</h2>
+                <h2 className="font-semibold text-xl">Enterprise support</h2>
                 <p className="mt-2 text-muted-foreground text-sm">
-                  Built for organizations that need more than our standard tiers
-                  offer.
+                  Reach out if you need help planning an enterprise rollout or
+                  getting imeetly working smoothly.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  {ENTERPRISE_FEATURES.map((feature) => (
+                  {SUPPORT_TOPICS.map((feature) => (
                     <li
                       className="flex items-start gap-2 text-sm"
                       key={feature}
@@ -66,38 +66,25 @@ export default function ContactPage() {
                 <div className="rounded-2xl border border-border/50 p-8">
                   <h2 className="font-semibold text-xl">Get in touch</h2>
                   <p className="mt-2 text-muted-foreground text-sm">
-                    Send us an email and tell us about your team size, use case,
-                    and any requirements. We&apos;ll put together a plan that
-                    fits.
+                    Send us an email with your use case, support needs, or
+                    question and we&apos;ll reply with the next step.
                   </p>
                   <a
                     className={buttonVariants({
                       variant: "default",
                       className: "mt-6 w-full gap-2",
                     })}
-                    href="mailto:support@imeetly.app?subject=Enterprise%20plan%20inquiry"
+                    href="mailto:support@imeetly.app?subject=imeetly%20enterprise%20inquiry"
                   >
                     <MailIcon className="size-4" />
                     support@imeetly.app
                   </a>
                 </div>
-
-                <div className="rounded-2xl border border-border/50 bg-muted/30 p-6">
-                  <p className="font-medium text-sm">
-                    Using Microsoft Teams with an enterprise account?
-                  </p>
-                  <p className="mt-1 text-muted-foreground text-sm">
-                    Enterprise Azure AD tenants require an IT admin to approve
-                    imeetly before users can connect. We&apos;ll walk your admin
-                    through the approval process.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-border/50 bg-muted/30 p-6">
+                <div className="h-full rounded-2xl bg-muted/30 p-6">
                   <p className="font-medium text-sm">Response time</p>
                   <p className="mt-1 text-muted-foreground text-sm">
-                    We respond to all enterprise inquiries within one business
-                    day.
+                    We respond to enterprise and support inquiries within one
+                    business day.
                   </p>
                 </div>
               </div>

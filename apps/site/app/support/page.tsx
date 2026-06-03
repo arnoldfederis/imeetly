@@ -13,7 +13,7 @@ import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
 
 const SUPPORT_DESCRIPTION =
-  "Get help with imeetly, including support hours, response times, documentation, troubleshooting, and contact options for Zoom, Google Meet, and Microsoft Teams.";
+  "Get help with imeetly, including support hours, response times, documentation, troubleshooting, and contact options for Zoom and Google Meet.";
 
 const SUPPORT_OPTIONS = [
   {
@@ -55,12 +55,12 @@ const SUPPORT_OPTIONS = [
 
 const SUPPORT_AREAS = [
   "Installing or authorizing imeetly for Zoom",
-  "Connecting Google Meet or Microsoft Teams",
+  "Connecting Google Meet",
   "Understanding how imeetly works with supported meeting platforms",
   "Meeting summary or meeting memory issues",
   "Account access issues",
   "Removing the Zoom app integration",
-  "Disconnecting Google Meet or Microsoft Teams",
+  "Disconnecting Google Meet",
   "Data deletion and privacy requests",
   "Billing or subscription questions, if applicable",
   "Bug reports and product feedback",
@@ -68,7 +68,7 @@ const SUPPORT_AREAS = [
 
 const BEFORE_CONTACTING_SUPPORT = [
   "Confirm you are signed in to the correct imeetly account",
-  "Confirm you are signed in to the correct Zoom, Google, or Microsoft account",
+  "Confirm you are signed in to the correct Zoom or Google account",
   "Confirm the correct meeting platform is connected",
   "Try reconnecting the integration from your imeetly account settings",
   "Review the documentation at /docs",
@@ -86,7 +86,7 @@ export default function SupportPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Need help with imeetly for Zoom, Google Meet, or Microsoft Teams? Our support team can help with installation, authorization, meeting summaries, account access, data removal, and troubleshooting."
+          description="Need help with imeetly for Zoom or Google Meet? Our support team can help with installation, authorization, meeting summaries, account access, data removal, and troubleshooting."
           eyebrow="Support"
           title="imeetly Support"
         />

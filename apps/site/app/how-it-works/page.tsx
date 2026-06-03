@@ -66,7 +66,7 @@ const inputs = [
   {
     icon: CalendarCheckIcon,
     label: "Connected calendar and meeting tools",
-    text: "Use integrations when meetings already live in Zoom, Google Meet, or Microsoft Teams workflows.",
+    text: "Use integrations when meetings already live in Zoom or Google Meet workflows.",
   },
   {
     icon: FileAudioIcon,

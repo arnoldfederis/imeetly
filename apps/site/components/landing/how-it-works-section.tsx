@@ -9,7 +9,7 @@ const steps = [
     icon: UploadIcon,
     title: "Bring your meetings in",
     description:
-      "Connect Zoom or Google Meet for recording import. Link Microsoft Teams to sync your Outlook calendar and import recordings manually. Or upload audio, video, or paste a transcript directly.",
+      "Connect Zoom or Google Meet for recording import. Or upload audio, video, or paste a transcript directly.",
   },
   {
     step: "02",

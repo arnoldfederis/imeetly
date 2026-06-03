@@ -9,7 +9,7 @@ export const faqs = [
   },
   {
     q: "Which meeting platforms does imeetly support?",
-    a: "imeetly integrates with Zoom, Google Meet, and Microsoft Teams. Zoom and Google Meet support recording import, and Microsoft Teams supports calendar sync and manual recording import.",
+    a: "imeetly integrates with Zoom and Google Meet for meeting import workflows.",
   },
   {
     q: "What file types can I upload?",
@@ -17,7 +17,7 @@ export const faqs = [
   },
   {
     q: "Can I use imeetly for team meetings?",
-    a: "Yes. imeetly is built for teams that need a shared record of summaries, decisions, action items, and follow-ups. The Team plan is planned for higher limits and team workflows.",
+    a: "Yes. imeetly is built for teams that need a shared record of summaries, decisions, action items, and follow-ups. Start on Free and upgrade to Pro when you need more processing volume.",
   },
   {
     q: "Does imeetly save meeting records automatically?",
@@ -45,10 +45,10 @@ export const faqs = [
   },
   {
     q: "What is the difference between Free snippets and Pro full answers?",
-    a: "Free users see matching text snippets from their meeting history - useful for finding the right meeting fast. Pro and Team users get a full AI-generated answer grounded in their meeting content, with citations to the exact meeting and date. No invented context.",
+    a: "Free users see matching text snippets from their meeting history - useful for finding the right meeting fast. Pro users get a full AI-generated answer grounded in their meeting content, with citations to the exact meeting and date. No invented context.",
   },
   {
     q: "What are the fair-use limits on AI Memory Search?",
-    a: "Free users get 5 AI memory searches per day. Pro users get 100 searches per day. Team users get 500 per day. Enterprise users have no fixed cap but are subject to fair-use and abuse prevention. Limits reset at midnight UTC.",
+    a: "Free users get 5 AI memory searches per day. Pro users get 100 searches per day. Limits reset at midnight UTC and are subject to fair-use and abuse prevention.",
   },
 ];

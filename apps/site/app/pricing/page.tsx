@@ -1,11 +1,9 @@
 import {
-  ArrowRightIcon,
   Building2Icon,
   CheckIcon,
   CircleDollarSignIcon,
   GaugeIcon,
   UserIcon,
-  UsersIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
@@ -14,10 +12,9 @@ import { FAQSection } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { PricingSection } from "@/components/landing/pricing-section";
-import { buttonVariants } from "@/components/ui/button";
 
 const PRICING_DESCRIPTION =
-  "Compare imeetly pricing plans for AI meeting notes, including the free plan, Pro monthly and yearly options, Team limits, and custom enterprise support.";
+  "Compare imeetly pricing plans for AI meeting notes, including Free, Pro monthly and yearly options, and custom enterprise support.";
 
 export const metadata: Metadata = {
   title: "Pricing for AI Meeting Notes",
@@ -46,35 +43,22 @@ const planGuidance = [
       "Choose Pro when meeting notes are part of your weekly operating rhythm and larger uploads or faster processing matter.",
   },
   {
-    icon: UsersIcon,
-    plan: "Team",
-    bestFor: "Shared team usage",
-    guidance:
-      "Team is intended for groups with higher meeting volume and heavier file sizes. It is marked coming soon while team workflows are finalized.",
-  },
-  {
     icon: Building2Icon,
     plan: "Enterprise",
     bestFor: "Custom requirements",
     guidance:
-      "Use Enterprise for higher limits, Microsoft Teams admin setup, SSO discussions, support requirements, or custom integration needs.",
+      "Use Enterprise when you need custom limits, onboarding help, support requirements review, or pricing shaped around a larger rollout.",
   },
 ];
 
 const comparisonRows = [
-  ["Meetings per month", "5", "50", "150"],
-  ["Max file size", "100 MB", "500 MB", "1 GB"],
-  ["AI summaries and action items", "Included", "Included", "Included"],
-  ["Priority processing", "-", "Included", "Included"],
-  ["PDF and Markdown export", "-", "Included", "Included"],
-  ["AI memory searches/day", "5", "100", "500"],
-  [
-    "AI memory answer mode",
-    "Snippets only",
-    "Full AI answers",
-    "Full AI answers",
-  ],
-  ["Team workflows", "-", "-", "Planned"],
+  ["Meetings per month", "5", "50"],
+  ["Max file size", "100 MB", "500 MB"],
+  ["AI summaries and action items", "Included", "Included"],
+  ["Priority processing", "-", "Included"],
+  ["PDF and Markdown export", "-", "Included"],
+  ["AI memory searches/day", "5", "100"],
+  ["AI memory answer mode", "Snippets only", "Full AI answers"],
 ];
 
 export default function PricingPage() {
@@ -82,7 +66,7 @@ export default function PricingPage() {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1">
         <PageIntro
-          description="Start with free meeting summaries, then upgrade when you need more processing volume, larger uploads, and team workflows."
+          description="Start with free meeting summaries, upgrade to Pro for more processing volume and full AI answers, or contact us for enterprise needs."
           eyebrow="Pricing"
           title="Plans that scale with your meeting load"
         />
@@ -107,14 +91,14 @@ function PlanGuidance() {
           </h2>
           <p className="mt-4 text-muted-foreground text-xl leading-relaxed">
             The main difference between plans is how often you process meetings
-            and how much operational support your team needs.
+            and how often you need imeetly to process and search them.
           </p>
         </FadeIn>
 
-        <Stagger className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Stagger className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
           {planGuidance.map((item) => (
             <StaggerItem className="h-full" key={item.plan}>
-              <div className="flex h-full flex-col rounded-2xl border-b p-6">
+              <div className="flex h-full flex-col border-b p-6">
                 <div className="mb-5 flex size-10 items-center justify-center rounded-xl bg-primary/10">
                   <item.icon className="size-5 text-primary" />
                 </div>
@@ -149,26 +133,16 @@ function PricingComparison() {
               Compare the practical limits
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              If you are unsure, start free and upgrade when the meeting cap or
-              file-size limits become the constraint.
+              If you are unsure, start free and upgrade when the meeting cap,
+              file-size limit, or answer quality becomes the constraint.
             </p>
-            <a
-              className={buttonVariants({
-                variant: "secondary",
-                className: "mt-6 gap-1.5",
-              })}
-              href="/contact"
-            >
-              Ask about custom limits
-              <ArrowRightIcon className="size-4" />
-            </a>
           </FadeIn>
 
           <FadeIn direction="right">
             <div className="overflow-hidden rounded-2xl bg-background">
               {/* Mobile View - Stacked */}
               <div className="grid divide-y md:hidden">
-                {["Free", "Pro", "Team"].map((plan, planIndex) => (
+                {["Free", "Pro"].map((plan, planIndex) => (
                   <div className="p-6" key={plan}>
                     <h3 className="mb-4 font-bold text-lg">{plan}</h3>
                     <div className="grid gap-4">
@@ -196,19 +170,18 @@ function PricingComparison() {
               {/* Desktop View - Table */}
               <div className="hidden overflow-x-auto md:block">
                 <div className="min-w-[600px]">
-                  <div className="grid grid-cols-4 border-b bg-muted/40 text-sm">
+                  <div className="grid grid-cols-3 border-b bg-muted/40 text-sm">
                     <div className="p-4 font-medium">Feature</div>
                     <div className="p-4 font-medium">Free</div>
                     <div className="p-4 font-medium">Pro</div>
-                    <div className="p-4 font-medium">Team</div>
                   </div>
-                  {comparisonRows.map(([feature, free, pro, team]) => (
+                  {comparisonRows.map(([feature, free, pro]) => (
                     <div
-                      className="grid grid-cols-4 border-b text-sm last:border-b-0"
+                      className="grid grid-cols-3 border-b text-sm last:border-b-0"
                       key={feature}
                     >
                       <div className="p-4 font-medium">{feature}</div>
-                      {[free, pro, team].map((value, index) => (
+                      {[free, pro].map((value, index) => (
                         <div
                           className="flex items-center gap-2 p-4 text-muted-foreground"
                           key={index}

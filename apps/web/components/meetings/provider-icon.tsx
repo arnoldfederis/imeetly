@@ -2,7 +2,6 @@
 
 import { FileAudioIcon, FileTextIcon, FileVideoIcon } from "lucide-react";
 import { GoogleMeetIcon } from "@/components/svgs/google-meet-icon";
-import { MicrosoftTeamsIcon } from "@/components/svgs/microsoft-teams-icon";
 import { ZoomIcon } from "@/components/svgs/zoom-icon";
 
 export type MeetingProvider = string | null | undefined;
@@ -16,10 +15,6 @@ const PROVIDER_META = {
   zoom: {
     label: "Zoom",
     icon: <ZoomIcon className="size-6" />,
-  },
-  microsoft: {
-    label: "Microsoft Teams",
-    icon: <MicrosoftTeamsIcon className="size-6" />,
   },
 } as const;
 
@@ -41,7 +36,6 @@ export function detectMeetingProvider(input: {
   if (!meetingUrl) return null;
   if (meetingUrl.includes("meet.google.com")) return "google";
   if (meetingUrl.includes("zoom.us")) return "zoom";
-  if (meetingUrl.includes("teams.microsoft.com")) return "microsoft";
 
   return null;
 }

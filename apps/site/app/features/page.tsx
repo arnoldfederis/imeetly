@@ -95,7 +95,7 @@ const capabilityGroups = [
       "Audio and video uploads",
       "Transcript paste",
       "Zoom and Google Meet recording import",
-      "Microsoft Teams calendar sync and manual imports",
+      "Direct upload when no integration is connected",
     ],
   },
   {

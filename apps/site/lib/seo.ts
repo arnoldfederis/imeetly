@@ -16,7 +16,7 @@ const DEFAULT_DESCRIPTION =
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 const DEFAULT_OG_IMAGE_ALT = "imeetly - The memory layer for meetings";
 const DEFAULT_KEYWORDS =
-  "AI meeting notes, meeting transcription, meeting summarizer, AI meeting assistant, automatic meeting notes, meeting minutes generator, meeting action items, meeting decisions tracker, meeting recap, meeting summary, searchable meeting history, Zoom meeting notes, Google Meet notes, Microsoft Teams notes, meeting productivity, team meeting notes, meeting memory, meeting recorder, meeting transcription software, AI note taker, meeting intelligence, action item tracker, meeting follow-up, decision tracker, meeting highlights";
+  "AI meeting notes, meeting transcription, meeting summarizer, AI meeting assistant, automatic meeting notes, meeting minutes generator, meeting action items, meeting decisions tracker, meeting recap, meeting summary, searchable meeting history, Zoom meeting notes, Google Meet notes, meeting productivity, team meeting notes, meeting memory, meeting recorder, meeting transcription software, AI note taker, meeting intelligence, action item tracker, meeting follow-up, decision tracker, meeting highlights";
 
 interface SeoOptions {
   /** Page title. Appended with " - imeetly" unless it already contains it. */

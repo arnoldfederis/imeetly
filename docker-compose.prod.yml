@@ -1,4 +1,27 @@
 services:
+  postgres-db:
+    image: pgvector/pgvector:0.8.2-pg18-trixie
+    restart: unless-stopped
+    ports:
+      - "${TAILSCALE_IP:-127.0.0.1}:${POSTGRES_DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD:?set POSTGRES_DB_PASSWORD}
+      POSTGRES_DB: imeetly
+    command: ["postgres", "-c", "password_encryption=scram-sha-256"]
+    volumes:
+      - imeetly-data-prod:/var/lib/postgresql/data
+      - ./tools/docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d imeetly"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   site:
     image: ghcr.io/proghublabs/imeetly-site:latest
     pull_policy: always
@@ -73,6 +96,7 @@ services:
       - NODE_ENV=production
       - APP_ENV=production
       - APP_MODULE=server
+      - DATABASE_URL=postgres://postgres:${POSTGRES_DB_PASSWORD}@postgres-db:5432/imeetly
       - PORT=4000
       - SERVER_PORT=4000
       - HOST=0.0.0.0
@@ -91,7 +115,10 @@ services:
       retries: 3
       start_period: 15s
     depends_on:
-      - temporal
+      postgres-db:
+        condition: service_healthy
+      temporal:
+        condition: service_started
     deploy:
       resources:
         limits:
@@ -107,10 +134,14 @@ services:
       - NODE_ENV=production
       - APP_ENV=production
       - APP_MODULE=worker
+      - DATABASE_URL=postgres://postgres:${POSTGRES_DB_PASSWORD}@postgres-db:5432/imeetly
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_NAMESPACE=default
     depends_on:
-      - temporal
+      postgres-db:
+        condition: service_healthy
+      temporal:
+        condition: service_started
     deploy:
       resources:
         limits:
@@ -121,7 +152,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: temporal
-      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD}
       POSTGRES_DB: temporal
     volumes:
       - temporal-data-prod:/var/lib/postgresql/data
@@ -142,7 +173,7 @@ services:
       - DB=postgres12
       - DB_PORT=5432
       - POSTGRES_USER=temporal
-      - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD:-temporal}
+      - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD}
       - POSTGRES_SEEDS=temporal-db
       - DEFAULT_NAMESPACE=default
     depends_on:
@@ -164,5 +195,7 @@ services:
       - temporal
 
 volumes:
+  imeetly-data-prod:
+    external: true
   temporal-data-prod:
     external: true

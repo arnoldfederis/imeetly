@@ -200,8 +200,8 @@ export default function PrivacyPage() {
             <section>
               <h2>5. Third-Party Integration Connections</h2>
               <p className="mt-3">
-                imeetly allows you to connect your Google Meet, Zoom, or
-                Microsoft Teams account via OAuth. When you do:
+                imeetly allows you to connect your Google Meet or Zoom account
+                via OAuth. When you do:
               </p>
               <ul className="mt-3">
                 <li>
@@ -300,11 +300,6 @@ export default function PrivacyPage() {
                   <strong>Zoom</strong> - if you connect the Zoom integration,
                   we use Zoom&apos;s OAuth API to access your cloud recordings.
                   We request only recording-related scopes.
-                </li>
-                <li>
-                  <strong>Microsoft</strong> - if you connect the Microsoft
-                  Teams integration, we use Microsoft Graph API to access your
-                  Outlook calendar and Teams meeting recordings via OAuth.
                 </li>
               </ul>
               <p className="mt-3">

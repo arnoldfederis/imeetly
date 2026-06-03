@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import type { PLANS } from "@/components/settings/billing/billing-plan";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 export function PlanCard({
@@ -64,11 +58,6 @@ export function PlanCard({
       {isHighlighted && !isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 font-medium text-primary-foreground text-xs">
           Most popular
-        </div>
-      )}
-      {isComingSoon && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-muted-foreground px-3 py-0.5 font-medium text-background text-xs">
-          Coming soon
         </div>
       )}
       <CardHeader>
