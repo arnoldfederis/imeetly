@@ -10,13 +10,18 @@ services:
       POSTGRES_DB: imeetly
     command: ["postgres", "-c", "password_encryption=scram-sha-256"]
     volumes:
-      - imeetly-data-prod:/var/lib/postgresql/data
+      - imeetly-data-prod:/var/lib/postgresql
       - ./tools/docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d imeetly"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB",
+        ]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
+      start_period: 30s
     deploy:
       resources:
         limits:
