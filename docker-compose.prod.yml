@@ -195,7 +195,8 @@ services:
       - temporal
 
 volumes:
+  # Persistent named volume for app Postgres data. Compose/Dokploy creates it
+  # automatically if missing; data persists until the volume is explicitly removed.
   imeetly-data-prod:
-    external: true
   temporal-data-prod:
     external: true
