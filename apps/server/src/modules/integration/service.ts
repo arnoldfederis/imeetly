@@ -239,7 +239,7 @@ export class IntegrationService {
           sourceType: "video",
           status: "pending",
         })
-        .returning({ id: meetings.id });
+        .returning();
       if (!meeting) throw new Error("Failed to create test meeting");
       const meetingId = meeting.id;
 

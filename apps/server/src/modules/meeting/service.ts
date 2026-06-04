@@ -858,7 +858,7 @@ export abstract class MeetingService {
       .update(meetings)
       .set({ visibility })
       .where(eq(meetings.id, meetingId))
-      .returning({ visibility: meetings.visibility });
+      .returning();
 
     return updated?.visibility ?? null;
   }

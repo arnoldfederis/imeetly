@@ -83,9 +83,12 @@ export abstract class AccountService {
     console.log(`[account] Deleted verifications for email ${userEmail}`);
 
     // 4. Delete user row - cascades all relational data
-    const result = await db.delete(users).where(eq(users.id, userId));
+    const result = await db
+      .delete(users)
+      .where(eq(users.id, userId))
+      .returning();
 
-    if (result.rowCount === 0) {
+    if (result.length === 0) {
       console.error(`[account] User ${userId} not found during deletion`);
       throw new Error("User not found");
     }

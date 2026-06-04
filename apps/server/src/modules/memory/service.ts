@@ -186,7 +186,7 @@ export async function retrieveChunks(
     ? sql` AND m.meeting_date <= ${new Date(toDate)}`
     : sql``;
 
-  const rows = await db.execute(sql`
+  const result = await db.execute(sql`
     SELECT
       mc.id,
       mc.meeting_id AS "meetingId",
@@ -207,16 +207,16 @@ export async function retrieveChunks(
     LIMIT ${topK}
   `);
 
-  return (
-    rows.rows as Array<{
-      id: string;
-      meetingId: string;
-      sourceType: string;
-      content: string;
-      metadata: Record<string, unknown>;
-      score: number;
-    }>
-  ).map((row) => ({
+  const rows = (Array.isArray(result) ? result : result.rows) as Array<{
+    id: string;
+    meetingId: string;
+    sourceType: string;
+    content: string;
+    metadata: Record<string, unknown>;
+    score: number;
+  }>;
+
+  return rows.map((row) => ({
     id: row.id,
     meetingId: row.meetingId,
     sourceType: row.sourceType,

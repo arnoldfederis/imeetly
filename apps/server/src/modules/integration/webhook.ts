@@ -98,7 +98,7 @@ export async function handleWebhook(
       payload: parsed.data,
       status: "pending",
     })
-    .returning({ id: integrationWebhookEvents.id });
+    .returning();
 
   if (!event) {
     return { ok: false, message: "Failed to store event" };

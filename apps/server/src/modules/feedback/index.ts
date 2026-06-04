@@ -166,7 +166,7 @@ export const feedbackController = base.router({
           message: input.message.trim(),
           rating: input.rating ?? null,
         })
-        .returning({ id: feedback.id });
+        .returning();
 
       return { id: row?.id };
     }),

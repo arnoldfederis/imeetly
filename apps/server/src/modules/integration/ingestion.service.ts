@@ -66,7 +66,7 @@ export class MeetingRecordingIngestionService {
         sourceType: recording.mimeType.startsWith("audio") ? "audio" : "video",
         status: "pending",
       })
-      .returning({ id: meetings.id });
+      .returning();
 
     if (!meeting) throw new Error("Failed to create meeting record");
     const meetingId = meeting.id;

@@ -281,7 +281,7 @@ export class OAuthService {
         status: "active",
         metadata: {},
       })
-      .returning({ id: integrations.id });
+      .returning();
 
     if (!inserted) throw new Error("Failed to create integration record");
     return inserted.id;
