@@ -161,7 +161,6 @@
         "@aws-sdk/client-s3": "^3.1061.0",
         "@aws-sdk/s3-request-presigner": "^3.1061.0",
         "@deepgram/sdk": "5.4.0",
-        "@neondatabase/serverless": "^1.1.0",
         "@react-email/components": "^1.0.12",
         "@repo/db": "workspace:*",
         "@repo/env": "workspace:*",
@@ -196,7 +195,6 @@
     "packages/db": {
       "name": "@repo/db",
       "dependencies": {
-        "@neondatabase/serverless": "^1.1.0",
         "@t3-oss/env-nextjs": "^0.13.11",
         "drizzle-orm": "catalog:",
         "pg": "catalog:",
@@ -207,7 +205,6 @@
         "@types/pg": "catalog:dev",
         "dotenv-cli": "catalog:dev",
         "drizzle-kit": "latest",
-        "tsx": "4.22.4",
       },
     },
     "packages/env": {

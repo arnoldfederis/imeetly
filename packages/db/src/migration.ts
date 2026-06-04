@@ -1,10 +1,8 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
-import { migrate } from "drizzle-orm/neon-http/migrator";
+import { drizzle } from "drizzle-orm/bun-sql";
+import { migrate } from "drizzle-orm/bun-sql/migrator";
 import { env } from "./env";
 
-const sql = neon(env.DATABASE_URL);
-const db = drizzleNeon(sql);
+const db = drizzle(env.DATABASE_URL);
 
 const main = async () => {
   try {

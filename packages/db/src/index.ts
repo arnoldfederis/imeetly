@@ -20,5 +20,5 @@ const logger =
 
 // Better Auth's Drizzle adapter relies on relational query APIs exposed on
 // `db.query[...]`. The node-postgres driver consistently provides the shape
-// needed by auth/session lookups across build-time and request-time execution.
+// needed by auth/session lookups across Bun server runtime and Next SSR.
 export const db = drizzle(env.DATABASE_URL, { schema, logger });
