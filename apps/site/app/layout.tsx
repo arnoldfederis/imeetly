@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { RootProvider } from "@/components/providers";
-import { LandingHeader } from "../components/landing/landing-header";
+import { DEFAULT_OG_IMAGE, DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://imeetly.app"),
@@ -40,20 +41,13 @@ export const metadata: Metadata = {
     siteName: "imeetly",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "imeetly - The memory layer for meetings",
-      },
-    ],
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   twitter: {
     card: "summary_large_image",
     site: "@imeetly",
     creator: "@arnoldfederis",
-    images: ["/og-image.png"],
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

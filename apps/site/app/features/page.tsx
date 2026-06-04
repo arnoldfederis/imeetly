@@ -22,6 +22,7 @@ import { MemoryChatSection } from "@/components/landing/memory-chat-section";
 import { PageIntro } from "@/components/landing/page-intro";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
 import { buttonVariants } from "@/components/ui/button";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const FEATURES_DESCRIPTION =
   "imeetly turns meeting recordings and transcripts into decisions, action items, blockers, and follow-ups. Ask Meetly your AI meeting assistant anything about your meeting history.";
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
     title: "imeetly Features - AI Meeting Notes",
     description: FEATURES_DESCRIPTION,
     url: "https://imeetly.app/features",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/features" },
 };

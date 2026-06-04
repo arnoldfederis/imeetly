@@ -8,14 +8,21 @@
  *   head: () => seo({})
  */
 
-const SITE_NAME = "imeetly";
-const SITE_URL = "https://imeetly.app";
-const DEFAULT_TITLE = "The memory layer for meetings - imeetly";
-const DEFAULT_DESCRIPTION =
+export const SITE_NAME = "imeetly";
+export const SITE_URL = "https://imeetly.app";
+export const DEFAULT_TITLE = "The memory layer for meetings - imeetly";
+export const DEFAULT_DESCRIPTION =
   "Never lose what happened in a meeting again. imeetly captures summary, decisions, action items, and follow-ups automatically and makes your entire meeting history searchable. Start free.";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
-const DEFAULT_OG_IMAGE_ALT = "imeetly - The memory layer for meetings";
-const DEFAULT_KEYWORDS =
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
+export const DEFAULT_OG_IMAGE_ALT =
+  "imeetly - The memory layer for meetings";
+export const DEFAULT_OG_IMAGE_METADATA = {
+  url: DEFAULT_OG_IMAGE,
+  width: 1200,
+  height: 630,
+  alt: DEFAULT_OG_IMAGE_ALT,
+} as const;
+export const DEFAULT_KEYWORDS =
   "AI meeting notes, meeting transcription, meeting summarizer, AI meeting assistant, automatic meeting notes, meeting minutes generator, meeting action items, meeting decisions tracker, meeting recap, meeting summary, searchable meeting history, Zoom meeting notes, Google Meet notes, meeting productivity, team meeting notes, meeting memory, meeting recorder, meeting transcription software, AI note taker, meeting intelligence, action item tracker, meeting follow-up, decision tracker, meeting highlights";
 
 interface SeoOptions {

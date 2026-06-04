@@ -4,6 +4,7 @@ import { Stagger, StaggerItem } from "@/components/common/motion";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const CONTACT_DESCRIPTION =
   "Contact imeetly for enterprise plans, onboarding guidance, support requirements, and general support.";
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
     title: "Contact imeetly",
     description: CONTACT_DESCRIPTION,
     url: "https://imeetly.app/contact",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/contact" },
 };

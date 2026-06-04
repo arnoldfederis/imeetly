@@ -13,6 +13,7 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/common/motion";
 import { CTASection } from "@/components/landing/cta-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const HOW_IT_WORKS_DESCRIPTION =
   "Learn how imeetly turns meeting recordings into searchable summaries, decisions, action items, and follow-ups in three simple steps.";
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
     title: "How imeetly Works - AI Meeting Notes",
     description: HOW_IT_WORKS_DESCRIPTION,
     url: "https://imeetly.app/how-it-works",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/how-it-works" },
 };

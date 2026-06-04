@@ -15,6 +15,8 @@ import { ProductPreviewSection } from "@/components/landing/product-preview-sect
 import { TrustBar } from "@/components/landing/trust-bar";
 import { faqs } from "@/lib/faq-data";
 import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_METADATA,
   faqJsonLd,
   organizationJsonLd,
   softwareAppJsonLd,
@@ -33,10 +35,13 @@ export const metadata: Metadata = {
     title: "The memory layer for meetings - imeetly",
     description: HOME_DESCRIPTION,
     url: "https://imeetly.app",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   twitter: {
+    card: "summary_large_image",
     title: "The memory layer for meetings - imeetly",
     description: HOME_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   alternates: { canonical: "https://imeetly.app" },
 };

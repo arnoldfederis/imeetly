@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { buttonVariants } from "@/components/ui/button";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const DOCS_DESCRIPTION =
   "Learn how to add, use, troubleshoot, and remove imeetly for Zoom and Google Meet.";
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
     title: "imeetly Documentation",
     description: DOCS_DESCRIPTION,
     url: "https://imeetly.app/docs",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/docs" },
 };

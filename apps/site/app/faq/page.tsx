@@ -3,6 +3,7 @@ import { CTASection } from "@/components/landing/cta-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const FAQ_DESCRIPTION =
   "Get answers about imeetly AI meeting notes, meeting summarization, supported audio and video uploads, free and Pro plan limits, editable notes, team use, and recording storage.";
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     title: "FAQ for AI Meeting Notes - imeetly",
     description: FAQ_DESCRIPTION,
     url: "https://imeetly.app/faq",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/faq" },
 };

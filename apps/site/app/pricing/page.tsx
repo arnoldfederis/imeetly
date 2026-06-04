@@ -12,6 +12,7 @@ import { FAQSection } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { PageIntro } from "@/components/landing/page-intro";
 import { PricingSection } from "@/components/landing/pricing-section";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 const PRICING_DESCRIPTION =
   "Compare imeetly pricing plans for AI meeting notes, including Free, Pro monthly and yearly options, and custom enterprise support.";
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
     title: "imeetly Pricing - AI Meeting Notes Plans",
     description: PRICING_DESCRIPTION,
     url: "https://imeetly.app/pricing",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/pricing" },
 };

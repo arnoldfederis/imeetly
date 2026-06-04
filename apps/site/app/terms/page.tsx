@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { DEFAULT_OG_IMAGE_METADATA } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Terms of Service - imeetly",
     url: "https://imeetly.app/terms",
+    images: [DEFAULT_OG_IMAGE_METADATA],
   },
   alternates: { canonical: "https://imeetly.app/terms" },
 };
